@@ -67,27 +67,43 @@ int main(int argc, char** argv) {
           fds[nfds].events = POLLIN;
           nfds++;
         } else {
-          Request request(fds[i].fd);
-          std::cout << "request: " << request.get_method() << " "
-                    << request.get_uri() << " " << request.get_version()
-                    << std::endl;
-          Response response("200", "OK");
+          Request request;
+          Response response;
 
-          std::string file_path = ROOT_PATH;
-          if (request.get_uri() == "/")
-            file_path += INDEX_PATH;
-          else
-            file_path += request.get_uri();
-          int file = open(file_path.c_str(), O_RDONLY);
-          if (file < 0 || request.get_method() != "GET") {
-            response = Response("404", "Not Found");
+          try {
+            request = Request(fds[i].fd);
+            std::cout << "request: " << request.get_method() << " "
+                      << request.get_uri() << " " << request.get_version()
+                      << std::endl;
+
+            std::string file_path = ROOT_PATH;
+            if (request.get_uri() == "/")
+              file_path += INDEX_PATH;
+            else
+              file_path += request.get_uri();
+
+            int file = open(file_path.c_str(), O_RDONLY);
+            if (file >= 0 && request.get_method() == "GET") {
+              response = Response("200", "OK");
+              response.set_body(file);
+              close(file);
+            } else if (file >= 0 && request.get_method() == "HEAD") {
+              close(file);
+            } else {
+              response = Response("404", "Not Found");
+              response.set_body(
+                  "<html><title>404 Not Found</title><body><center><h1>404 Not "
+                  "Found</h1></center></body></html>");
+            }
+
+          } catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+            response = Response("400", "Bad Request");
             response.set_body(
-                "<html><title>404 Not Found</title><body><center><h1>404 Not "
-                "Found</h1></center></body></html>");
-          } else {
-            response.set_body(file);
-            close(file);
+                "<html><title>400 Bad Request</title><body><center><h1>400 Bad "
+                "Request</h1></center></body></html>");
           }
+
           int write_result =
               write(fds[i].fd, response.get().c_str(), response.get().size());
           if (write_result < 0) {

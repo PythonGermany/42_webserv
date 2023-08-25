@@ -1,5 +1,7 @@
 #include "Response.hpp"
 
+Response::Response() : status(""), body("") {}
+
 Response::Response(std::string status_code, std::string message) {
   status = "HTTP/1.1 " + status_code + " " + message + "\r\n";
   body = "";

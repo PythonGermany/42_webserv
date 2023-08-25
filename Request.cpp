@@ -1,29 +1,45 @@
 #include "Request.hpp"
 
 #include <iostream>
+
+Request::Request() {}
+
 Request::Request(int fd) {
   std::string request = "";
   char buffer[1024];
   int bytes_read = read(fd, buffer, 1024);
   request += std::string(buffer, bytes_read);
   if (bytes_read < 0) throw std::runtime_error("read error");
-  std::string header = request.substr(0, request.find("\r\n\r\n"));
-  body = request.substr(request.find("\r\n\r\n") + 4);
+  size_t index = request.find("\r\n\r\n");
+  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  std::string header = request.substr(0, index);
+  body = request.substr(index + 4);
 
-  std::string request_line = header.substr(0, header.find("\r\n"));
-  std::string fields = header.substr(header.find("\r\n") + 2);
+  index = header.find("\r\n");
+  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  std::string request_line = header.substr(0, index);
+  std::string fields = header.substr(index + 2);
 
-  method = request_line.substr(0, request_line.find(" "));
-  uri = request_line.substr(request_line.find(" ") + 1);
-  version = uri.substr(uri.find(" ") + 1);
-  uri = uri.substr(0, uri.find(" "));
+  index = request_line.find(" ");
+  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  method = request_line.substr(0, index);
+  uri = request_line.substr(index + 1);
+  index = uri.find(" ");
+  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  version = uri.substr(index + 1);
+  uri = uri.substr(0, index);
 
-  while (fields.find("\r\n") != std::string::npos) {
-    std::string field = fields.substr(0, fields.find("\r\n"));
-    std::string key = field.substr(0, field.find(": "));
-    std::string value = field.substr(field.find(": ") + 2);
+  index = fields.find("\r\n");
+  while (index != std::string::npos) {
+    std::string field = fields.substr(0, index);
+    size_t separator = field.find(": ");
+    if (separator == std::string::npos)
+      throw std::runtime_error("invalid request");
+    std::string key = field.substr(0, separator);
+    std::string value = field.substr(separator + 2);
     this->fields[key] = value;
-    fields = fields.substr(fields.find("\r\n") + 2);
+    fields = fields.substr(index + 2);
+    index = fields.find("\r\n");
   }
 }
 

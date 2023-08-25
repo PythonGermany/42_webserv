@@ -14,6 +14,7 @@ class Response {
   std::string body;
 
  public:
+  Response();
   Response(std::string status_code, std::string message);
   Response(const Response& other);
   Response& operator=(const Response& other);

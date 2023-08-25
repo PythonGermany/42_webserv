@@ -16,6 +16,7 @@ class Request {
   std::string body;
 
  public:
+  Request();
   Request(int fd);
   ~Request();
 
