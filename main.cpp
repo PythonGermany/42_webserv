@@ -1,17 +1,15 @@
-#include <fcntl.h>
 #include <sys/poll.h>
 
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Server.hpp"
 #include "Socket.hpp"
 
 #define MAX_CLIENTS 10
 #define ROOT_PATH "/home/pythongermany/_Projects/42_webserv/website"
-#define INDEX_PATH "/index.html"
+#define INDEX_PATH "index.html"
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -21,6 +19,7 @@ int main(int argc, char** argv) {
 
   int nfds = argc - 1;
   Socket sockets[nfds];
+  Server server;
   struct sockaddr_in address;
   socklen_t address_len = sizeof(address);
   struct pollfd fds[MAX_CLIENTS * nfds + nfds];
@@ -46,6 +45,28 @@ int main(int argc, char** argv) {
     fds[i].events = POLLIN;
   }
 
+  // Initialize server values (TEST)
+  server.set_socket(&sockets[0]);  // Unused at the moment
+  server.set_host("localhost");    // Unused at the moment
+  server.set_port(atoi(argv[1]));  // Unused at the moment
+  server.set_names(
+      std::vector<std::string>(1, "localhost"));  // Unused at the moment
+  server.set_error_pages(
+      std::map<std::string, std::string>());  // Unused at the moment
+  server.set_client_max_body_size(1024);      // Unused at the moment
+
+  // Initialize server location directive (TEST)
+  std::vector<location> locations;
+  locations.push_back(location());
+  locations[0]._path = "/";
+  locations[0]._redirect = "";
+  locations[0]._root = ROOT_PATH;
+  locations[0]._index = INDEX_PATH;
+  locations[0]._autoindex = false;
+  locations[0]._cgi_path = "";
+  locations[0]._cgi_extension = "php";
+  server.set_locations(locations);
+
   while (true) {
     int poll_result = poll(fds, nfds, -1);
     if (poll_result < 0) {
@@ -61,55 +82,40 @@ int main(int argc, char** argv) {
             std::cerr << "accept error: " << strerror(errno) << std::endl;
             return 1;
           }
-
           fds[nfds].fd = client_df;
           fds[nfds].events = POLLIN;
           nfds++;
         } else {
           Request request;
           Response response;
-
           try {
+            // Read request
             request = Request(fds[i].fd);
             std::cout << "request: " << request.method() << " " << request.uri()
                       << " " << request.version() << std::endl;
 
-            std::string file_path = ROOT_PATH;
-            if (request.uri() == "/")
-              file_path += INDEX_PATH;
-            else
-              file_path += request.uri();
+            // Get path from location directive
+            location location = server.resolve_location(request.uri());
+            std::string file_path = location._root + request.uri();
+            if (is_dir(file_path)) file_path += location._index;
 
-            int file = open(file_path.c_str(), O_RDONLY);
-            if (file >= 0 && request.method() == "GET") {
+            // Create response
+            if (is_file(file_path) && is_readable(file_path)) {
               response = Response("200", "OK");
-              response.set_body(file);
-              close(file);
-            } else if (file >= 0 && request.method() == "HEAD") {
-              close(file);
-            } else {
+              response.load_body(file_path);
+            } else
               response = Response("404", "Not Found");
-              response.set_body(
-                  "<html><title>404 Not Found</title><body><center><h1>404 Not "
-                  "Found</h1></center></body></html>");
-            }
+          } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+            response = Response("400", "Bad Request");
+          }
+          response.set_field("Server", "webserv");
+
+          // Send response
+          try {
+            response.send(fds[i].fd);
           } catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
-            response = Response("400", "Bad Request");
-            response.set_body(
-                "<html><title>400 Bad Request</title><body><center><h1>400 Bad "
-                "Request</h1></center></body></html>");
-          }
-
-          int write_result =
-              write(fds[i].fd, response.get().c_str(), response.get().size());
-          if (write_result < 0) {
-            std::cerr << "write error: " << strerror(errno) << std::endl;
-            return 1;
-          }
-          if (close(fds[i].fd) == -1) {
-            std::cerr << "close error: " << strerror(errno) << std::endl;
-            return 1;
           }
 
           fds[i].fd = fds[nfds - 1].fd;

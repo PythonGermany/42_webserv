@@ -1,6 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <map>
@@ -11,7 +12,7 @@ class Response {
  private:
   std::string status;
   std::map<std::string, std::string> fields;
-  std::string body;
+  std::string _body;
 
  public:
   Response();
@@ -21,9 +22,8 @@ class Response {
   ~Response();
 
   void set_field(std::string key, std::string value);
-  void set_body(int fd);
-  void set_body(std::string body);
-  std::string get() const;
+  void load_body(std::string path);
+  void send(int fd) const;
 };
 
 #endif

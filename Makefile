@@ -2,7 +2,7 @@ NAME = webserv
 
 FLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRC = main.cpp Socket.cpp Request.cpp Response.cpp utils.cpp
+SRC = main.cpp Server.cpp Socket.cpp Request.cpp Response.cpp utils.cpp
 OBJ = $(SRC:%.cpp=%.o)
 
 all : $(NAME)
