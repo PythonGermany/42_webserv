@@ -81,7 +81,9 @@ int main(int argc, char** argv) {
           int file = open(file_path.c_str(), O_RDONLY);
           if (file < 0 || request.get_method() != "GET") {
             response = Response("404", "Not Found");
-            response.set_body("404 Not Found");
+            response.set_body(
+                "<html><title>404 Not Found</title><body><center><h1>404 Not "
+                "Found</h1></center></body></html>");
           } else {
             response.set_body(file);
             close(file);
