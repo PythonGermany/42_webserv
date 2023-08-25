@@ -15,7 +15,6 @@ class Socket {
   int socket_fd;
   int domain;
   struct sockaddr_in address;
-  std::string error;
 
  public:
   Socket();
@@ -24,7 +23,7 @@ class Socket {
   Socket& operator=(const Socket& other);
   ~Socket();
 
-  int get_fd() const;
+  int fd() const;
   std::string get_error() const;
   void Setsockopt(int level, int option_name, const void* option_value,
                   socklen_t option_len);

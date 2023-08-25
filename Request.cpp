@@ -1,7 +1,5 @@
 #include "Request.hpp"
 
-#include <iostream>
-
 Request::Request() {}
 
 Request::Request(int fd) {
@@ -11,23 +9,23 @@ Request::Request(int fd) {
   request += std::string(buffer, bytes_read);
   if (bytes_read < 0) throw std::runtime_error("read error");
   size_t index = request.find("\r\n\r\n");
-  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  if (index == std::string::npos) throw_error("header not found");
   std::string header = request.substr(0, index);
-  body = request.substr(index + 4);
+  _body = request.substr(index + 4);
 
   index = header.find("\r\n");
-  if (index == std::string::npos) throw std::runtime_error("invalid request");
+  if (index == std::string::npos) throw_error("request line not found");
   std::string request_line = header.substr(0, index);
   std::string fields = header.substr(index + 2);
 
   index = request_line.find(" ");
-  if (index == std::string::npos) throw std::runtime_error("invalid request");
-  method = request_line.substr(0, index);
-  uri = request_line.substr(index + 1);
-  index = uri.find(" ");
-  if (index == std::string::npos) throw std::runtime_error("invalid request");
-  version = uri.substr(index + 1);
-  uri = uri.substr(0, index);
+  if (index == std::string::npos) throw_error("method not found");
+  _method = request_line.substr(0, index);
+  _uri = request_line.substr(index + 1);
+  index = _uri.find(" ");
+  if (index == std::string::npos) throw_error("uri/version not found");
+  _version = _uri.substr(index + 1);
+  _uri = _uri.substr(0, index);
 
   index = fields.find("\r\n");
   while (index != std::string::npos) {
@@ -37,24 +35,40 @@ Request::Request(int fd) {
       throw std::runtime_error("invalid request");
     std::string key = field.substr(0, separator);
     std::string value = field.substr(separator + 2);
-    this->fields[key] = value;
+    _fields[key] = value;
     fields = fields.substr(index + 2);
     index = fields.find("\r\n");
   }
 }
 
+Request::Request(const Request& other) { *this = other; }
+
+Request& Request::operator=(const Request& other) {
+  if (this == &other) return *this;
+  _method = other._method;
+  _uri = other._uri;
+  _version = other._version;
+  _fields = other._fields;
+  _body = other._body;
+  return *this;
+}
+
 Request::~Request() {}
 
-std::string Request::get_method(void) const { return method; }
+std::string Request::method(void) const { return _method; }
 
-std::string Request::get_uri(void) const { return uri; }
+std::string Request::uri(void) const { return _uri; }
 
-std::string Request::get_version(void) const { return version; }
+std::string Request::version(void) const { return _version; }
 
-std::string Request::get_field(std::string key) const {
-  std::map<std::string, std::string>::const_iterator it = fields.find(key);
-  if (it == fields.end()) throw std::runtime_error("field not found");
+std::string Request::field(std::string key) const {
+  std::map<std::string, std::string>::const_iterator it = _fields.find(key);
+  if (it == _fields.end()) throw std::runtime_error("field not found");
   return it->second;
 }
 
-std::string Request::get_body(void) const { return body; }
+std::string Request::body(void) const { return _body; }
+
+void Request::throw_error(const std::string& error) {
+  throw std::runtime_error("request: " + error);
+}

@@ -36,13 +36,13 @@ int main(int argc, char** argv) {
       sockets[i].Bind(atoi(argv[i + 1]));
       sockets[i].Listen(MAX_CLIENTS);
     } catch (const std::exception& e) {
-      std::cerr << "init: " << sockets[i].get_error() << std::endl;
+      std::cerr << e.what() << std::endl;
       return 1;
     }
     std::cout << "Listening on port " << argv[i + 1] << std::endl;
 
     // Initialize pollfd struct
-    fds[i].fd = sockets[i].get_fd();
+    fds[i].fd = sockets[i].fd();
     fds[i].events = POLLIN;
   }
 
@@ -52,12 +52,11 @@ int main(int argc, char** argv) {
       std::cerr << "poll error: " << strerror(errno) << std::endl;
       return 1;
     }
-
     for (int i = 0; i < nfds; i++) {
       if (fds[i].revents & POLLIN) {
-        if (fds[i].fd == sockets[i].get_fd()) {
+        if (fds[i].fd == sockets[i].fd()) {
           int client_df =
-              accept(sockets[i].get_fd(), (sockaddr*)&address, &address_len);
+              accept(sockets[i].fd(), (sockaddr*)&address, &address_len);
           if (client_df < 0) {
             std::cerr << "accept error: " << strerror(errno) << std::endl;
             return 1;
@@ -72,22 +71,21 @@ int main(int argc, char** argv) {
 
           try {
             request = Request(fds[i].fd);
-            std::cout << "request: " << request.get_method() << " "
-                      << request.get_uri() << " " << request.get_version()
-                      << std::endl;
+            std::cout << "request: " << request.method() << " " << request.uri()
+                      << " " << request.version() << std::endl;
 
             std::string file_path = ROOT_PATH;
-            if (request.get_uri() == "/")
+            if (request.uri() == "/")
               file_path += INDEX_PATH;
             else
-              file_path += request.get_uri();
+              file_path += request.uri();
 
             int file = open(file_path.c_str(), O_RDONLY);
-            if (file >= 0 && request.get_method() == "GET") {
+            if (file >= 0 && request.method() == "GET") {
               response = Response("200", "OK");
               response.set_body(file);
               close(file);
-            } else if (file >= 0 && request.get_method() == "HEAD") {
+            } else if (file >= 0 && request.method() == "HEAD") {
               close(file);
             } else {
               response = Response("404", "Not Found");
@@ -95,7 +93,6 @@ int main(int argc, char** argv) {
                   "<html><title>404 Not Found</title><body><center><h1>404 Not "
                   "Found</h1></center></body></html>");
             }
-
           } catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
             response = Response("400", "Bad Request");
@@ -110,7 +107,10 @@ int main(int argc, char** argv) {
             std::cerr << "write error: " << strerror(errno) << std::endl;
             return 1;
           }
-          close(fds[i].fd);
+          if (close(fds[i].fd) == -1) {
+            std::cerr << "close error: " << strerror(errno) << std::endl;
+            return 1;
+          }
 
           fds[i].fd = fds[nfds - 1].fd;
           fds[i].events = fds[nfds - 1].events;

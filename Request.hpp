@@ -9,22 +9,27 @@
 
 class Request {
  private:
-  std::string method;
-  std::string uri;
-  std::string version;
-  std::map<std::string, std::string> fields;
-  std::string body;
+  std::string _method;
+  std::string _uri;
+  std::string _version;
+  std::map<std::string, std::string> _fields;
+  std::string _body;
 
  public:
   Request();
+  Request(const Request& other);
+  Request& operator=(const Request& other);
   Request(int fd);
   ~Request();
 
-  std::string get_method(void) const;
-  std::string get_uri(void) const;
-  std::string get_version(void) const;
-  std::string get_field(std::string key) const;
-  std::string get_body(void) const;
+  std::string method(void) const;
+  std::string uri(void) const;
+  std::string version(void) const;
+  std::string field(std::string key) const;
+  std::string body(void) const;
+
+ private:
+  void throw_error(const std::string& error);
 };
 
 #endif

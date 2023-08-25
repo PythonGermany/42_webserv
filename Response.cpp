@@ -10,6 +10,7 @@ Response::Response(std::string status_code, std::string message) {
 Response::Response(const Response& other) { *this = other; }
 
 Response& Response::operator=(const Response& other) {
+  if (this == &other) return *this;
   status = other.status;
   fields = other.fields;
   body = other.body;
