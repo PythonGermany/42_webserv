@@ -31,7 +31,7 @@ class Socket {
   void Listen(int max_clients);
 
  private:
-  void throw_error(const std::string& function_name);
+  void throw_error(const std::string& function_name) const;
 };
 
 #endif

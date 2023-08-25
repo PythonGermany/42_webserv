@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "utils.hpp"
+
 class Request {
  private:
   std::string _method;
@@ -29,7 +31,7 @@ class Request {
   std::string body(void) const;
 
  private:
-  void throw_error(const std::string& error);
+  void throw_error(const std::string& error) const;
 };
 
 #endif

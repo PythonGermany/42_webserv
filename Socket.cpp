@@ -43,7 +43,7 @@ void Socket::Listen(int max_clients) {
   if (result < 0) throw_error("listen");
 }
 
-void Socket::throw_error(const std::string& function_name) {
+void Socket::throw_error(const std::string& function_name) const {
   std::string error = "socket: " + function_name + ": ";
   error += strerror(errno);
   throw std::runtime_error(error);

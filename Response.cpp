@@ -30,7 +30,7 @@ void Response::set_body(int fd) {
     body += std::string(buffer, bytes_read);
     bytes_read = read(fd, buffer, 1024);
   }
-  if (bytes_read < 0) throw std::runtime_error("read error");
+  if (bytes_read < 0) throw std::runtime_error("response: read error");
 }
 
 void Response::set_body(std::string body) { this->body = body; }
