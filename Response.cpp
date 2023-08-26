@@ -25,6 +25,8 @@ void Response::set_field(std::string key, std::string value) {
   fields[key] = value;
 }
 
+void Response::set_body(std::string body) { _body = body; }
+
 void Response::load_body(std::string path) {
   int fd = open(path.c_str(), O_RDONLY);
   if (fd < 0) throw std::runtime_error("response: open error");

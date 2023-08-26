@@ -35,9 +35,9 @@ Request::Request(int fd) {
   index = fields.find("\r\n");
   while (index != std::string::npos) {
     std::string field = fields.substr(0, index);
-    size_t separator = field.find(": ");
+    size_t separator = field.find(":");
     std::string key = field.substr(0, separator);
-    std::string value = field.substr(separator + 2);
+    std::string value = trim(field.substr(separator + 1));
     _fields[key] = value;
     fields = fields.substr(index + 2);
     index = fields.find("\r\n");
@@ -60,7 +60,7 @@ Request::~Request() {}
 
 std::string Request::method(void) const { return _method; }
 
-std::string Request::uri(void) const { return _uri; }
+std::string& Request::uri(void) { return _uri; }
 
 std::string Request::version(void) const { return _version; }
 

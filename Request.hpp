@@ -25,7 +25,7 @@ class Request {
   ~Request();
 
   std::string method(void) const;
-  std::string uri(void) const;
+  std::string& uri(void);
   std::string version(void) const;
   std::string field(std::string key) const;
   std::string body(void) const;

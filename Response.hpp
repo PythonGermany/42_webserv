@@ -22,6 +22,7 @@ class Response {
   ~Response();
 
   void set_field(std::string key, std::string value);
+  void set_body(std::string body);
   void load_body(std::string path);
   void send(int fd) const;
 };

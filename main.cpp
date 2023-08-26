@@ -1,6 +1,8 @@
+#include <dirent.h>
 #include <sys/poll.h>
 
 #include <iostream>
+#include <sstream>
 
 #include "Request.hpp"
 #include "Response.hpp"
@@ -10,6 +12,35 @@
 #define MAX_CLIENTS 10
 #define ROOT_PATH "/home/pythongermany/_Projects/42_webserv/website"
 #define INDEX_PATH "index.html"
+
+template <typename T>
+std::string to_string(T value) {
+  std::stringstream ss;
+  ss << value;
+  return ss.str();
+}
+
+std::string generate_directive_listing(std::string root, std::string path) {
+  std::string host_path = root + path;
+  std::string listing = "<html><head><title>Index of " + path +
+                        "</title></head><body><h1>Index of " + path +
+                        "</h1><hr><pre>";
+  DIR* dir = opendir(host_path.c_str());
+  if (dir == NULL)
+    throw std::runtime_error("generate_directive_listing: opendir error");
+  struct dirent* entry = readdir(dir);
+  while (entry != NULL) {
+    std::string fsize = to_string(size(host_path + entry->d_name));
+    std::string fmodified = to_string(modified(host_path + entry->d_name));
+    listing += "<a href=\"" + path + std::string(entry->d_name) + "\">" +
+               std::string(entry->d_name) + "</a>" + "    " + fmodified +
+               "    " + fsize + "<br>";
+    entry = readdir(dir);
+  }
+  closedir(dir);
+  listing += "</pre><hr></body></html>";
+  return listing;
+}
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -25,8 +56,8 @@ int main(int argc, char** argv) {
   struct pollfd fds[MAX_CLIENTS * nfds + nfds];
 
   memset(fds, 0, sizeof(fds));
-  for (int i = 0; i < argc - 1; i++) {
-    try {
+  try {
+    for (int i = 0; i < argc - 1; i++) {
       // Initialize server socket
       sockets[i] = Socket(AF_INET, SOCK_STREAM, 0);
       int port_reuse = 1;
@@ -34,15 +65,15 @@ int main(int argc, char** argv) {
                             sizeof(port_reuse));
       sockets[i].Bind(atoi(argv[i + 1]));
       sockets[i].Listen(MAX_CLIENTS);
-    } catch (const std::exception& e) {
-      std::cerr << e.what() << std::endl;
-      return 1;
-    }
-    std::cout << "Listening on port " << argv[i + 1] << std::endl;
+      std::cout << "Listening on port " << argv[i + 1] << std::endl;
 
-    // Initialize pollfd struct
-    fds[i].fd = sockets[i].fd();
-    fds[i].events = POLLIN;
+      // Initialize pollfd struct
+      fds[i].fd = sockets[i].fd();
+      fds[i].events = POLLIN;
+    }
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
   }
 
   // Initialize server values (TEST)
@@ -62,7 +93,7 @@ int main(int argc, char** argv) {
   locations[0]._redirect = "";
   locations[0]._root = ROOT_PATH;
   locations[0]._index = INDEX_PATH;
-  locations[0]._autoindex = false;
+  locations[0]._autoindex = true;
   locations[0]._cgi_path = "";
   locations[0]._cgi_extension = "php";
   server.set_locations(locations);
@@ -94,19 +125,36 @@ int main(int argc, char** argv) {
             std::cout << "request: " << request.method() << " " << request.uri()
                       << " " << request.version() << std::endl;
 
-            // Get path from location directive
+            // Get path on server from location directive
             location location = server.resolve_location(request.uri());
-            std::string file_path = location._root + request.uri();
-            if (is_dir(file_path)) file_path += location._index;
+            std::string path = location._root + request.uri();
+            if (request.uri() == location._path) path += location._index;
 
             // Create response
-            if (is_file(file_path) && is_readable(file_path)) {
-              response = Response("200", "OK");
-              response.load_body(file_path);
-            } else
+            if (exists(path) == false) {
               response = Response("404", "Not Found");
+            } else if (is_readable(path) == false) {
+              response = Response("403", "Forbidden");
+            } else if (is_file(path) == true) {
+              response = Response("200", "OK");
+              response.load_body(path);
+            } else if (is_dir(path) == true) {
+              if (path[path.size() - 1] != '/') {
+                response = Response("301", "Moved Permanently");
+                response.set_field("Location", request.uri() + "/");
+              } else if (location._autoindex == true) {
+                response = Response("200", "OK");
+                response.set_field("Content-Type", "text/html");
+                response.set_body(
+                    generate_directive_listing(location._root, request.uri()));
+              } else {
+                response = Response("403", "Forbidden");
+              }
+            } else {
+              response = Response("500", "Internal Server Error");
+            }
           } catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
+            std::cerr << "main: " << e.what() << std::endl;
             response = Response("400", "Bad Request");
           }
           response.set_field("Server", "webserv");

@@ -29,3 +29,15 @@ bool is_readable(std::string path) {
   stat(path.c_str(), &buf);
   return buf.st_mode & S_IRUSR;
 }
+
+long int size(std::string path) {
+  struct stat buf;
+  stat(path.c_str(), &buf);
+  return buf.st_size;
+}
+
+long int modified(std::string path) {
+  struct stat buf;
+  stat(path.c_str(), &buf);
+  return buf.st_mtim.tv_sec;
+}
