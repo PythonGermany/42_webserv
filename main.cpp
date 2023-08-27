@@ -77,15 +77,13 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Initialize server values (TEST) // TODO: Setup server values
-  // server.setSocket(&sockets[0]);
-  // server.setHost("localhost");
-  // server.setPort(atoi(argv[1]));
-  // server.setNames(
-  //     std::vector<std::string>(1, "localhost"));
-  // server.setError_pages(
-  //     std::map<std::string, std::string>());
-  // server.setClient_max_body_size(1024);
+  // Initialize server values (TEST)
+  server.setSocket(&sockets[0]);
+  server.setHost("localhost");
+  server.setPort(atoi(argv[1]));
+  server.addName("localhost");
+  server.addErrorPage("404", "404.html");
+  server.setClientMaxBodySize(1024);
 
   // Initialize server location directive (TEST)
   location location;
@@ -146,8 +144,9 @@ int main(int argc, char** argv) {
               } else if (location._autoindex == true) {
                 response = Response("200", "OK");
                 response.set_field("Content-Type", "text/html");
-                response.setBody(
-                    generate_directive_listing(location._root, request.uri()));
+                // response.setBody(
+                //     generate_directive_listing(location._root,
+                //     request.uri()));
               } else {
                 response = Response("403", "Forbidden");
               }

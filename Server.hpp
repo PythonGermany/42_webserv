@@ -32,8 +32,12 @@ class Server {
   Server();
   ~Server();
 
-  // TODO: Add setters
-
+  void setSocket(Socket *socket);
+  void setHost(std::string host);
+  void setPort(int port);
+  void addName(std::string name);
+  void addErrorPage(std::string code, std::string path);
+  void setClientMaxBodySize(int size);
   void addLocation(location location);
 
   location resolveLocation(std::string path);

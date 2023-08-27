@@ -27,50 +27,77 @@ std::vector<Server> Config::parse() {
   std::string data = _config;
 
   while (data.length() > 0) {
-    int end = findBlockEnd(data);
+    int end = findContextEnd(data);
     if (end == -1) throwExeption("parse", "Expected token '}' not found");
-    std::string block = data.substr(0, end + 1);
-    servers.push_back(parseServer(block));
+    std::string context = data.substr(0, end + 1);
+    servers.push_back(parseServer(context));
     data = data.substr(end + 1);
   }
   return servers;
 }
 
-Server Config::parseServer(std::string block) {
+Server Config::parseServer(std::string context) {
   Server server;
-  if (findToken(block, "server") != 0)
+  if (findToken(context, "server") != 0)
     throwExeption("parseServer", "Expected token 'server' not found");
-  block = block.substr(6, block.length());
-  block = trim(block);
-  block = trim(block.substr(1, block.length() - 2));
-  while (block.length() > 0) {
-    // TODO: parse server block
+  context = context.substr(6, context.length());
+  context = trim(context);
+  context = trim(context.substr(1, context.length() - 2));
+  while (context.length() > 0) {
+    if (isContext(context))
+      parseContext(cut(context, 0, findContextEnd(context) + 1), server);
+    else
+      parseDirective(cut(context, 0, findToken(context, ";") + 1), server);
   }
   return server;
 }
 
-location Config::parseLocation(std::string block) {
+void Config::parseContext(std::string context, Server &server) {
+  context = trim(context.substr(0, findToken(context, "{")));
+  if (context == "server") {
+    throwExeption("parseContext", "Nested server context not allowed");
+  } else if (context == "location") {
+    location location = parseLocation(context);
+    server.addLocation(location);
+  } else {
+    throwExeption("parseContext", "Unknown context '" + context + "'");
+  }
+}
+
+void Config::parseDirective(std::string directive, Server &server) {
+  // TODO: parse directive
+}
+
+location Config::parseLocation(std::string context) {
   location location;
-  // TODO: parse location block
+  // TODO: parse location context
   return location;
 }
 
-int Config::findBlockEnd(std::string block) {
+bool Config::isContext(const std::string &context) {
+  int contextStart = context.find_first_of("{");
+  int directiveEnd = context.find_first_of(";");
+  if (contextStart == -1) return false;
+  if (directiveEnd == -1) return true;
+  return contextStart < directiveEnd;
+}
+
+int Config::findContextEnd(const std::string &context) {
   int depth = 0;
   int i = -1;
-  while (i < (int)block.length()) {
-    i = block.find_first_of("{}", i + 1);
+  while (i < (int)context.length()) {
+    i = context.find_first_of("{}", i + 1);
     if (i == -1) return -1;
-    if (block[i] == '{')
+    if (context[i] == '{')
       depth++;
-    else if (block[i] == '}')
+    else if (context[i] == '}')
       depth--;
     if (depth == 0) return i;
   }
   return -1;
 }
 
-int Config::findToken(std::string data, std::string token) {
+int Config::findToken(const std::string &data, std::string token) {
   int i = data.find(token);
   if (i == -1)
     throwExeption("find_token", "Expected token '" + token + "' not found");

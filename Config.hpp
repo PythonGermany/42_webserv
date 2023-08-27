@@ -23,10 +23,13 @@ class Config {
   std::vector<Server> parse();
 
  private:
-  Server parseServer(std::string block);
-  location parseLocation(std::string block);
-  int findBlockEnd(std::string block);
-  int findToken(std::string data, std::string token);
+  Server parseServer(std::string context);
+  void parseContext(std::string context, Server &server);
+  void parseDirective(std::string context, Server &server);
+  location parseLocation(std::string context);
+  bool isContext(const std::string &context);
+  int findContextEnd(const std::string &context);
+  int findToken(const std::string &data, std::string token);
 
   void throwExeption(std::string func, std::string msg);
 };
