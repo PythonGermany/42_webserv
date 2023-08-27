@@ -35,3 +35,23 @@ bool endsWith(std::string str, std::string suffix) {
   return str.size() >= suffix.size() &&
          str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
+
+std::string inet_ntoa(uint32_t addr) {
+  std::string str = "";
+  for (int i = 0; i < 4; i++) {
+    str += toString((int)addr & 0xFF);
+    if (i != 3) str += ".";
+    addr >>= 8;
+  }
+  return str;
+}
+
+std::string inet_hostname(uint32_t addr) {
+  struct sockaddr_in address;
+  address.sin_addr.s_addr = addr;
+  char hostname[NI_MAXHOST];
+  int result = getnameinfo((struct sockaddr *)&address, sizeof(address),
+                           hostname, NI_MAXHOST, NULL, 0, 0);
+  if (result != 0) return inet_ntoa(addr);
+  return std::string(hostname);
+}

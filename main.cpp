@@ -94,8 +94,10 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << "webserv: Request: " << request.method() << " "
-                      << request.uri() << " " << request.version() << " -> ";
+            std::cout << "webserv: Request from "
+                      << inet_ntoa(address.sin_addr.s_addr) << ": "
+                      << request.method() << " " << request.uri() << " "
+                      << request.version() << " -> ";
 
             // Get server from host header
             std::string host = request.field("Host");

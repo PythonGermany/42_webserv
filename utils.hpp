@@ -1,6 +1,8 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <netdb.h>
+#include <netinet/in.h>
 #include <sys/stat.h>
 
 #include <sstream>
@@ -43,5 +45,12 @@ std::string toString(T val) {
   ss << val;
   return ss.str();
 }
+
+// Convert address.sin_addr.s_addr to string
+// @param addr The address to convert
+// @return The string representation of the address
+std::string inet_ntoa(uint32_t addr);
+
+std::string inet_hostname(uint32_t addr);
 
 #endif
