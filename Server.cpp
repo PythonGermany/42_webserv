@@ -1,15 +1,13 @@
 #include "Server.hpp"
 
 Server::Server() {
-  _socket = NULL;
   _host = "";
   _port = -1;
   _client_max_body_size = 1024 * 1024;
+  _isDefault = false;
 }
 
 Server::~Server() {}
-
-void Server::setSocket(Socket *socket) { _socket = socket; }
 
 void Server::setHost(std::string host) { _host = host; }
 
@@ -27,19 +25,7 @@ void Server::setClientMaxBodySize(int size) { _client_max_body_size = size; }
 
 void Server::addLocation(location location) { _locations.push_back(location); }
 
-location Server::matchLocation(std::string path) {
-  location *match = &_locations[0];
-  for (size_t i = 1; i < _locations.size(); i++) {
-    if (path.find(_locations[i]._path) == 0 &&
-        _locations[i]._path.length() > (*match)._path.length()) {
-      match = &_locations[i];
-    }
-  }
-  if (match == NULL) throw std::runtime_error("No matching location found");
-  return *match;
-}
-
-Socket *Server::getSocket() { return _socket; }
+void Server::setIsDefault(bool isDefault) { _isDefault = isDefault; }
 
 std::string Server::getHost() { return _host; }
 
@@ -52,6 +38,20 @@ std::map<std::string, std::string> Server::getErrorPages() {
 }
 
 int Server::getClientMaxBodySize() { return _client_max_body_size; }
+
+bool Server::getIsDefault() { return _isDefault; }
+
+location Server::matchLocation(std::string path) {
+  location *match = &_locations[0];
+  for (size_t i = 1; i < _locations.size(); i++) {
+    if (path.find(_locations[i]._path) == 0 &&
+        _locations[i]._path.length() > (*match)._path.length()) {
+      match = &_locations[i];
+    }
+  }
+  if (match == NULL) throw std::runtime_error("No matching location found");
+  return *match;
+}
 
 std::vector<location> Server::getLocations() { return _locations; }
 
@@ -88,6 +88,7 @@ void Server::print() {
       std::cout << "    cgi: " << it2->first << " " << it2->second << std::endl;
     }
   }
+  std::cout << "  isDefault: " << _isDefault << std::endl;
   std::cout << "----------------------------------------------------"
             << std::endl;
 }

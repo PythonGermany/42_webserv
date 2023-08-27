@@ -23,20 +23,19 @@ struct location {
 // Class to store the server block
 class Server {
  private:
-  Socket *_socket;
   std::string _host;
   int _port;
   std::vector<std::string> _names;
   std::map<std::string, std::string> _error_pages;
   int _client_max_body_size;
   std::vector<location> _locations;
+  bool _isDefault;
 
  public:
   Server();
   ~Server();
 
   // Setters/Adders
-  void setSocket(Socket *socket);
   void setHost(std::string host);
   void setPort(int port);
   void addName(std::string name);
@@ -44,15 +43,16 @@ class Server {
   void addErrorPage(std::string code, std::string path);
   void setClientMaxBodySize(int size);
   void addLocation(location location);
+  void setIsDefault(bool idDefault);
 
   // Getters
-  Socket *getSocket();
   std::string getHost();
   int getPort();
   std::vector<std::string> getNames();
   std::map<std::string, std::string> getErrorPages();
   int getClientMaxBodySize();
   std::vector<location> getLocations();
+  bool getIsDefault();
 
   // Resolves the longest matching location for a path
   // @param path The path to match

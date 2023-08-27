@@ -27,6 +27,8 @@ void Response::set_field(std::string key, std::string value) {
 
 void Response::setBody(std::string body) { _body = body; }
 
+std::string Response::getStatus() const { return status; }
+
 void Response::send(int fd) const {
   std::string response = status;
   for (std::map<std::string, std::string>::const_iterator it = fields.begin();

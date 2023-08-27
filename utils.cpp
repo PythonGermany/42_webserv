@@ -30,3 +30,8 @@ bool isNumeric(std::string str) {
     if (!isdigit(*it)) return false;
   return true;
 }
+
+bool endsWith(std::string str, std::string suffix) {
+  return str.size() >= suffix.size() &&
+         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}

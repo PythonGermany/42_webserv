@@ -3,6 +3,7 @@
 
 #include <sys/stat.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -29,5 +30,18 @@ std::vector<std::string> split(std::string str, std::string delim);
 // @param str The string to check
 // @return True if the string is numeric, false otherwise
 bool isNumeric(std::string str);
+
+// Checks if the string ends with the suffix
+// @param str The string to check
+// @param suffix The suffix to check for
+// @return True if the string ends with the suffix, false otherwise
+bool endsWith(std::string str, std::string suffix);
+
+template <typename T>
+std::string toString(T val) {
+  std::stringstream ss;
+  ss << val;
+  return ss.str();
+}
 
 #endif

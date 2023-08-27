@@ -1,6 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,8 @@ class Config {
   // @param servers The servers to validate
   // @exception std::runtime_error Thrown if the config is invalid
   void validateConfig(std::vector<Server> &servers);
+
+  void setDefaultServers(std::vector<Server> &servers);
 
  private:
   // Parses a single server context block

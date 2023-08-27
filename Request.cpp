@@ -9,39 +9,15 @@ Request::Request(int fd) {
   if (bytes_read < 0) throw std::runtime_error("read error");
   request += std::string(buffer, bytes_read);
 
-  // Split request into header and body
-  size_t index = request.find("\r\n\r\n");
-  if (index == std::string::npos) throwException("header not found");
-  std::string header = trim(request.substr(0, index));
-  _body = trim(request.substr(index + 4));
+  std::string line = request.substr(0, request.find("\r\n"));
+  std::vector<std::string> tokens = split(line, " ");
+  if (tokens.size() != 3) throwException("invalid request line");
+  _method = tokens[0];
+  _uri = tokens[1];
+  _version = tokens[2];
+  request = request.substr(request.find("\r\n") + 2);
 
-  // Split header into request line and fields
-  index = header.find("\r\n");
-  if (index == std::string::npos) throwException("request line not found");
-  std::string request_line = header.substr(0, index);
-  std::string fields = header.substr(index + 2);
-
-  // Split request line into method, uri, and version
-  index = request_line.find(" ");
-  if (index == std::string::npos) throwException("method not found");
-  _method = request_line.substr(0, index);
-  _uri = request_line.substr(index + 1);
-  index = _uri.find(" ");
-  if (index == std::string::npos) throwException("uri/version not found");
-  _version = _uri.substr(index + 1);
-  _uri = _uri.substr(0, index);
-
-  // Split fields into key-value pairs
-  index = fields.find("\r\n");
-  while (index != std::string::npos) {
-    std::string field = fields.substr(0, index);
-    size_t separator = field.find(":");
-    std::string key = field.substr(0, separator);
-    std::string value = trim(field.substr(separator + 1));
-    _fields[key] = value;
-    fields = fields.substr(index + 2);
-    index = fields.find("\r\n");
-  }
+  _fields["Host"] = "localhost";
 }
 
 Request::Request(const Request& other) { *this = other; }

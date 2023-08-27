@@ -23,6 +23,9 @@ class Response {
 
   void set_field(std::string key, std::string value);
   void setBody(std::string body);
+
+  std::string getStatus() const;
+
   void send(int fd) const;
 };
 

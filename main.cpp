@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <set>
-#include <sstream>
 
 #include "Config.hpp"
 #include "File.hpp"
@@ -14,16 +13,11 @@
 #define CONFIG_FILE "server.conf"
 #define MAX_CLIENTS 10
 
-template <typename T>
-std::string toString(T val) {
-  std::stringstream ss;
-  ss << val;
-  return ss.str();
-}
-
 int main(int argc, char** argv) {
   Config config;
   std::vector<Server> servers;
+  std::vector<Socket> sockets;
+  std::set<int> ports;
 
   try {
     if (argc > 1)
@@ -34,30 +28,31 @@ int main(int argc, char** argv) {
     std::cout << "Config parsing complete" << std::endl;
     config.validateConfig(servers);
     std::cout << "Config validation complete" << std::endl;
+    config.setDefaultServers(servers);
+    std::cout << "Default servers set" << std::endl;
+
+    for (size_t i = 0; i < servers.size(); i++) {
+      if (ports.find(servers[i].getPort()) == ports.end()) {
+        ports.insert(servers[i].getPort());
+        // Initialize server socket
+        Socket socket = Socket(AF_INET, SOCK_STREAM, 0);
+        int port_reuse = 1;
+        socket.Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
+                          sizeof(port_reuse));
+        socket.Bind(servers[i].getPort(), INADDR_ANY);
+        socket.Listen(MAX_CLIENTS);
+        sockets.push_back(socket);
+      }
+      std::cout << "Server listening on port " << servers[i].getPort();
+      if (servers[i].getIsDefault() == true) std::cout << " (default)";
+      std::cout << std::endl;
+    }
+    std::cout << "Server will listen on " << ports.size() << " ports"
+              << std::endl;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;
     return 1;
   }
-
-  std::vector<Socket> sockets;
-  std::set<int> ports;
-  for (size_t i = 0; i < servers.size(); i++) {
-    if (ports.find(servers[i].getPort()) == ports.end()) {
-      ports.insert(servers[i].getPort());
-      // Initialize server socket
-      Socket socket = Socket(AF_INET, SOCK_STREAM, 0);
-      int port_reuse = 1;
-      socket.Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
-                        sizeof(port_reuse));
-      socket.Bind(servers[i].getPort(), INADDR_ANY);
-      socket.Listen(MAX_CLIENTS);
-      sockets.push_back(socket);
-    }
-    std::cout << "Server listening on port " << servers[i].getPort()
-              << std::endl;
-  }
-  std::cout << "Server will listen on " << ports.size() << " ports"
-            << std::endl;
 
   int nfds = ports.size();
   struct sockaddr_in address;
@@ -99,21 +94,19 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << "request: " << request.method() << " " << request.uri()
-                      << " " << request.version() << std::endl;
+            std::cout << "webserv: Request: " << request.method() << " "
+                      << request.uri() << " " << request.version() << " -> ";
 
             // Get server from host header
+            std::string host = request.field("Host");
+            if (host.find(':') != std::string::npos)
+              host = host.substr(0, host.find(':'));
             Server* server = NULL;
             for (size_t j = 0; j < servers.size(); j++) {
               std::vector<std::string> names = servers[j].getNames();
-              std::string host = request.field("Host");
-              if (host.find(':') != std::string::npos)
-                host = host.substr(0, host.find(':'));
-              for (size_t k = 0; k < names.size(); k++) {
-                if (names[k] == host) {
-                  server = &servers[j];
-                  break;
-                }
+              if (std::find(names.begin(), names.end(), host) != names.end()) {
+                server = &servers[j];
+                break;
               }
             }
             if (server == NULL) server = &servers[0];
@@ -131,7 +124,10 @@ int main(int argc, char** argv) {
             }
 
             // Create response
-            if (file.exists() == false) {
+            if (location._redirect != "") {
+              response = Response("301", "Moved Permanently");
+              response.set_field("Location", location._redirect);
+            } else if (file.exists() == false) {
               response = Response("404", "Not Found");
             } else if (file.readable() == false) {
               response = Response("403", "Forbidden");
@@ -140,8 +136,7 @@ int main(int argc, char** argv) {
               response.setBody(file.Read());
             } else if (file.dir() == true) {
               std::string fpath = file.path();
-              if (fpath[fpath.size() - 1] !=
-                  '/') {  // TODO: fix my dumb implementation
+              if (endsWith(fpath, "/")) {
                 response = Response("301", "Moved Permanently");
                 response.set_field("Location", request.uri() + "/");
               } else if (location._autoindex == true) {
@@ -155,6 +150,8 @@ int main(int argc, char** argv) {
             response = Response("400", "Bad Request");
           }
           response.set_field("Server", "webserv");
+
+          std::cout << "Response: " << response.getStatus();
 
           // Send response
           try {

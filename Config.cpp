@@ -54,13 +54,27 @@ void Config::validateConfig(
       if (it2->_path == "/") root_location = true;
       if (it2->_methods.size() == 0)
         throwExeption("validate", "No methods set for location");
-      if (it2->_root == "")
+      if (it2->_root == "" && it2->_redirect == "")
         throwExeption("validate", "No root set for location");
-      if (it2->_index.size() == 0)
+      if (it2->_index.size() == 0 && it2->_redirect == "")
         throwExeption("validate", "No index set for location");
     }
     if (!root_location)
       throwExeption("validate", "No root location set for server");
+  }
+}
+
+void Config::setDefaultServers(std::vector<Server> &servers) {
+  std::set<std::string> connection;
+  for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
+       it++) {
+    if (it->getHost() == "") throwExeption("setDefaultServers", "Host not set");
+    if (it->getPort() == -1) throwExeption("setDefaultServers", "Port not set");
+    std::string key = it->getHost() + ":" + toString(it->getPort());
+    if (connection.find(key) == connection.end()) {
+      connection.insert(key);
+      it->setIsDefault(true);
+    }
   }
 }
 
@@ -83,7 +97,6 @@ Server Config::parseServer(std::string context) {
         if (server.getPort() == 0) throwExeption("parseServer", "Invalid port");
       } else if (token == "server_name") {
         server.setNames(split(value, " "));
-        std::cout << "server_name: " << server.getNames()[0] << std::endl;
       } else if (token == "error_page") {
         std::vector<std::string> error_page = split(value, " ");
         if (error_page.size() != 2)
@@ -126,6 +139,7 @@ location Config::parseLocation(std::string context) {
     } else if (token == "redirect") {
       location._redirect = value;
     } else if (token == "root") {
+      if (!endsWith(value, "/")) value += "/";
       location._root = value;
     } else if (token == "index") {
       location._index = split(value, " ");
