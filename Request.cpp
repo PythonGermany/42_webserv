@@ -11,23 +11,23 @@ Request::Request(int fd) {
 
   // Split request into header and body
   size_t index = request.find("\r\n\r\n");
-  if (index == std::string::npos) throw_error("header not found");
+  if (index == std::string::npos) throwException("header not found");
   std::string header = trim(request.substr(0, index));
   _body = trim(request.substr(index + 4));
 
   // Split header into request line and fields
   index = header.find("\r\n");
-  if (index == std::string::npos) throw_error("request line not found");
+  if (index == std::string::npos) throwException("request line not found");
   std::string request_line = header.substr(0, index);
   std::string fields = header.substr(index + 2);
 
   // Split request line into method, uri, and version
   index = request_line.find(" ");
-  if (index == std::string::npos) throw_error("method not found");
+  if (index == std::string::npos) throwException("method not found");
   _method = request_line.substr(0, index);
   _uri = request_line.substr(index + 1);
   index = _uri.find(" ");
-  if (index == std::string::npos) throw_error("uri/version not found");
+  if (index == std::string::npos) throwException("uri/version not found");
   _version = _uri.substr(index + 1);
   _uri = _uri.substr(0, index);
 
@@ -66,12 +66,12 @@ std::string Request::version(void) const { return _version; }
 
 std::string Request::field(std::string key) const {
   std::map<std::string, std::string>::const_iterator it = _fields.find(key);
-  if (it == _fields.end()) throw_error("field not found");
+  if (it == _fields.end()) throwException("field not found");
   return it->second;
 }
 
 std::string Request::body(void) const { return _body; }
 
-void Request::throw_error(const std::string& error) const {
-  throw std::runtime_error("request: " + error);
+void Request::throwException(std::string msg) const {
+  throw std::runtime_error("Request: " + msg);
 }

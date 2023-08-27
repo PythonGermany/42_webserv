@@ -6,10 +6,6 @@
 #include <string>
 
 std::string trim(std::string str);
-bool exists(std::string path);
-bool is_file(std::string path);
-bool is_dir(std::string path);
-bool is_readable(std::string path);
 long int size(std::string path);
 long int modified(std::string path);
 

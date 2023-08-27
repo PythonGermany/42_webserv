@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "File.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
@@ -76,27 +77,26 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Initialize server values (TEST)
-  server.set_socket(&sockets[0]);  // Unused at the moment
-  server.set_host("localhost");    // Unused at the moment
-  server.set_port(atoi(argv[1]));  // Unused at the moment
-  server.set_names(
-      std::vector<std::string>(1, "localhost"));  // Unused at the moment
-  server.set_error_pages(
-      std::map<std::string, std::string>());  // Unused at the moment
-  server.set_client_max_body_size(1024);      // Unused at the moment
+  // Initialize server values (TEST) // TODO: Setup server values
+  // server.setSocket(&sockets[0]);
+  // server.setHost("localhost");
+  // server.setPort(atoi(argv[1]));
+  // server.setNames(
+  //     std::vector<std::string>(1, "localhost"));
+  // server.setError_pages(
+  //     std::map<std::string, std::string>());
+  // server.setClient_max_body_size(1024);
 
   // Initialize server location directive (TEST)
-  std::vector<location> locations;
-  locations.push_back(location());
-  locations[0]._path = "/";
-  locations[0]._redirect = "";
-  locations[0]._root = ROOT_PATH;
-  locations[0]._index = INDEX_PATH;
-  locations[0]._autoindex = true;
-  locations[0]._cgi_path = "";
-  locations[0]._cgi_extension = "php";
-  server.set_locations(locations);
+  location location;
+  location._path = "/";
+  location._redirect = "";
+  location._root = ROOT_PATH;
+  location._index = INDEX_PATH;
+  location._autoindex = true;
+  location._cgi["php"] = "/usr/bin/php-cgi";
+  location._cgi["py"] = "/usr/bin/python3";
+  server.addLocation(location);
 
   while (true) {
     int poll_result = poll(fds, nfds, -1);
@@ -126,26 +126,27 @@ int main(int argc, char** argv) {
                       << " " << request.version() << std::endl;
 
             // Get path on server from location directive
-            location location = server.resolve_location(request.uri());
+            struct location location = server.resolveLocation(request.uri());
             std::string path = location._root + request.uri();
             if (request.uri() == location._path) path += location._index;
+            File file(path);
 
             // Create response
-            if (exists(path) == false) {
+            if (file.exists() == false) {
               response = Response("404", "Not Found");
-            } else if (is_readable(path) == false) {
+            } else if (file.readable() == false) {
               response = Response("403", "Forbidden");
-            } else if (is_file(path) == true) {
+            } else if (file.file() == true) {
               response = Response("200", "OK");
-              response.load_body(path);
-            } else if (is_dir(path) == true) {
+              response.setBody(path);
+            } else if (file.dir() == true) {
               if (path[path.size() - 1] != '/') {
                 response = Response("301", "Moved Permanently");
                 response.set_field("Location", request.uri() + "/");
               } else if (location._autoindex == true) {
                 response = Response("200", "OK");
                 response.set_field("Content-Type", "text/html");
-                response.set_body(
+                response.setBody(
                     generate_directive_listing(location._root, request.uri()));
               } else {
                 response = Response("403", "Forbidden");

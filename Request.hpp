@@ -31,7 +31,7 @@ class Request {
   std::string body(void) const;
 
  private:
-  void throw_error(const std::string& error) const;
+  void throwException(std::string msg) const;
 };
 
 #endif

@@ -25,23 +25,7 @@ void Response::set_field(std::string key, std::string value) {
   fields[key] = value;
 }
 
-void Response::set_body(std::string body) { _body = body; }
-
-void Response::load_body(std::string path) {
-  int fd = open(path.c_str(), O_RDONLY);
-  if (fd < 0) throw std::runtime_error("response: open error");
-
-  char buffer[1024];
-  int bytes_read = read(fd, buffer, 1024);
-  std::string body = "";
-  while (bytes_read > 0) {
-    body += std::string(buffer, bytes_read);
-    bytes_read = read(fd, buffer, 1024);
-  }
-  close(fd);
-  if (bytes_read < 0) throw std::runtime_error("response: read error");
-  _body = body;
-}
+void Response::setBody(std::string body) { _body = body; }
 
 void Response::send(int fd) const {
   std::string response = status;
