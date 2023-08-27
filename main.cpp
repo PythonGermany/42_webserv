@@ -12,7 +12,7 @@
 
 #define MAX_CLIENTS 10
 #define ROOT_PATH "/home/pythongermany/_Projects/42_webserv/website"
-#define INDEX_PATH "index.html"
+#define INDEX_FILE "index.html"
 
 template <typename T>
 std::string to_string(T value) {
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   location._path = "/";
   location._redirect = "";
   location._root = ROOT_PATH;
-  location._index = INDEX_PATH;
+  location._index = std::vector<std::string>(1, INDEX_FILE);
   location._autoindex = true;
   location._cgi["php"] = "/usr/bin/php-cgi";
   location._cgi["py"] = "/usr/bin/python3";

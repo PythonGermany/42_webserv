@@ -2,6 +2,7 @@
 #define SERVER_HPP
 
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ struct location {
   std::vector<std::string> _methods;
   std::string _redirect;
   std::string _root;
-  std::string _index;
+  std::vector<std::string> _index;
   bool _autoindex;
   std::map<std::string, std::string> _cgi;
 };
@@ -36,11 +37,22 @@ class Server {
   void setHost(std::string host);
   void setPort(int port);
   void addName(std::string name);
+  void setNames(std::vector<std::string> names);
   void addErrorPage(std::string code, std::string path);
   void setClientMaxBodySize(int size);
   void addLocation(location location);
 
+  Socket *getSocket();
+  std::string getHost();
+  int getPort();
+  std::vector<std::string> getNames();
+  std::map<std::string, std::string> getErrorPages();
+  int getClientMaxBodySize();
+  std::vector<location> getLocations();
+
   location resolveLocation(std::string path);
+
+  void print();
 };
 
 #endif
