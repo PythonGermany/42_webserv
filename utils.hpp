@@ -30,7 +30,4 @@ std::vector<std::string> split(std::string str, std::string delim);
 // @return True if the string is numeric, false otherwise
 bool isNumeric(std::string str);
 
-long int size(std::string path);
-long int modified(std::string path);
-
 #endif

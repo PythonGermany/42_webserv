@@ -2,13 +2,7 @@
 
 Config::Config() {}
 
-Config::Config(std::string path) {
-  _file = File(path);
-  if (!_file.exists()) throwExeption("Config", "File does not exist");
-  if (!_file.file()) throwExeption("Config", "Path is not a file");
-  if (!_file.readable()) throwExeption("Config", "File is not readable");
-  _config = _file.Read();
-}
+Config::Config(std::string path) { setFile(path); }
 
 Config::Config(const Config &rhs) { *this = rhs; }
 
@@ -20,9 +14,17 @@ Config &Config::operator=(const Config &rhs) {
 
 Config::~Config() {}
 
-#include <iostream>  // TODO: remove
+std::string Config::getFile() { return _file.Read(); }
 
-std::vector<Server> Config::parse() {
+void Config::setFile(std::string path) {
+  _file = File(path);
+  if (!_file.exists()) throwExeption("setFile", "File does not exist");
+  if (!_file.file()) throwExeption("setFile", "Path is not a file");
+  if (!_file.readable()) throwExeption("setFile", "File is not readable");
+  _config = _file.Read();
+}
+
+std::vector<Server> Config::parseConfig() {
   std::vector<Server> servers;
   std::string data = trim(_config);
 
@@ -37,7 +39,9 @@ std::vector<Server> Config::parse() {
   return servers;
 }
 
-void Config::validate(std::vector<Server> &servers) {
+void Config::validateConfig(
+    std::vector<Server>
+        &servers) {  // TODO: complete, improve and test validation
   for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
        it++) {
     bool root_location = false;
@@ -63,13 +67,10 @@ void Config::validate(std::vector<Server> &servers) {
 Server Config::parseServer(std::string context) {
   Server server;
   context = trimContext(context);
-  // Parse server context
   while (context.length() > 0) {
     if (isContextBlock(context)) {
-      // Parse context block
       parseContext(cut(context, 0, findContextEnd(context)), server);
     } else {
-      // Parse context tokens
       std::string token = trim(cut(context, 0, findToken(context, " ")));
       std::string value = trim(cut(context, 0, findToken(context, ";")));
       if (token == "listen") {
@@ -128,7 +129,7 @@ location Config::parseLocation(std::string context) {
     } else if (token == "index") {
       location._index = split(value, " ");
     } else if (token == "autoindex") {
-      location._autoindex = value == "on";
+      location._autoindex = (value == "on");
     } else if (token == "cgi") {
       std::vector<std::string> cgi = split(value, " ");
       if (cgi.size() != 2)

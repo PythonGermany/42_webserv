@@ -6,6 +6,10 @@ File::File(std::string path) { _path = path; }
 
 File::~File() {}
 
+std::string File::path() { return _path; }
+
+void File::setPath(std::string path) { _path = path; }
+
 bool File::exists() {
   struct stat buf;
   return stat(_path.c_str(), &buf) == 0;

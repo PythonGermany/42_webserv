@@ -27,16 +27,16 @@ void Server::setClientMaxBodySize(int size) { _client_max_body_size = size; }
 
 void Server::addLocation(location location) { _locations.push_back(location); }
 
-location Server::resolveLocation(std::string path) {
-  location longest_match;
-  for (std::vector<location>::iterator it = _locations.begin();
-       it != _locations.end(); it++) {
-    if (path.find(it->_path) == 0 &&
-        it->_path.length() > longest_match._path.length()) {
-      longest_match = *it;
+location Server::matchLocation(std::string path) {
+  location *match = &_locations[0];
+  for (size_t i = 1; i < _locations.size(); i++) {
+    if (path.find(_locations[i]._path) == 0 &&
+        _locations[i]._path.length() > (*match)._path.length()) {
+      match = &_locations[i];
     }
   }
-  return longest_match;
+  if (match == NULL) throw std::runtime_error("No matching location found");
+  return *match;
 }
 
 Socket *Server::getSocket() { return _socket; }

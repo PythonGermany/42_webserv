@@ -4,12 +4,12 @@
 #include "Config.hpp"
 
 int main() {
-  Config config("server_example.conf");
+  Config config("server.conf");
   std::vector<Server> servers;
 
   try {
-    servers = config.parse();
-    config.validate(servers);
+    servers = config.parseConfig();
+    config.validateConfig(servers);
     for (std::vector<Server>::iterator it = servers.begin();
          it != servers.end(); it++)
       it->print();

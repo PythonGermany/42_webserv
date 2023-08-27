@@ -9,6 +9,7 @@
 
 #include "Socket.hpp"
 
+// Struct to store the location block
 struct location {
   std::string _path;
   std::vector<std::string> _methods;
@@ -19,6 +20,7 @@ struct location {
   std::map<std::string, std::string> _cgi;
 };
 
+// Class to store the server block
 class Server {
  private:
   Socket *_socket;
@@ -33,6 +35,7 @@ class Server {
   Server();
   ~Server();
 
+  // Setters/Adders
   void setSocket(Socket *socket);
   void setHost(std::string host);
   void setPort(int port);
@@ -42,6 +45,7 @@ class Server {
   void setClientMaxBodySize(int size);
   void addLocation(location location);
 
+  // Getters
   Socket *getSocket();
   std::string getHost();
   int getPort();
@@ -50,8 +54,13 @@ class Server {
   int getClientMaxBodySize();
   std::vector<location> getLocations();
 
-  location resolveLocation(std::string path);
+  // Resolves the longest matching location for a path
+  // @param path The path to match
+  // @return The longest matching location
+  // @exception std::runtime_error Thrown if no matching location is found
+  location matchLocation(std::string path);
 
+  // Prints the current server block configuration
   void print();
 };
 

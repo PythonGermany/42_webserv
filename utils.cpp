@@ -30,15 +30,3 @@ bool isNumeric(std::string str) {
     if (!isdigit(*it)) return false;
   return true;
 }
-
-long int size(std::string path) {
-  struct stat buf;
-  stat(path.c_str(), &buf);
-  return buf.st_size;
-}
-
-long int modified(std::string path) {
-  struct stat buf;
-  stat(path.c_str(), &buf);
-  return buf.st_mtim.tv_sec;
-}

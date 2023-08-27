@@ -29,9 +29,9 @@ void Socket::Setsockopt(int level, int option_name, const void* option_value,
   if (result < 0) throwException("setsockopt", strerror(errno));
 }
 
-void Socket::Bind(int port) {
+void Socket::Bind(int port, u_int32_t interface) {
   address.sin_family = domain;
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  address.sin_addr.s_addr = htonl(interface);
   address.sin_port = htons(port);
 
   int result = bind(socket_fd, (sockaddr*)&address, sizeof(address));
