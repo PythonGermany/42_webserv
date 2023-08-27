@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int nfds = 1;
+  int nfds = servers.size();
   Socket sockets[nfds];
   struct sockaddr_in address;
   socklen_t address_len = sizeof(address);
@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
       int port_reuse = 1;
       sockets[i].Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
                             sizeof(port_reuse));
-      sockets[i].Bind(servers[0].getPort(), INADDR_ANY);
+      sockets[i].Bind(servers[i].getPort(), INADDR_ANY);
       sockets[i].Listen(MAX_CLIENTS);
-      std::cout << "Listening on port " << servers[0].getPort() << std::endl;
+      std::cout << "Listening on port " << servers[i].getPort() << std::endl;
 
       // Initialize pollfd struct
       fds[i].fd = sockets[i].fd();
@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  Server* link[MAX_CLIENTS * nfds];
   while (true) {
     int poll_result = poll(fds, nfds, -1);
     if (poll_result < 0) {
@@ -74,6 +75,7 @@ int main(int argc, char** argv) {
           }
           fds[nfds].fd = client_df;
           fds[nfds].events = POLLIN;
+          link[nfds] = &servers[i];
           nfds++;
         } else {
           Request request;
@@ -81,14 +83,16 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << "request: " << request.method() << " " << request.uri()
-                      << " " << request.version() << std::endl;
+            std::cout << "request: "
+                      << "port: " << link[i]->getPort() << " "
+                      << request.method() << " " << request.uri() << " "
+                      << request.version() << std::endl;
 
             // Get path on server from location directive
-            struct location location = servers[0].matchLocation(request.uri());
+            struct location location = link[i]->matchLocation(request.uri());
             File file(location._root + request.uri());
 
-            // Check if file is available
+            // Check if index file is available
             if (request.uri() == location._path) {
               for (size_t i = 0; i < location._index.size(); i++) {
                 file.setPath(location._root + location._index[i]);
