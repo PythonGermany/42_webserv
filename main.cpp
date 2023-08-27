@@ -95,14 +95,23 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << getTimeStamp() << " webserv: Request '" << GREEN
-                      << request.field("Host") << RESET << "' from '" << YELLOW
-                      << inet_ntoa(address.sin_addr.s_addr) << RESET
-                      << "': " << request.method() << " " << request.uri()
-                      << " " << request.version() << RED << " -> " << RESET;
+            try {
+              std::cout << getTimeStamp() << " webserv: Request '" << GREEN
+                        << request.field("Host") << RESET << "' from '"
+                        << YELLOW << inet_ntoa(address.sin_addr.s_addr) << RESET
+                        << "': " << request.method() << " " << request.uri()
+                        << " " << request.version() << RED << " -> " << RESET;
+            } catch (const std::exception& e) {
+              std::cerr << getTimeStamp() << e.what() << '\n';
+            }
 
             // Get server from host header
-            std::string host = request.field("Host");
+            std::string host;
+            try {
+              host = request.field("Host");
+            } catch (const std::exception& e) {
+              std::cerr << getTimeStamp() << e.what() << '\n';
+            }
             if (host.find(':') != std::string::npos)
               host = host.substr(0, host.find(':'));
             Server* server = NULL;
