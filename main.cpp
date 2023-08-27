@@ -1,6 +1,8 @@
 #include <sys/poll.h>
 
 #include <iostream>
+#include <set>
+#include <sstream>
 
 #include "Config.hpp"
 #include "File.hpp"
@@ -11,6 +13,13 @@
 
 #define CONFIG_FILE "server.conf"
 #define MAX_CLIENTS 10
+
+template <typename T>
+std::string toString(T val) {
+  std::stringstream ss;
+  ss << val;
+  return ss.str();
+}
 
 int main(int argc, char** argv) {
   Config config;
@@ -30,24 +39,33 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int nfds = servers.size();
-  Socket sockets[nfds];
+  std::vector<Socket> sockets;
+  std::set<int> ports;
+  for (size_t i = 0; i < servers.size(); i++) {
+    if (ports.find(servers[i].getPort()) == ports.end()) {
+      ports.insert(servers[i].getPort());
+      // Initialize server socket
+      Socket socket = Socket(AF_INET, SOCK_STREAM, 0);
+      int port_reuse = 1;
+      socket.Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
+                        sizeof(port_reuse));
+      socket.Bind(servers[i].getPort(), INADDR_ANY);
+      socket.Listen(MAX_CLIENTS);
+      sockets.push_back(socket);
+    }
+    std::cout << "Server listening on port " << servers[i].getPort()
+              << std::endl;
+  }
+  std::cout << "Server will listen on " << ports.size() << " ports"
+            << std::endl;
+
+  int nfds = ports.size();
   struct sockaddr_in address;
   socklen_t address_len = sizeof(address);
-  struct pollfd fds[MAX_CLIENTS * nfds + nfds];
+  struct pollfd* fds = new struct pollfd[MAX_CLIENTS * nfds + nfds];
 
-  memset(fds, 0, sizeof(fds));
   try {
     for (int i = 0; i < nfds; i++) {
-      // Initialize server socket
-      sockets[i] = Socket(AF_INET, SOCK_STREAM, 0);
-      int port_reuse = 1;
-      sockets[i].Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
-                            sizeof(port_reuse));
-      sockets[i].Bind(servers[i].getPort(), INADDR_ANY);
-      sockets[i].Listen(MAX_CLIENTS);
-      std::cout << "Listening on port " << servers[i].getPort() << std::endl;
-
       // Initialize pollfd struct
       fds[i].fd = sockets[i].fd();
       fds[i].events = POLLIN;
@@ -57,7 +75,6 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  Server* link[MAX_CLIENTS * nfds];
   while (true) {
     int poll_result = poll(fds, nfds, -1);
     if (poll_result < 0) {
@@ -75,7 +92,6 @@ int main(int argc, char** argv) {
           }
           fds[nfds].fd = client_df;
           fds[nfds].events = POLLIN;
-          link[nfds] = &servers[i];
           nfds++;
         } else {
           Request request;
@@ -83,13 +99,27 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << "request: "
-                      << "port: " << link[i]->getPort() << " "
-                      << request.method() << " " << request.uri() << " "
-                      << request.version() << std::endl;
+            std::cout << "request: " << request.method() << " " << request.uri()
+                      << " " << request.version() << std::endl;
+
+            // Get server from host header
+            Server* server = NULL;
+            for (size_t j = 0; j < servers.size(); j++) {
+              std::vector<std::string> names = servers[j].getNames();
+              std::string host = request.field("Host");
+              if (host.find(':') != std::string::npos)
+                host = host.substr(0, host.find(':'));
+              for (size_t k = 0; k < names.size(); k++) {
+                if (names[k] == host) {
+                  server = &servers[j];
+                  break;
+                }
+              }
+            }
+            if (server == NULL) server = &servers[0];
 
             // Get path on server from location directive
-            struct location location = link[i]->matchLocation(request.uri());
+            struct location location = server->matchLocation(request.uri());
             File file(location._root + request.uri());
 
             // Check if index file is available

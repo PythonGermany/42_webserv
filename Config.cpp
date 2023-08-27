@@ -83,6 +83,7 @@ Server Config::parseServer(std::string context) {
         if (server.getPort() == 0) throwExeption("parseServer", "Invalid port");
       } else if (token == "server_name") {
         server.setNames(split(value, " "));
+        std::cout << "server_name: " << server.getNames()[0] << std::endl;
       } else if (token == "error_page") {
         std::vector<std::string> error_page = split(value, " ");
         if (error_page.size() != 2)
