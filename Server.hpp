@@ -11,13 +11,13 @@
 
 // Struct to store the location block
 struct location {
-  std::string _path;
-  std::vector<std::string> _methods;
-  std::string _redirect;
-  std::string _root;
+  std::string path;
+  std::vector<std::string> methods;
+  std::string redirect;
+  std::string root;
   std::vector<std::string> _index;
   bool _autoindex;
-  std::map<std::string, std::string> _cgi;
+  std::map<std::string, std::string> cgi;
 };
 
 // Class to store the server block

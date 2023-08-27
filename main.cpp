@@ -9,6 +9,7 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
+#include "colors.hpp"
 
 #define CONFIG_FILE "server.conf"
 #define MAX_CLIENTS 10
@@ -47,8 +48,8 @@ int main(int argc, char** argv) {
       if (servers[i].getIsDefault() == true) std::cout << " (default)";
       std::cout << std::endl;
     }
-    std::cout << "Server will listen on " << ports.size() << " ports"
-              << std::endl;
+    std::cout << "Server listening on " << ports.size() << " port"
+              << (ports.size() > 1 ? "s" : "") << std::endl;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;
     return 1;
@@ -94,10 +95,11 @@ int main(int argc, char** argv) {
           try {
             // Read request
             request = Request(fds[i].fd);
-            std::cout << "webserv: Request from "
-                      << inet_ntoa(address.sin_addr.s_addr) << ": "
-                      << request.method() << " " << request.uri() << " "
-                      << request.version() << " -> ";
+            std::cout << getTimeStamp() << " webserv: Request '" << GREEN
+                      << request.field("Host") << RESET << "' from '" << YELLOW
+                      << inet_ntoa(address.sin_addr.s_addr) << RESET
+                      << "': " << request.method() << " " << request.uri()
+                      << " " << request.version() << RED << " -> " << RESET;
 
             // Get server from host header
             std::string host = request.field("Host");
@@ -115,20 +117,20 @@ int main(int argc, char** argv) {
 
             // Get path on server from location directive
             struct location location = server->matchLocation(request.uri());
-            File file(location._root + request.uri());
+            File file(location.root + request.uri());
 
             // Check if index file is available
-            if (request.uri() == location._path) {
+            if (request.uri() == location.path) {
               for (size_t i = 0; i < location._index.size(); i++) {
-                file.setPath(location._root + location._index[i]);
+                file.setPath(location.root + location._index[i]);
                 if (file.exists() && file.readable() && file.file()) break;
               }
             }
 
             // Create response
-            if (location._redirect != "") {
+            if (location.redirect != "") {
               response = Response("301", "Moved Permanently");
-              response.set_field("Location", location._redirect);
+              response.set_field("Location", location.redirect);
             } else if (file.exists() == false) {
               response = Response("404", "Not Found");
             } else if (file.readable() == false) {

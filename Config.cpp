@@ -50,13 +50,13 @@ void Config::validateConfig(
     std::vector<location> locations = it->getLocations();
     for (std::vector<location>::iterator it2 = locations.begin();
          it2 != locations.end(); it2++) {
-      if (it2->_path == "") throwExeption("validate", "Location path not set");
-      if (it2->_path == "/") root_location = true;
-      if (it2->_methods.size() == 0)
+      if (it2->path == "") throwExeption("validate", "Location path not set");
+      if (it2->path == "/") root_location = true;
+      if (it2->methods.size() == 0)
         throwExeption("validate", "No methods set for location");
-      if (it2->_root == "" && it2->_redirect == "")
+      if (it2->root == "" && it2->redirect == "")
         throwExeption("validate", "No root set for location");
-      if (it2->_index.size() == 0 && it2->_redirect == "")
+      if (it2->_index.size() == 0 && it2->redirect == "")
         throwExeption("validate", "No index set for location");
     }
     if (!root_location)
@@ -129,18 +129,18 @@ void Config::parseContext(std::string context, Server &server) {
 
 location Config::parseLocation(std::string context) {
   location location;
-  location._path = trim(cut(context, 0, findToken(context, " ")));
+  location.path = trim(cut(context, 0, findToken(context, " ")));
   context = trimContext(context);
   while (context.length() > 0) {
     std::string token = trim(cut(context, 0, findToken(context, " ")));
     std::string value = trim(cut(context, 0, findToken(context, ";")));
     if (token == "methods") {
-      location._methods = split(value, " ");
+      location.methods = split(value, " ");
     } else if (token == "redirect") {
-      location._redirect = value;
+      location.redirect = value;
     } else if (token == "root") {
       if (!endsWith(value, "/")) value += "/";
-      location._root = value;
+      location.root = value;
     } else if (token == "index") {
       location._index = split(value, " ");
     } else if (token == "autoindex") {
@@ -149,7 +149,7 @@ location Config::parseLocation(std::string context) {
       std::vector<std::string> cgi = split(value, " ");
       if (cgi.size() != 2)
         throwExeption("parseLocation", "Expected 2 arguments for cgi");
-      location._cgi[cgi[0]] = cgi[1];
+      location.cgi[cgi[0]] = cgi[1];
     } else {
       throwExeption("parseLocation", "Unknown token '" + token + "'");
     }

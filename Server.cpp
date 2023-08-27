@@ -44,8 +44,8 @@ bool Server::getIsDefault() { return _isDefault; }
 location Server::matchLocation(std::string path) {
   location *match = &_locations[0];
   for (size_t i = 1; i < _locations.size(); i++) {
-    if (path.find(_locations[i]._path) == 0 &&
-        _locations[i]._path.length() > (*match)._path.length()) {
+    if (path.find(_locations[i].path) == 0 &&
+        _locations[i].path.length() > (*match).path.length()) {
       match = &_locations[i];
     }
   }
@@ -72,19 +72,19 @@ void Server::print() {
   for (std::vector<location>::iterator it = _locations.begin();
        it != _locations.end(); it++) {
     std::cout << "  location: " << std::endl;
-    std::cout << "    path: " << it->_path << std::endl;
-    for (std::vector<std::string>::iterator it2 = it->_methods.begin();
-         it2 != it->_methods.end(); it2++)
+    std::cout << "    path: " << it->path << std::endl;
+    for (std::vector<std::string>::iterator it2 = it->methods.begin();
+         it2 != it->methods.end(); it2++)
       std::cout << "    method: " << *it2 << std::endl;
-    std::cout << "    redirect: " << it->_redirect << std::endl;
-    std::cout << "    root: " << it->_root << std::endl;
+    std::cout << "    redirect: " << it->redirect << std::endl;
+    std::cout << "    root: " << it->root << std::endl;
     for (std::vector<std::string>::iterator it2 = it->_index.begin();
          it2 != it->_index.end(); it2++) {
       std::cout << "    index: " << *it2 << std::endl;
     }
     std::cout << "    autoindex: " << it->_autoindex << std::endl;
-    for (std::map<std::string, std::string>::iterator it2 = it->_cgi.begin();
-         it2 != it->_cgi.end(); it2++) {
+    for (std::map<std::string, std::string>::iterator it2 = it->cgi.begin();
+         it2 != it->cgi.end(); it2++) {
       std::cout << "    cgi: " << it2->first << " " << it2->second << std::endl;
     }
   }

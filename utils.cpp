@@ -46,12 +46,14 @@ std::string inet_ntoa(uint32_t addr) {
   return str;
 }
 
-std::string inet_hostname(uint32_t addr) {
-  struct sockaddr_in address;
-  address.sin_addr.s_addr = addr;
-  char hostname[NI_MAXHOST];
-  int result = getnameinfo((struct sockaddr *)&address, sizeof(address),
-                           hostname, NI_MAXHOST, NULL, 0, 0);
-  if (result != 0) return inet_ntoa(addr);
-  return std::string(hostname);
+std::string getTimeStamp() {
+  time_t rawtime;
+  struct tm *timeinfo;
+  char buffer[9];
+
+  time(&rawtime);
+  timeinfo = localtime(&rawtime);
+
+  strftime(buffer, 9, "%H:%M:%S", timeinfo);
+  return std::string(buffer);
 }

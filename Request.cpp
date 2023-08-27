@@ -17,7 +17,16 @@ Request::Request(int fd) {
   _version = tokens[2];
   request = request.substr(request.find("\r\n") + 2);
 
-  _fields["Host"] = "localhost";
+  std::string header = request.substr(0, request.find("\r\n\r\n"));
+  std::string body = request.substr(request.find("\r\n\r\n") + 4);
+
+  tokens = split(header, "\r\n");
+  for (size_t i = 0; i < tokens.size(); i++) {
+    std::string key = tokens[i].substr(0, tokens[i].find(":"));
+    std::string value = tokens[i].substr(tokens[i].find(":") + 2);
+    _fields[key] = value;
+  }
+  _body = body;
 }
 
 Request::Request(const Request& other) { *this = other; }

@@ -2,7 +2,6 @@
 #define UTILS_HPP
 
 #include <netdb.h>
-#include <netinet/in.h>
 #include <sys/stat.h>
 
 #include <sstream>
@@ -51,6 +50,9 @@ std::string toString(T val) {
 // @return The string representation of the address
 std::string inet_ntoa(uint32_t addr);
 
-std::string inet_hostname(uint32_t addr);
+// TODO: find alternative according to suject
+// Get the current timestamp in the format "HH:MM:SS"
+// @return The current timestamp
+std::string getTimeStamp();
 
 #endif
