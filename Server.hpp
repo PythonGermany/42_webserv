@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "Socket.hpp"
+#include "Cgi.hpp"
+#include "utils.hpp"
 
 // Struct to store the location block
 struct location {
@@ -17,7 +18,7 @@ struct location {
   std::string root;
   std::vector<std::string> _index;
   bool _autoindex;
-  std::map<std::string, std::string> cgi;
+  std::map<std::string, Cgi> cgi;
 };
 
 // Class to store the server block
@@ -32,7 +33,7 @@ class Server {
   bool _isDefault;
 
  public:
-  Server();
+  Server();  // TODO: Add copy constructor
   ~Server();
 
   // Setters/Adders

@@ -31,3 +31,6 @@
 *.out
 *.app
 webserv
+test_config
+test_cgi
+test_file

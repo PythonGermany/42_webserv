@@ -16,7 +16,7 @@ class File {
 
  public:
   File();
-  File(std::string path);
+  File(std::string path);  // TODO: Add copy constructor
   ~File();
 
   // Getters
@@ -40,6 +40,8 @@ class File {
   // @param data The data to write
   // @exception std::runtime_error Thrown if the file could not be written
   void Write(std::string data);
+
+  void append(std::string data); // TODO: implement append
 
  private:
   // Throws an exeption using the format "File: [func]: [msg]"

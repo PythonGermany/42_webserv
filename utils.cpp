@@ -31,9 +31,14 @@ bool isNumeric(std::string str) {
   return true;
 }
 
+bool startsWith(std::string str, std::string suffix) {
+  if (str.size() < suffix.size()) return false;
+  return !str.compare(0, suffix.size(), suffix);
+}
+
 bool endsWith(std::string str, std::string suffix) {
-  return str.size() >= suffix.size() &&
-         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+  if (str.size() < suffix.size()) return false;
+  return !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
 std::string inet_ntoa(uint32_t addr) {
@@ -51,9 +56,9 @@ std::string getTimeStamp() {
   struct tm *timeinfo;
   char buffer[9];
 
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
+  std::time(&rawtime);
+  timeinfo = std::localtime(&rawtime);
 
-  strftime(buffer, 9, "%H:%M:%S", timeinfo);
+  std::strftime(buffer, 9, "%H:%M:%S", timeinfo);
   return std::string(buffer);
 }

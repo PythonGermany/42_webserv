@@ -62,6 +62,8 @@ void File::Write(std::string data) {
   if (close(fd) == -1) throwException("Write", "Could not close file");
 }
 
+void File::append(std::string data) { (void)data; }
+
 void File::throwException(std::string func, std::string msg) {
   throw std::runtime_error("File::" + func + ": " + msg);
 }

@@ -32,6 +32,8 @@ std::vector<std::string> split(std::string str, std::string delim);
 // @return True if the string is numeric, false otherwise
 bool isNumeric(std::string str);
 
+bool startsWith(std::string str, std::string suffix);
+
 // Checks if the string ends with the suffix
 // @param str The string to check
 // @param suffix The suffix to check for

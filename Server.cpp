@@ -44,7 +44,7 @@ bool Server::getIsDefault() { return _isDefault; }
 location Server::matchLocation(std::string path) {
   location *match = &_locations[0];
   for (size_t i = 1; i < _locations.size(); i++) {
-    if (path.find(_locations[i].path) == 0 &&
+    if (startsWith(path, _locations[i].path) &&
         _locations[i].path.length() > (*match).path.length()) {
       match = &_locations[i];
     }
@@ -83,9 +83,10 @@ void Server::print() {
       std::cout << "    index: " << *it2 << std::endl;
     }
     std::cout << "    autoindex: " << it->_autoindex << std::endl;
-    for (std::map<std::string, std::string>::iterator it2 = it->cgi.begin();
+    for (std::map<std::string, Cgi>::iterator it2 = it->cgi.begin();
          it2 != it->cgi.end(); it2++) {
-      std::cout << "    cgi: " << it2->first << " " << it2->second << std::endl;
+      std::cout << "    cgi: " << it2->first << " " << it2->second.getPath()
+                << std::endl;
     }
   }
   std::cout << "  isDefault: " << _isDefault << std::endl;

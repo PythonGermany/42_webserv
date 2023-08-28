@@ -2,5 +2,7 @@ Implement directory listing again
 Recode Request class
 Recode Response class
 Implement cgi
-Implement request method checking 
-Implement allowed methods
+Implement request method checking
+Implement correct default server selection
+Implement correct server selection based on host and port
+Implement support for multiple ports per server

@@ -124,9 +124,8 @@ void Config::parseContext(std::string context, Server &server) {
     throwExeption("parseContext", "Nested server context not allowed");
   } else if (token == "location") {
     server.addLocation(parseLocation(trim(context)));
-  } else {
+  } else
     throwExeption("parseContext", "Unknown context '" + context + "'");
-  }
 }
 
 location Config::parseLocation(std::string context) {
@@ -141,20 +140,22 @@ location Config::parseLocation(std::string context) {
     } else if (token == "redirect") {
       location.redirect = value;
     } else if (token == "root") {
-      if (!endsWith(value, "/")) value += "/";
+      if (endsWith(value, "/")) value = value.substr(0, value.size() - 1);
       location.root = value;
     } else if (token == "index") {
-      location._index = split(value, " ");
+      std::vector<std::string> index = split(value, " ");
+      for (size_t i = 0; i < index.size(); i++)
+        if (!startsWith(index[i], "/")) index[i] = "/" + index[i];
+      location._index = index;
     } else if (token == "autoindex") {
       location._autoindex = (value == "on");
     } else if (token == "cgi") {
       std::vector<std::string> cgi = split(value, " ");
       if (cgi.size() != 2)
         throwExeption("parseLocation", "Expected 2 arguments for cgi");
-      location.cgi[cgi[0]] = cgi[1];
-    } else {
+      location.cgi[cgi[0]] = Cgi(cgi[1]);
+    } else
       throwExeption("parseLocation", "Unknown token '" + token + "'");
-    }
     context = trim(context.erase(0, 1));
   }
   return location;

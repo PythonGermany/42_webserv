@@ -33,7 +33,7 @@ class Config {
   // @exception std::runtime_error Thrown if the config is invalid
   std::vector<Server> parseConfig();
 
-  // Validates the config of the parsed servers
+  // Validates the configuration of the parsed servers
   // @param servers The servers to validate
   // @exception std::runtime_error Thrown if the config is invalid
   void validateConfig(std::vector<Server> &servers);

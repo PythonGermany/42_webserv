@@ -9,6 +9,8 @@ Request::Request(int fd) {
   if (bytes_read < 0) throw std::runtime_error("read error");
   request += std::string(buffer, bytes_read);
 
+  if (request.empty()) throwException("empty request line");
+
   std::string line = request.substr(0, request.find("\r\n"));
   std::vector<std::string> tokens = split(line, " ");
   if (tokens.size() != 3) throwException("invalid request line");
