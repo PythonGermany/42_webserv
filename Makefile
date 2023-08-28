@@ -8,8 +8,8 @@ OBJ = $(SRC:%.cpp=%.o)
 
 all : $(NAME)
 
-test:
-	c++ $(FLAGS) test.cpp Config.cpp Server.cpp File.cpp utils.cpp
+test_config:
+	c++ $(FLAGS) test_config.cpp Config.cpp Server.cpp File.cpp utils.cpp
 
 $(NAME) : $(OBJ)
 	c++ $(FLAGS) -o $(NAME) $(OBJ)

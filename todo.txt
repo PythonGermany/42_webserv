@@ -2,5 +2,5 @@ Implement directory listing again
 Recode Request class
 Recode Response class
 Implement cgi
-Implement redirect
+Implement request method checking 
 Implement allowed methods
