@@ -12,13 +12,13 @@
 #include "colors.hpp"
 
 #define CONFIG_FILE "server.conf"
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 1
 
 int main(int argc, char** argv) {
   Config config;
   std::vector<Server> servers;
   std::vector<Socket> sockets;
-  std::set<int> ports;
+  std::set<std::string> ports;
 
   try {
     if (argc > 1)
@@ -36,12 +36,11 @@ int main(int argc, char** argv) {
       if (ports.find(servers[i].getPort()) == ports.end()) {
         ports.insert(servers[i].getPort());
         // Initialize server socket
-        Socket socket = Socket(AF_INET, SOCK_STREAM, 0);
+        Socket socket =
+            Socket(servers[i].getHost(), servers[i].getPort(), MAX_CLIENTS);
         int port_reuse = 1;
         socket.Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
                           sizeof(port_reuse));
-        socket.Bind(servers[i].getPort(), INADDR_ANY);
-        socket.Listen(MAX_CLIENTS);
         sockets.push_back(socket);
       }
       std::cout << "Server listening on port " << servers[i].getPort();
@@ -59,7 +58,7 @@ int main(int argc, char** argv) {
   struct sockaddr_in address;
   socklen_t address_len = sizeof(address);
   struct pollfd* fds = new struct pollfd[MAX_CLIENTS * nfds + nfds];
-
+  std::string* request_ports = new std::string[MAX_CLIENTS * nfds + nfds];
   try {
     for (int i = 0; i < nfds; i++) {
       // Initialize pollfd struct
@@ -88,6 +87,7 @@ int main(int argc, char** argv) {
           }
           fds[nfds].fd = client_df;
           fds[nfds].events = POLLIN;
+          request_ports[nfds] = sockets[i].getPort();
           nfds++;
         } else {
           Request request;
@@ -96,13 +96,15 @@ int main(int argc, char** argv) {
             // Read request
             request = Request(fds[i].fd);
             try {
+              std::string host = request.field("Host");
               std::cout << getTimeStamp() << " webserv: Request '" << GREEN
-                        << request.field("Host") << RESET << "' from '"
-                        << YELLOW << inet_ntoa(address.sin_addr.s_addr) << RESET
+                        << host << RESET << "' from '" << YELLOW
+                        << inet_ntoa(address.sin_addr.s_addr) << RESET
                         << "': " << request.method() << " " << request.uri()
                         << " " << request.version() << RED << " -> " << RESET;
             } catch (const std::exception& e) {
-              std::cerr << getTimeStamp() << e.what() << '\n';
+              std::string time = getTimeStamp();
+              std::cerr << RED << " " << time << e.what() << std::endl << RESET;
             }
 
             // Get server from host header
@@ -110,16 +112,20 @@ int main(int argc, char** argv) {
             try {
               host = request.field("Host");
             } catch (const std::exception& e) {
-              std::cerr << getTimeStamp() << e.what() << '\n';
+              std::string time = getTimeStamp();
+              std::cerr << RED << " " << time << e.what() << std::endl << RESET;
             }
             if (host.find(':') != std::string::npos)
               host = host.substr(0, host.find(':'));
             Server* server = NULL;
             for (size_t j = 0; j < servers.size(); j++) {
-              std::vector<std::string> names = servers[j].getNames();
-              if (std::find(names.begin(), names.end(), host) != names.end()) {
-                server = &servers[j];
-                break;
+              if (servers[j].getPort() == request_ports[i]) {
+                std::vector<std::string> names = servers[j].getNames();
+                if (std::find(names.begin(), names.end(), host) !=
+                    names.end()) {
+                  server = &servers[j];
+                  break;
+                }
               }
             }
             if (server == NULL) server = &servers[0];

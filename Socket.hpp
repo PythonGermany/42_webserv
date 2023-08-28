@@ -13,18 +13,20 @@
 // Class to create and manage a socket
 class Socket {
  private:
-  int socket_fd;
+  int _port;
+  int _fd;
   int domain;
   struct sockaddr_in address;
 
  public:
   Socket();
-  Socket(int domain, int type, int protocol);
+  Socket(std::string host, std::string port, int max_clients);
   Socket(const Socket& other);
   Socket& operator=(const Socket& other);
   ~Socket();
 
   // Getters
+  int getPort() const;
   int fd() const;
   std::string get_error() const;
 
@@ -35,15 +37,6 @@ class Socket {
   // @param option_len The length of the option value
   void Setsockopt(int level, int option_name, const void* option_value,
                   socklen_t option_len);
-
-  // Binds the socket to an address
-  // @param port The port to bind to
-  // @param interface The interface to bind to
-  void Bind(int port, u_int32_t interface);
-
-  // Listens for connections on the socket
-  // @param max_clients The maximum number of clients to listen for
-  void Listen(int max_clients);
 
  private:
   // Throws an exeption using the format "Socket: [func]: [msg]"

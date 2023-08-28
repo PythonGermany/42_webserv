@@ -2,7 +2,7 @@
 
 Server::Server() {
   _host = "";
-  _port = -1;
+  _port = "";
   _client_max_body_size = 1024 * 1024;
   _isDefault = false;
 }
@@ -11,7 +11,7 @@ Server::~Server() {}
 
 void Server::setHost(std::string host) { _host = host; }
 
-void Server::setPort(int port) { _port = port; }
+void Server::setPort(std::string port) { _port = port; }
 
 void Server::addName(std::string name) { _names.push_back(name); }
 
@@ -29,7 +29,7 @@ void Server::setIsDefault(bool isDefault) { _isDefault = isDefault; }
 
 std::string Server::getHost() { return _host; }
 
-int Server::getPort() { return _port; }
+std::string Server::getPort() { return _port; }
 
 std::vector<std::string> Server::getNames() { return _names; }
 

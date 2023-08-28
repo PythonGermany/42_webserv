@@ -46,7 +46,7 @@ void Config::validateConfig(
        it++) {
     bool root_location = false;
     if (it->getHost() == "") throwExeption("validate", "Host not set");
-    if (it->getPort() == -1) throwExeption("validate", "Port not set");
+    if (it->getPort() == "") throwExeption("validate", "Port not set");
     std::vector<location> locations = it->getLocations();
     for (std::vector<location>::iterator it2 = locations.begin();
          it2 != locations.end(); it2++) {
@@ -68,9 +68,7 @@ void Config::setDefaultServers(std::vector<Server> &servers) {
   std::set<std::string> connection;
   for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
        it++) {
-    if (it->getHost() == "") throwExeption("setDefaultServers", "Host not set");
-    if (it->getPort() == -1) throwExeption("setDefaultServers", "Port not set");
-    std::string key = it->getHost() + ":" + toString(it->getPort());
+    std::string key = it->getHost() + ":" + it->getPort();
     if (connection.find(key) == connection.end()) {
       connection.insert(key);
       it->setIsDefault(true);
@@ -93,8 +91,7 @@ Server Config::parseServer(std::string context) {
           throwExeption("parseServer", "Expected 2 arguments for listen");
         server.setHost(listen[0]);
         if (!isNumeric(listen[1])) throwExeption("parseServer", "Invalid port");
-        server.setPort(std::atoi(listen[1].c_str()));
-        if (server.getPort() == 0) throwExeption("parseServer", "Invalid port");
+        server.setPort(listen[1]);
       } else if (token == "server_name") {
         server.setNames(split(value, " "));
       } else if (token == "error_page") {

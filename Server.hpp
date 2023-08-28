@@ -24,7 +24,7 @@ struct location {
 class Server {
  private:
   std::string _host;
-  int _port;
+  std::string _port;
   std::vector<std::string> _names;
   std::map<std::string, std::string> _error_pages;
   int _client_max_body_size;
@@ -37,7 +37,7 @@ class Server {
 
   // Setters/Adders
   void setHost(std::string host);
-  void setPort(int port);
+  void setPort(std::string port);
   void addName(std::string name);
   void setNames(std::vector<std::string> names);
   void addErrorPage(std::string code, std::string path);
@@ -47,7 +47,7 @@ class Server {
 
   // Getters
   std::string getHost();
-  int getPort();
+  std::string getPort();
   std::vector<std::string> getNames();
   std::map<std::string, std::string> getErrorPages();
   int getClientMaxBodySize();
