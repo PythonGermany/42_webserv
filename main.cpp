@@ -42,12 +42,15 @@ int main(int argc, char** argv) {
         socket.Setsockopt(SOL_SOCKET, SO_REUSEADDR, &port_reuse,
                           sizeof(port_reuse));
         sockets.push_back(socket);
+        std::cout << "Socket created on " << servers[i].getHost() << ":"
+                  << servers[i].getPort() << std::endl;
       }
-      std::cout << "Server listening on port " << servers[i].getPort();
+      std::cout << "Server listening on " << servers[i].getHost() << ":"
+                << servers[i].getPort();
       if (servers[i].getIsDefault() == true) std::cout << " (default)";
       std::cout << std::endl;
     }
-    std::cout << "Server listening on " << ports.size() << " port"
+    std::cout << "Servers listening on " << ports.size() << " port"
               << (ports.size() > 1 ? "s" : "") << std::endl;
   } catch (std::exception& e) {
     std::cout << e.what() << std::endl;

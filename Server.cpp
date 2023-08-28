@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Server::Server() {
-  _host = "";
+  _host = "0.0.0.0";
   _port = "";
   _client_max_body_size = 1024 * 1024;
   _isDefault = false;

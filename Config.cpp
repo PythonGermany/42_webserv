@@ -45,7 +45,6 @@ void Config::validateConfig(
   for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
        it++) {
     bool root_location = false;
-    if (it->getHost() == "") throwExeption("validate", "Host not set");
     if (it->getPort() == "") throwExeption("validate", "Port not set");
     std::vector<location> locations = it->getLocations();
     for (std::vector<location>::iterator it2 = locations.begin();
@@ -87,11 +86,17 @@ Server Config::parseServer(std::string context) {
       std::string value = trim(cut(context, 0, findToken(context, ";")));
       if (token == "listen") {
         std::vector<std::string> listen = split(value, ":");
-        if (listen.size() != 2)
-          throwExeption("parseServer", "Expected 2 arguments for listen");
-        server.setHost(listen[0]);
-        if (!isNumeric(listen[1])) throwExeption("parseServer", "Invalid port");
-        server.setPort(listen[1]);
+        if (listen.size() > 2)
+          throwExeption("parseServer", "Expected 1-2 arguments for listen");
+        std::string port;
+        if (listen.size() == 1)
+          port = listen[0];
+        else {
+          server.setHost(listen[0]);
+          port = listen[1];
+        }
+        if (!isNumeric(port)) throwExeption("parseServer", "Invalid port");
+        server.setPort(port);
       } else if (token == "server_name") {
         server.setNames(split(value, " "));
       } else if (token == "error_page") {
