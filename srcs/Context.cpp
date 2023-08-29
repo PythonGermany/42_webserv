@@ -123,6 +123,6 @@ void Context::addTokenOccurence(std::string token) {
 }
 
 void Context::throwExeption(std::string func, std::string msg) {
-  writeToErrorLog("Context: " + func + ": " + msg);
+  Log::writeError("Context: " + func + ": " + msg);
   throw std::runtime_error("Context: " + func + ": " + msg);
 }

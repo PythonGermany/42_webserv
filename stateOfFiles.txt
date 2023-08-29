@@ -1,7 +1,6 @@
-Server.* -> Usable
-Config.* -> Usable
+Server.* -> Usable (incomplete)
+Config.* -> Usable (tweaks and bugchecking left)
+Log.* -> Usable
 main.cpp -> Only config loading part working
 
-Request.* -> Its a mess
-Response.* -> Its a mess
 Socket.* -> Somewhat working

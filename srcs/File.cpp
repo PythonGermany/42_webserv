@@ -78,5 +78,6 @@ void File::Write(std::string data) {
 }
 
 void File::throwException(std::string func, std::string msg) {
+  Log::writeError("File::" + func + ": " + msg);
   throw std::runtime_error("File::" + func + ": " + msg);
 }

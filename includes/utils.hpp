@@ -3,8 +3,6 @@
 
 #include <netdb.h>
 
-#include <ctime>
-#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -29,11 +27,5 @@ std::string toString(T val) {
 }
 
 std::string inet_ntoa(uint32_t addr);
-
-std::string getTimeStamp();
-
-void writeToLog(std::string msg, t_log_level level, std::string color = RESET);
-
-void writeToErrorLog(std::string msg);
 
 #endif

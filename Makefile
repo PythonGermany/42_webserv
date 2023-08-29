@@ -6,7 +6,7 @@ SRC_DIR = srcs/
 INC_DIR = includes/
 OBJ_DIR = .obj/
 
-SRC = main.cpp Config.cpp Server.cpp Context.cpp File.cpp utils.cpp
+SRC = main.cpp Config.cpp Server.cpp Context.cpp File.cpp Log.cpp utils.cpp
 OBJ = $(addprefix $(OBJ_DIR), $(SRC:%.cpp=%.o))
 
 all : $(OBJ_DIR) $(NAME)

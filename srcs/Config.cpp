@@ -29,7 +29,7 @@ std::vector<Server> Config::parseConfig() {
   std::vector<Server> servers;
   std::string data = trim(_config);
 
-  writeToLog("Parsing config file", INFO);
+  Log::write("Parsing config file", INFO);
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
     if (token != "server")
@@ -40,14 +40,14 @@ std::vector<Server> Config::parseConfig() {
   }
   if (servers.size() == 0)
     throwExeption("parseConfig", "No server blocks found");
-  writeToLog("Sucessfully parsed config file", INFO);
+  Log::write("Sucessfully parsed config file", INFO);
   return servers;
 }
 
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent) {
   Context context(name, parent);
-  writeToLog("Parsing context '" + name + "'", DEBUG);
+  Log::write("Parsing context '" + name + "'", DEBUG);
   if (startsWith(data, "{") == false)
     throwExeption("parseContext", "Expected token '{' not found");
   data = trim(cut(data, 1, findContextEnd(data) - 1));
@@ -65,7 +65,7 @@ Context Config::parseContext(std::string data, std::string name,
                                         "' for context '" + name + "'");
     data = trim(data);
   }
-  writeToLog("Context sucessfully parsed  '" + name + "'", DEBUG);
+  Log::write("Context sucessfully parsed  '" + name + "'", DEBUG);
   return context;
 }
 
@@ -94,6 +94,6 @@ int Config::findToken(const std::string &data, std::string token) {
 }
 
 void Config::throwExeption(std::string func, std::string msg) {
-  writeToErrorLog("Config: " + func + ": " + msg);
+  Log::writeError("Config: " + func + ": " + msg);
   throw std::runtime_error("Config: " + func + ": " + msg);
 }

@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "Log.hpp"
+
 // Class to check file properties and read/write files
 class File {
  private:

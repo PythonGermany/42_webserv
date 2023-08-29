@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "Log.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
 #include "webserv.hpp"
