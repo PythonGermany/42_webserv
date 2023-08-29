@@ -1,20 +1,32 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include <unistd.h>
+
 #include <string>
+#include <map>
+#include <stdexcept>
+
+#include "File.hpp"
 
 class Cgi {
  private:
-  std::string _path;
+  std::map<std::string, std::string> _entries;
 
  public:
   Cgi();
-  Cgi(std::string path);  // TODO: Add copy constructor
   ~Cgi();
 
-  std::string getPath();
+  void addEntry(std::string key, std::string value);
 
-  std::string executeFile(std::string path);
+  std::string getEntry(std::string key);
+  std::map<std::string, std::string> getEntries();
+
+  bool isCgiFile(File &file);
+  std::string executeFile(File &file, std::string pwd);
+
+private:
+  void throwException(std::string func, std::string msg);
 };
 
 #endif

@@ -12,7 +12,7 @@
 #include "colors.hpp"
 
 #define CONFIG_FILE "server.conf"
-#define MAX_CLIENTS 1
+#define MAX_CLIENTS 100
 
 int main(int argc, char** argv) {
   Config config;
@@ -139,8 +139,8 @@ int main(int argc, char** argv) {
             File file(location.root + request.uri());
             // Check if index file is available
             if (request.uri() == location.path) {
-              for (size_t i = 0; i < location._index.size(); i++) {
-                file.setPath(location.root + location._index[i]);
+              for (size_t i = 0; i < location.index.size(); i++) {
+                file.setPath(location.root + location.index[i]);
                 if (file.exists() && file.readable() && file.file()) break;
               }
             }
@@ -156,12 +156,12 @@ int main(int argc, char** argv) {
               response = Response("200", "OK");
               response.setBody(file.Read());
             } else if (file.dir() == true) {
-              std::string fpath = file.path();
+              std::string fpath = file.getPath();
               std::cout << fpath << std::endl;
               if (!endsWith(fpath, "/")) {
                 response = Response("301", "Moved Permanently");
                 response.set_field("Location", request.uri() + "/");
-              } else if (location._autoindex == true) {
+              } else if (location.autoindex == true) {
                 response = Response("500", "Internal Server Error");
               } else
                 response = Response("403", "Forbidden");

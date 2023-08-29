@@ -9,6 +9,14 @@
 #include "Server.hpp"
 #include "utils.hpp"
 
+typedef struct s_token { // TODO: Test if thi is a good idea
+  std::string name;
+  size_t minOccurence;
+  size_t maxOccurence;
+  size_t minArgs;
+  size_t maxArgs;
+} t_token;
+
 // Parses and validates the config file into a vector of servers
 class Config {
  private:

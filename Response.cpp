@@ -36,9 +36,9 @@ void Response::send(int fd) const {
     response += it->first + ": " + it->second + "\r\n";
   }
   response += "\r\n" + _body;
-  if (fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) ==
-      -1)  // TODO: Check how to correctly use fcntl
-    throw std::runtime_error("Response: fcntl error");
+  // if (fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC) ==
+  //     -1)  // TODO: Check how to correctly use fcntl
+  //   throw std::runtime_error("Response: fcntl error");
   int write_result = write(fd, response.c_str(), response.size());
   if (close(fd) == -1) throw std::runtime_error("Response: close error");
   if (write_result < 0) throw std::runtime_error("Response: write error");

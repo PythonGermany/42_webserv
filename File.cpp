@@ -6,7 +6,13 @@ File::File(std::string path) { _path = path; }
 
 File::~File() {}
 
-std::string File::path() { return _path; }
+std::string File::getPath() { return _path; }
+
+std::string File::getExtension() {
+  std::string::size_type pos = _path.find_last_of('.');
+  if (pos == std::string::npos) return "";
+  return _path.substr(pos + 1);
+}
 
 void File::setPath(std::string path) { _path = path; }
 
@@ -40,17 +46,18 @@ long int File::size() {
 }
 
 std::string File::Read() {
-  char buffer[1024];
   std::string data;
   int fd = open(_path.c_str(), O_RDONLY);
+  
   if (fd == -1) throwException("read", "Could not open file");
-  int bytes_read = read(fd, buffer, 1024);
-  while (bytes_read > 0) {
-    data.append(buffer, bytes_read);
-    bytes_read = read(fd, buffer, 1024);
+  while (true) {
+    char buffer[1024];
+    int bytes_read = read(fd, buffer, 1024);
+    if (bytes_read < 0) throwException("Read", "Could not read file");
+    data += std::string(buffer, bytes_read);
+    if (bytes_read < 1024) break;
   }
   if (close(fd) == -1) throwException("Read", "Could not close file");
-  if (bytes_read == -1) throwException("Read", "Could not read file");
   return data;
 }
 

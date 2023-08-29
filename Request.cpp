@@ -3,13 +3,14 @@
 Request::Request() {}
 
 Request::Request(int fd) {
-  std::string request = "";
-  char buffer[1024];
-  int bytes_read = read(fd, buffer, 1024);
-  if (bytes_read < 0) throw std::runtime_error("read error");
-  request += std::string(buffer, bytes_read);
-
-  if (request.empty()) throwException("empty request line");
+  std::string request;
+  while (true) {
+    char buffer[1024];
+    int bytes_read = read(fd, buffer, 1024);
+    if (bytes_read < 0) throwException("read error");
+    request += std::string(buffer, bytes_read);
+    if (bytes_read < 1024) break;
+  }
 
   std::string line = request.substr(0, request.find("\r\n"));
   std::vector<std::string> tokens = split(line, " ");

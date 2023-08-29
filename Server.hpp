@@ -16,9 +16,10 @@ struct location {
   std::vector<std::string> methods;
   std::string redirect;
   std::string root;
-  std::vector<std::string> _index;
-  bool _autoindex;
-  std::map<std::string, Cgi> cgi;
+  std::vector<std::string> index;
+  bool autoindex;
+  std::string upload;
+  Cgi cgi;
 };
 
 // Class to store the server block

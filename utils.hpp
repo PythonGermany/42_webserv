@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ctime>
 
 // Trims thhe start and end of the string from whitespace
 // @param str The string to trim

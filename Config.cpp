@@ -55,7 +55,7 @@ void Config::validateConfig(
         throwExeption("validate", "No methods set for location");
       if (it2->root == "" && it2->redirect == "")
         throwExeption("validate", "No root set for location");
-      if (it2->_index.size() == 0 && it2->redirect == "")
+      if (it2->index.size() == 0 && it2->redirect == "")
         throwExeption("validate", "No index set for location");
     }
     if (!root_location)
@@ -146,14 +146,17 @@ location Config::parseLocation(std::string context) {
       std::vector<std::string> index = split(value, " ");
       for (size_t i = 0; i < index.size(); i++)
         if (!startsWith(index[i], "/")) index[i] = "/" + index[i];
-      location._index = index;
+      location.index = index;
     } else if (token == "autoindex") {
-      location._autoindex = (value == "on");
+      location.autoindex = (value == "on");
+    } else if (token == "upload") {
+      location.upload = value;
     } else if (token == "cgi") {
-      std::vector<std::string> cgi = split(value, " ");
-      if (cgi.size() != 2)
+      std::vector<std::string> values = split(value, " ");
+      if (values.size() != 2)
         throwExeption("parseLocation", "Expected 2 arguments for cgi");
-      location.cgi[cgi[0]] = Cgi(cgi[1]);
+      if (startsWith(values[0], ".")) values[0] = values[0].substr(1);
+      location.cgi.addEntry(values[0], values[1]);
     } else
       throwExeption("parseLocation", "Unknown token '" + token + "'");
     context = trim(context.erase(0, 1));

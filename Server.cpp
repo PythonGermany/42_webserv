@@ -78,14 +78,15 @@ void Server::print() {
       std::cout << "    method: " << *it2 << std::endl;
     std::cout << "    redirect: " << it->redirect << std::endl;
     std::cout << "    root: " << it->root << std::endl;
-    for (std::vector<std::string>::iterator it2 = it->_index.begin();
-         it2 != it->_index.end(); it2++) {
+    for (std::vector<std::string>::iterator it2 = it->index.begin();
+         it2 != it->index.end(); it2++) {
       std::cout << "    index: " << *it2 << std::endl;
     }
-    std::cout << "    autoindex: " << it->_autoindex << std::endl;
-    for (std::map<std::string, Cgi>::iterator it2 = it->cgi.begin();
-         it2 != it->cgi.end(); it2++) {
-      std::cout << "    cgi: " << it2->first << " " << it2->second.getPath()
+    std::cout << "    autoindex: " << it->autoindex << std::endl;
+    std::map<std::string, std::string> cgi = it->cgi.getEntries();
+    for (std::map<std::string, std::string>::iterator it2 = cgi.begin();
+         it2 != cgi.end(); it2++) {
+      std::cout << "    cgi: " << it2->first << " " << it2->second
                 << std::endl;
     }
   }

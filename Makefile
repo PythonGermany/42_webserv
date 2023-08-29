@@ -12,7 +12,7 @@ test_config:
 	c++ $(FLAGS) -o test_config test_config.cpp Config.cpp Server.cpp Cgi.cpp File.cpp utils.cpp
 
 test_cgi:
-	c++ $(FLAGS) -o test_cgi test_cgi.cpp
+	c++ $(FLAGS) -o test_cgi test_cgi.cpp Cgi.cpp File.cpp
 
 test_file:
 	c++ $(FLAGS) -o test_file test_file.cpp File.cpp

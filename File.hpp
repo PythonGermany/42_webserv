@@ -20,7 +20,8 @@ class File {
   ~File();
 
   // Getters
-  std::string path();
+  std::string getPath();
+  std::string getExtension();
 
   // Setters
   void setPath(std::string path);
