@@ -74,6 +74,7 @@ void Config::validateConfig(std::vector<Server> &servers) {
     if (it->getContext().isValid() == false)
       throwExeption("validateConfig", "Invalid server block configuration");
   }
+  writeToLog("Sucessfully validated config file", INFO);
 }
 
 int Config::findContextEnd(const std::string &context) {

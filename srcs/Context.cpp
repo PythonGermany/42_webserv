@@ -29,7 +29,7 @@ void Context::addDirective(std::string directive,
                            std::vector<std::string> values) {
   if (validArguments(directive, values) == false)
     throwExeption("addDirective",
-                  "Invalid directive values'" + directive + "'");
+                  "Invalid directive values for '" + directive + "'");
   for (std::vector<std::string>::iterator it = values.begin();
        it != values.end(); it++)
     _directives[directive].push_back(*it);
@@ -144,5 +144,6 @@ bool Context::validArguments(std::string token, std::vector<std::string> args) {
 }
 
 void Context::throwExeption(std::string func, std::string msg) {
+  writeToErrorLog("Context: " + func + ": " + msg);
   throw std::runtime_error("Context: " + func + ": " + msg);
 }

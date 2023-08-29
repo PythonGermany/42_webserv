@@ -21,7 +21,7 @@ std::vector<std::string> split(std::string str, std::string delim) {
     if (pos != 0) tokens.push_back(str.substr(0, pos));
     str.erase(0, pos + delim.length());
   }
-  tokens.push_back(str);
+  if (str.length() > 0) tokens.push_back(str);
   return tokens;
 }
 
