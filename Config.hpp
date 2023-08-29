@@ -9,14 +9,6 @@
 #include "Server.hpp"
 #include "utils.hpp"
 
-typedef struct s_token { // TODO: Test if thi is a good idea
-  std::string name;
-  size_t minOccurence;
-  size_t maxOccurence;
-  size_t minArgs;
-  size_t maxArgs;
-} t_token;
-
 // Parses and validates the config file into a vector of servers
 class Config {
  private:
@@ -46,27 +38,8 @@ class Config {
   // @exception std::runtime_error Thrown if the config is invalid
   void validateConfig(std::vector<Server> &servers);
 
-  void setDefaultServers(std::vector<Server> &servers);
-
  private:
-  // Parses a single server context block
-  // @param context The context block to parse
-  Server parseServer(std::string context);
-
-  // Parses a single context block
-  // @param context The context block to parse
-  // @param server The server to add the context to
-  void parseContext(std::string context, Server &server);
-
-  // Parses a single location context block
-  // @param context The context block to parse
-  // @return The parsed location
-  location parseLocation(std::string context);
-
-  // Checks if the next part of the context is a block
-  // @param context The context to check
-  // @return True if the next part of the context is a block, false otherwise
-  bool isContextBlock(const std::string &context);
+  Context parseContext(std::string data, std::string name, std::string parent);
 
   // Finds the end of the context block
   // @param context The context to find the end of
@@ -74,12 +47,6 @@ class Config {
   // @exception std::runtime_error Thrown if the context is not a block or the
   // end could not be found
   int findContextEnd(const std::string &context);
-
-  // Trims the context block brackets
-  // @param context The context to trim
-  // @return The trimmed context
-  // @exception std::runtime_error Thrown if the context is not a block
-  std::string trimContext(const std::string &context);
 
   // Finds the token
   // @param data The data to find the token in

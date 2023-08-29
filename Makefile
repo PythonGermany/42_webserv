@@ -9,7 +9,7 @@ OBJ = $(SRC:%.cpp=%.o)
 all : $(NAME)
 
 test_config:
-	c++ $(FLAGS) -o test_config test_config.cpp Config.cpp Server.cpp Cgi.cpp File.cpp utils.cpp
+	c++ $(FLAGS) -o test_config test_config.cpp Config.cpp Server.cpp Cgi.cpp File.cpp Context.cpp utils.cpp
 
 test_cgi:
 	c++ $(FLAGS) -o test_cgi test_cgi.cpp Cgi.cpp File.cpp

@@ -10,7 +10,6 @@ int main() {
   try {
     servers = config.parseConfig();
     config.validateConfig(servers);
-    config.setDefaultServers(servers);
     for (std::vector<Server>::iterator it = servers.begin();
          it != servers.end(); it++)
       it->print();

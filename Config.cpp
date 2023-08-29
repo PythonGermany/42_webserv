@@ -30,146 +30,54 @@ std::vector<Server> Config::parseConfig() {
 
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
-    if (token == "server")
-      servers.push_back(parseServer(cut(data, 0, findContextEnd(data))));
-    else
-      throwExeption("parse", "Unknown token '" + token + "'");
+    if (token != "server")
+      throwExeption("parseConfig", "Unknown token '" + token + "'");
+    std::string contextData = trim(cut(data, 0, findContextEnd(data)));
+    servers.push_back(Server(parseContext(contextData, token, "_")));
     data = trim(data);
   }
   return servers;
 }
 
+void printVector(std::vector<std::string> vec) {
+  for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end();
+       it++)
+    std::cout << "'" << *it << "' ";
+  std::cout << std::endl;
+}
+
+Context Config::parseContext(std::string data, std::string name,
+                             std::string parent) {
+  Context context(name, parent);
+  if (startsWith(data, "{") == false)
+    throwExeption("parseContext", "Expected token '{' not found");
+  data = trim(cut(data, 1, findContextEnd(data) - 1));
+  while (data.length() > 0) {
+    std::string token = trim(cut(data, 0, findToken(data, " ")));
+    if (context.validTokenName(token) == false)
+      throwExeption("parseContext", "Unknown token '" + token + "'");
+    if (context.isContext(token)) {
+      std::string contextData = trim(cut(data, 0, findContextEnd(data)));
+      Context childContext = parseContext(contextData, token, name);
+      context.addContext(childContext);
+    } else if (context.isDirective(token)) {
+      std::vector<std::string> values =
+          split(cut(data, 0, findToken(data, ";")), " ");
+      if (context.validDirective(token, values) == false)
+        throwExeption("parseContext",
+                      "Invalid values for token '" + token + "'");
+      context.addDirectives(token, values);
+      data = data.substr(1);
+    }
+    data = trim(data);
+  }
+  return context;
+}
+
 void Config::validateConfig(
     std::vector<Server>
         &servers) {  // TODO: complete, improve and test validation
-  for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
-       it++) {
-    bool root_location = false;
-    if (it->getPort() == "") throwExeption("validate", "Port not set");
-    std::vector<location> locations = it->getLocations();
-    for (std::vector<location>::iterator it2 = locations.begin();
-         it2 != locations.end(); it2++) {
-      if (it2->path == "") throwExeption("validate", "Location path not set");
-      if (it2->path == "/") root_location = true;
-      if (it2->methods.size() == 0)
-        throwExeption("validate", "No methods set for location");
-      if (it2->root == "" && it2->redirect == "")
-        throwExeption("validate", "No root set for location");
-      if (it2->index.size() == 0 && it2->redirect == "")
-        throwExeption("validate", "No index set for location");
-    }
-    if (!root_location)
-      throwExeption("validate", "No root location set for server");
-  }
-}
-
-void Config::setDefaultServers(std::vector<Server> &servers) {
-  std::set<std::string> connection;
-  for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
-       it++) {
-    std::string key = it->getHost() + ":" + it->getPort();
-    if (connection.find(key) == connection.end()) {
-      connection.insert(key);
-      it->setIsDefault(true);
-    }
-  }
-}
-
-Server Config::parseServer(std::string context) {
-  Server server;
-  context = trimContext(context);
-  while (context.length() > 0) {
-    if (isContextBlock(context)) {
-      parseContext(cut(context, 0, findContextEnd(context)), server);
-    } else {
-      std::string token = trim(cut(context, 0, findToken(context, " ")));
-      std::string value = trim(cut(context, 0, findToken(context, ";")));
-      if (token == "listen") {
-        std::vector<std::string> listen = split(value, ":");
-        if (listen.size() > 2)
-          throwExeption("parseServer", "Expected 1-2 arguments for listen");
-        std::string port;
-        if (listen.size() == 1)
-          port = listen[0];
-        else {
-          server.setHost(listen[0]);
-          port = listen[1];
-        }
-        if (!isNumeric(port)) throwExeption("parseServer", "Invalid port");
-        server.setPort(port);
-      } else if (token == "server_name") {
-        server.setNames(split(value, " "));
-      } else if (token == "error_page") {
-        std::vector<std::string> error_page = split(value, " ");
-        if (error_page.size() != 2)
-          throwExeption("parseServer", "Expected 2 arguments for error_page");
-        server.addErrorPage(error_page[0], error_page[1]);
-      } else if (token == "client_max_body_size") {
-        if (!isNumeric(value))
-          throwExeption("parseServer", "Invalid client_max_body_size");
-        server.setClientMaxBodySize(std::atoi(value.c_str()));
-        if (server.getClientMaxBodySize() == 0)
-          throwExeption("parseServer", "Invalid client_max_body_size");
-      } else
-        throwExeption("parseServer", "Unknown token '" + token + "'");
-    }
-    context = trim(context.erase(0, 1));
-  }
-  return server;
-}
-
-void Config::parseContext(std::string context, Server &server) {
-  std::string token = trim(cut(context, 0, findToken(context, " ")));
-  if (token == "server") {
-    throwExeption("parseContext", "Nested server context not allowed");
-  } else if (token == "location") {
-    server.addLocation(parseLocation(trim(context)));
-  } else
-    throwExeption("parseContext", "Unknown context '" + context + "'");
-}
-
-location Config::parseLocation(std::string context) {
-  location location;
-  location.path = trim(cut(context, 0, findToken(context, " ")));
-  context = trimContext(context);
-  while (context.length() > 0) {
-    std::string token = trim(cut(context, 0, findToken(context, " ")));
-    std::string value = trim(cut(context, 0, findToken(context, ";")));
-    if (token == "methods") {
-      location.methods = split(value, " ");
-    } else if (token == "redirect") {
-      location.redirect = value;
-    } else if (token == "root") {
-      if (endsWith(value, "/")) value = value.substr(0, value.size() - 1);
-      location.root = value;
-    } else if (token == "index") {
-      std::vector<std::string> index = split(value, " ");
-      for (size_t i = 0; i < index.size(); i++)
-        if (!startsWith(index[i], "/")) index[i] = "/" + index[i];
-      location.index = index;
-    } else if (token == "autoindex") {
-      location.autoindex = (value == "on");
-    } else if (token == "upload") {
-      location.upload = value;
-    } else if (token == "cgi") {
-      std::vector<std::string> values = split(value, " ");
-      if (values.size() != 2)
-        throwExeption("parseLocation", "Expected 2 arguments for cgi");
-      if (startsWith(values[0], ".")) values[0] = values[0].substr(1);
-      location.cgi.addEntry(values[0], values[1]);
-    } else
-      throwExeption("parseLocation", "Unknown token '" + token + "'");
-    context = trim(context.erase(0, 1));
-  }
-  return location;
-}
-
-bool Config::isContextBlock(const std::string &context) {
-  int contextStart = context.find_first_of("{");
-  int directiveEnd = context.find_first_of(";");
-  if (contextStart == -1) return false;
-  if (directiveEnd == -1) return true;
-  return contextStart < directiveEnd;
+  (void)servers;
 }
 
 int Config::findContextEnd(const std::string &context) {
@@ -187,13 +95,6 @@ int Config::findContextEnd(const std::string &context) {
   }
   throwExeption("findContextEnd", "No context end found");
   return -1;
-}
-
-std::string Config::trimContext(const std::string &context) {
-  int start = findToken(context, "{");
-  int end = context.find_last_of("}");
-  if (end == -1) throwExeption("trimContext", "Expected token '}' not found");
-  return trim(context.substr(start + 1, end - start - 1));
 }
 
 int Config::findToken(const std::string &data, std::string token) {
