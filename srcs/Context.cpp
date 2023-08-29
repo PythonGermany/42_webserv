@@ -41,6 +41,12 @@ void Context::addContext(Context context) {
   addTokenOccurence(context.getName());
 }
 
+bool Context::isValidToken(std::string token) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+    if (tokens[i].name == token) return true;
+  return false;
+}
+
 size_t Context::getTokenOccurence(std::string token) {
   if (_tokenOccurences.find(token) == _tokenOccurences.end()) return 0;
   return _tokenOccurences[token];
@@ -63,27 +69,27 @@ bool Context::isContext(std::string token) {
   return false;
 }
 
-bool Context::isDirective(std::string token) { return !isContext(token); }
+bool Context::isDirective(std::string token) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+    if (tokens[i].name == token && !tokens[i].isContext) return true;
+  return false;
+}
 
 bool Context::isValid() {
-  writeToLog("Validating '" + _name + "' context" +
-                 (_parent == "_" ? "" : " of parent '" + _parent + "'"),
+  writeToLog("Validating '" + _name + "' context of parent '" + _parent + "'",
              DEBUG);
-  for (std::map<std::string, size_t>::iterator it = _tokenOccurences.begin();
-       it != _tokenOccurences.end(); it++) {
-    for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-      if (tokens[i].name == it->first) {
-        writeToLog("Validating token '" + it->first + "'", DEBUG);
-        if (it->second < tokens[i].minOccurence ||
-            it->second > tokens[i].maxOccurence) {
-          writeToErrorLog("Context '" + _name + "' has " +
-                          toString(it->second) + " occurences of token '" +
-                          it->first + "' but should have between " +
-                          toString(tokens[i].minOccurence) + " and " +
-                          toString(tokens[i].maxOccurence));
-          return false;
-        }
-      }
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
+    size_t occurences = getTokenOccurence(tokens[i].name);
+    if (occurences > 0 && tokens[i].parent != _name) {
+      writeToErrorLog("Context '" + _name + " has an invalid " +
+                      "occurence of token '" + tokens[i].name + "'");
+      return false;
+    } else if (tokens[i].parent == _name &&
+               (occurences < tokens[i].minOccurence ||
+                occurences > tokens[i].maxOccurence)) {
+      writeToErrorLog("Context '" + _name + " has an invalid " +
+                      "number of token '" + tokens[i].name + "'");
+      return false;
     }
   }
   for (std::map<std::string, std::vector<Context> >::iterator it =

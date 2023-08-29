@@ -6,36 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "colors.hpp"
 #include "utils.hpp"
 #include "webserv.hpp"
-
-typedef struct s_token {
-  std::string name;
-  std::string parent;
-  bool isContext;
-  size_t minOccurence;
-  size_t maxOccurence;
-  size_t minArgs;
-  size_t maxArgs;
-} t_token;
-
-static const t_token tokens[15] = {
-    {"server", "_", true, 1, -1, 0, 0},
-    {"host", "server", false, 1, 1, 1, 1},
-    {"port", "server", false, 1, 1, 1, 1},
-    {"server_name", "server", false, 0, -1, 1, -1},
-    {"error_page", "server", false, 0, -1, 2, 2},
-    {"client_max_body_size", "server", false, 1, 1, 1, 1},
-
-    {"location", "server", true, 1, -1, 0, 0},
-    {"url", "location", false, 1, 1, 1, 1},
-    {"method", "location", false, 0, -1, 1, -1},
-    {"root", "location", false, 1, 1, 1, 1},
-    {"index", "location", false, 1, -1, 1, -1},
-    {"autoindex", "location", false, 0, 1, 1, 1},
-    {"upload", "location", false, 0, 1, 1, 1},
-    {"cgi", "location", false, 0, 1, 2, 2},
-    {"redirect", "location", false, 0, 1, 1, 1}};
 
 class Context {
  private:
@@ -63,6 +36,7 @@ class Context {
   void addDirective(std::string directive, std::vector<std::string> values);
   void addContext(Context context);
 
+  bool isValidToken(std::string token);
   bool isContext(std::string token);
   bool isDirective(std::string token);
   bool isValid();

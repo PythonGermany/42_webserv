@@ -2,15 +2,13 @@
 #define UTILS_HPP
 
 #include <netdb.h>
-#include <sys/stat.h>
 
 #include <ctime>
 #include <fstream>
-#include <iostream>
 #include <sstream>
-#include <string>
 #include <vector>
 
+#include "colors.hpp"
 #include "webserv.hpp"
 
 std::string trim(std::string str);
@@ -18,8 +16,6 @@ std::string trim(std::string str);
 std::string cut(std::string &str, int start, int end);
 
 std::vector<std::string> split(std::string str, std::string delim);
-
-bool isNumeric(std::string str);
 
 bool startsWith(std::string str, std::string suffix);
 
@@ -36,7 +32,7 @@ std::string inet_ntoa(uint32_t addr);
 
 std::string getTimeStamp();
 
-void writeToLog(std::string msg, t_log_level level);
+void writeToLog(std::string msg, t_log_level level, std::string color = RESET);
 
 void writeToErrorLog(std::string msg);
 

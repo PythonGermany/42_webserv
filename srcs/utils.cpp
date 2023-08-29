@@ -25,12 +25,6 @@ std::vector<std::string> split(std::string str, std::string delim) {
   return tokens;
 }
 
-bool isNumeric(std::string str) {
-  for (std::string::iterator it = str.begin(); it != str.end(); it++)
-    if (!isdigit(*it)) return false;
-  return true;
-}
-
 bool startsWith(std::string str, std::string suffix) {
   if (str.size() < suffix.size()) return false;
   return !str.compare(0, suffix.size(), suffix);
@@ -63,9 +57,10 @@ std::string getTimeStamp() {
   return std::string(buffer);
 }
 
-void writeToLog(std::string msg, t_log_level level) {
+void writeToLog(std::string msg, t_log_level level, std::string color) {
   if (level >= LOG_LEVEL) {
-    std::cout << "[" << getTimeStamp() << "] " << msg << std::endl;
+    std::cout << "[" << getTimeStamp() << "] " << color << msg << RESET
+              << std::endl;
     std::ofstream log(LOG_PATH, std::ios::app);
     log << "[" << getTimeStamp() << "] " << msg << std::endl;
     log.close();

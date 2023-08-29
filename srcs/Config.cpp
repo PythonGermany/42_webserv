@@ -64,17 +64,18 @@ Context Config::parseContext(std::string data, std::string name,
       throwExeption("parseContext", "Unknown token '" + token + "'");
     data = trim(data);
   }
-  writeToLog("Sucessfully parsed context '" + name + "'", DEBUG);
+  writeToLog("Context sucessfully parsed  '" + name + "'", DEBUG);
   return context;
 }
 
 void Config::validateConfig(std::vector<Server> &servers) {
+  writeToLog("Validating config file", INFO);
   for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
        it++) {
     if (it->getContext().isValid() == false)
       throwExeption("validateConfig", "Invalid server block configuration");
   }
-  writeToLog("Sucessfully validated config file", INFO);
+  writeToLog("Config file sucessfully validated ", INFO);
 }
 
 int Config::findContextEnd(const std::string &context) {

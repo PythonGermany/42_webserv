@@ -23,6 +23,9 @@ $(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
 $(OBJ_DIR) :
 	mkdir -p $(OBJ_DIR)
 
+lines:
+	@wc -l $(SRC_DIR)*.cpp $(INC_DIR)*.hpp
+
 clean :
 	rm -rf $(OBJ_DIR)
 
