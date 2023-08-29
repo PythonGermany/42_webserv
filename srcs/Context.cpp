@@ -75,6 +75,22 @@ bool Context::isValidDirective(std::string token) {
   return false;
 }
 
+bool Context::validToAdd(std::string token) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+    if (tokens[i].name == token && tokens[i].parent == _name)
+      return getTokenOccurence(token) < tokens[i].maxOccurence;
+  return false;
+}
+
+bool Context::validArguments(std::string token, std::vector<std::string> args) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
+    if (tokens[i].name == token && tokens[i].parent == _name)
+      return tokens[i].minArgs <= args.size() &&
+             tokens[i].maxArgs >= args.size();
+  }
+  return false;
+}
+
 void Context::print(int indent) {
   std::string spaces = "";
   for (int i = 0; i < indent; i++) spaces += "| ";
@@ -97,25 +113,6 @@ void Context::print(int indent) {
       it2->print(indent + 1);
     }
   }
-}
-
-bool Context::validToAdd(std::string token) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
-    if (tokens[i].name == token && tokens[i].parent == _name)
-      return getTokenOccurence(token) < tokens[i].maxOccurence;
-  return false;
-}
-
-bool Context::validArguments(std::string token, std::vector<std::string> args) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-    if (tokens[i].name == token && tokens[i].parent == _name &&
-        tokens[i].isContext == false) {
-      if (tokens[i].minArgs > args.size() || tokens[i].maxArgs < args.size())
-        return false;
-      return true;
-    }
-  }
-  return false;
 }
 
 void Context::addTokenOccurence(std::string token) {

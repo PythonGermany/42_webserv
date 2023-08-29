@@ -7,10 +7,7 @@ int main(int argc, char** argv) {
 
   writeToLog("-------- Loading config file --------", INFO, BRIGHT_GREEN);
   try {
-    if (argc > 1)
-      config = Config(argv[1]);
-    else
-      config = Config(CONFIG_PATH);
+    config = Config(argc > 1 ? argv[1] : CONFIG_PATH);
     servers = config.parseConfig();
   } catch (std::exception& e) {
     return 1;
