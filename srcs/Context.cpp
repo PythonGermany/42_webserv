@@ -25,26 +25,22 @@ std::string Context::getName() { return _name; }
 
 std::string Context::getParent() { return _parent; }
 
-void Context::addDirective(std::string directive,
-                           std::vector<std::string> values) {
-  if (validArguments(directive, values) == false)
-    throwExeption("addDirective",
-                  "Invalid directive values for '" + directive + "'");
+void Context::addDirective(std::string token, std::vector<std::string> values) {
+  if (validToAdd(token) == false)
+    throwExeption("addDirective", "Invalid directive '" + token + "'");
+  if (validArguments(token, values) == false)
+    throwExeption("addDirective", "Invalid arguments for '" + token + "'");
   for (std::vector<std::string>::iterator it = values.begin();
        it != values.end(); it++)
-    _directives[directive].push_back(*it);
-  addTokenOccurence(directive);
+    _directives[token].push_back(*it);
+  addTokenOccurence(token);
 }
 
 void Context::addContext(Context context) {
+  if (!validToAdd(context.getName()))
+    throwExeption("addContext", "Invalid context '" + context.getName() + "'");
   _contexts[context.getName()].push_back(context);
   addTokenOccurence(context.getName());
-}
-
-bool Context::isValidToken(std::string token) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
-    if (tokens[i].name == token) return true;
-  return false;
 }
 
 size_t Context::getTokenOccurence(std::string token) {
@@ -52,59 +48,31 @@ size_t Context::getTokenOccurence(std::string token) {
   return _tokenOccurences[token];
 }
 
-std::vector<std::string> Context::getDirective(std::string directive) {
-  if (_directives.find(directive) == _directives.end())
+std::vector<std::string> Context::getDirective(std::string token) {
+  if (_directives.find(token) == _directives.end())
     return std::vector<std::string>();
-  return _directives[directive];
+  return _directives[token];
 }
 
-std::vector<Context> Context::getContext(std::string context) {
-  if (_contexts.find(context) == _contexts.end()) return std::vector<Context>();
-  return _contexts[context];
+std::vector<Context> Context::getContext(std::string token) {
+  if (_contexts.find(token) == _contexts.end()) return std::vector<Context>();
+  return _contexts[token];
 }
 
-bool Context::isContext(std::string token) {
+bool Context::isValidContext(std::string token) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
-    if (tokens[i].name == token && tokens[i].isContext) return true;
+    if (tokens[i].name == token && tokens[i].parent == _name &&
+        tokens[i].isContext)
+      return true;
   return false;
 }
 
-bool Context::isDirective(std::string token) {
+bool Context::isValidDirective(std::string token) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
-    if (tokens[i].name == token && !tokens[i].isContext) return true;
+    if (tokens[i].name == token && tokens[i].parent == _name &&
+        !tokens[i].isContext)
+      return true;
   return false;
-}
-
-bool Context::isValid() {
-  writeToLog("Validating '" + _name + "' context of parent '" + _parent + "'",
-             DEBUG);
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-    size_t occurences = getTokenOccurence(tokens[i].name);
-    if (occurences > 0 && tokens[i].parent != _name) {
-      writeToErrorLog("Context '" + _name + " has an invalid " +
-                      "occurence of token '" + tokens[i].name + "'");
-      return false;
-    } else if (tokens[i].parent == _name &&
-               (occurences < tokens[i].minOccurence ||
-                occurences > tokens[i].maxOccurence)) {
-      writeToErrorLog("Context '" + _name + " has an invalid " +
-                      "number of token '" + tokens[i].name + "'");
-      return false;
-    }
-  }
-  for (std::map<std::string, std::vector<Context> >::iterator it =
-           _contexts.begin();
-       it != _contexts.end(); it++) {
-    for (std::vector<Context>::iterator it2 = it->second.begin();
-         it2 != it->second.end(); it2++) {
-      if (it2->isValid() == false) {
-        writeToErrorLog("Context '" + it2->getName() + "' is invalid");
-        return false;
-      }
-    }
-  }
-  writeToLog("Context '" + _name + "' is valid", DEBUG);
-  return true;
 }
 
 void Context::print(int indent) {
@@ -131,22 +99,30 @@ void Context::print(int indent) {
   }
 }
 
-void Context::addTokenOccurence(std::string token) {
-  if (_tokenOccurences.find(token) == _tokenOccurences.end())
-    _tokenOccurences[token] = 1;
-  else
-    _tokenOccurences[token]++;
+bool Context::validToAdd(std::string token) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+    if (tokens[i].name == token && tokens[i].parent == _name)
+      return getTokenOccurence(token) < tokens[i].maxOccurence;
+  return false;
 }
 
 bool Context::validArguments(std::string token, std::vector<std::string> args) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-    if (tokens[i].name == token) {
+    if (tokens[i].name == token && tokens[i].parent == _name &&
+        tokens[i].isContext == false) {
       if (tokens[i].minArgs > args.size() || tokens[i].maxArgs < args.size())
         return false;
       return true;
     }
   }
   return false;
+}
+
+void Context::addTokenOccurence(std::string token) {
+  if (_tokenOccurences.find(token) == _tokenOccurences.end())
+    _tokenOccurences[token] = 1;
+  else
+    _tokenOccurences[token]++;
 }
 
 void Context::throwExeption(std::string func, std::string msg) {

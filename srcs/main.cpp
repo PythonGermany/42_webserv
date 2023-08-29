@@ -12,12 +12,11 @@ int main(int argc, char** argv) {
     else
       config = Config(CONFIG_PATH);
     servers = config.parseConfig();
-    config.validateConfig(servers);
   } catch (std::exception& e) {
     return 1;
   }
   writeToLog("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
-  if (LOG_LEVEL <= DEBUG) {
+  if (LOG_LEVEL >= DEBUG) {
     for (std::vector<Server>::iterator it = servers.begin();
          it != servers.end(); it++) {
       it->print();

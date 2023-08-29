@@ -29,23 +29,22 @@ class Context {
   std::string getName();
   std::string getParent();
   size_t getTokenOccurence(std::string token);
-  std::vector<std::string> getDirective(std::string directive);
-  std::vector<Context> getContext(std::string context);
+  std::vector<std::string> getDirective(std::string token);
+  std::vector<Context> getContext(std::string token);
 
   // Setters/Adders
-  void addDirective(std::string directive, std::vector<std::string> values);
+  void addDirective(std::string token, std::vector<std::string> values);
   void addContext(Context context);
 
-  bool isValidToken(std::string token);
-  bool isContext(std::string token);
-  bool isDirective(std::string token);
-  bool isValid();
+  bool isValidContext(std::string token);
+  bool isValidDirective(std::string token);
+  bool validToAdd(std::string token);
+  bool validArguments(std::string token, std::vector<std::string> args);
 
   void print(int indent = 0);
 
  private:
   void addTokenOccurence(std::string token);
-  bool validArguments(std::string token, std::vector<std::string> args);
   void throwExeption(std::string func, std::string msg);
 };
 

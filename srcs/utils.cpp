@@ -58,7 +58,7 @@ std::string getTimeStamp() {
 }
 
 void writeToLog(std::string msg, t_log_level level, std::string color) {
-  if (level >= LOG_LEVEL) {
+  if (level <= LOG_LEVEL) {
     std::cout << "[" << getTimeStamp() << "] " << color << msg << RESET
               << std::endl;
     std::ofstream log(LOG_PATH, std::ios::app);

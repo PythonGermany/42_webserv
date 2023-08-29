@@ -30,15 +30,10 @@ class Config {
 
   std::vector<Server> parseConfig();
 
-  void validateConfig(std::vector<Server> &servers);
-
  private:
   Context parseContext(std::string data, std::string name, std::string parent);
-
   int findContextEnd(const std::string &context);
-
   int findToken(const std::string &data, std::string token);
-
   void throwExeption(std::string func, std::string msg);
 };
 

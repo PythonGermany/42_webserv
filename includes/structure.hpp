@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-typedef enum e_log_level { DEBUG, INFO, WARNING } t_log_level;
+typedef enum e_log_level { WARNING, INFO, DEBUG } t_log_level;
 
 typedef struct s_token {
   std::string name;

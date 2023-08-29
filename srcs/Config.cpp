@@ -53,29 +53,20 @@ Context Config::parseContext(std::string data, std::string name,
   data = trim(cut(data, 1, findContextEnd(data) - 1));
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
-    if (context.isContext(token)) {
+    if (context.isValidContext(token)) {
       std::string contextData = trim(cut(data, 0, findContextEnd(data)));
       context.addContext(parseContext(contextData, token, name));
-    } else if (context.isDirective(token)) {
+    } else if (context.isValidDirective(token)) {
       context.addDirective(token,
                            split(cut(data, 0, findToken(data, ";")), " "));
       data = data.substr(1);
     } else
-      throwExeption("parseContext", "Unknown token '" + token + "'");
+      throwExeption("parseContext", "Error for token '" + token +
+                                        "' for context '" + name + "'");
     data = trim(data);
   }
   writeToLog("Context sucessfully parsed  '" + name + "'", DEBUG);
   return context;
-}
-
-void Config::validateConfig(std::vector<Server> &servers) {
-  writeToLog("Validating config file", INFO);
-  for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
-       it++) {
-    if (it->getContext().isValid() == false)
-      throwExeption("validateConfig", "Invalid server block configuration");
-  }
-  writeToLog("Config file sucessfully validated ", INFO);
 }
 
 int Config::findContextEnd(const std::string &context) {
