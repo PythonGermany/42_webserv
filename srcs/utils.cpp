@@ -62,3 +62,21 @@ std::string getTimeStamp() {
   std::strftime(buffer, 9, "%H:%M:%S", timeinfo);
   return std::string(buffer);
 }
+
+void writeToLog(std::string msg, t_log_level level) {
+  if (level >= LOG_LEVEL) {
+    std::cout << "[" << getTimeStamp() << "] " << msg << std::endl;
+    std::ofstream log(LOG_PATH, std::ios::app);
+    log << "[" << getTimeStamp() << "] " << msg << std::endl;
+    log.close();
+  }
+}
+
+void writeToErrorLog(std::string msg) {
+  std::cerr << "[" << getTimeStamp() << "] " << RED << "Error: " << RESET << msg
+            << std::endl;
+  std::ofstream errorLog(ERROR_LOG_PATH, std::ios::app);
+  errorLog << "[" << getTimeStamp() << "] "
+           << "Error: " << msg << std::endl;
+  errorLog.close();
+}

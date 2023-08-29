@@ -7,21 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "Cgi.hpp"
 #include "Context.hpp"
 #include "utils.hpp"
-
-// Struct to store the location block
-struct location {
-  std::string path;
-  std::vector<std::string> methods;
-  std::string redirect;
-  std::string root;
-  std::vector<std::string> index;
-  bool autoindex;
-  std::string upload;
-  Cgi cgi;
-};
 
 // Class to store the server block
 class Server {
@@ -41,10 +28,11 @@ class Server {
   void setIsDefault(bool idDefault);
 
   // Getters
-  Context &getContext();
+  Context getContext();
   bool getIsDefault();
 
   // Prints the current server block configuration
+  // @exception None
   void print();
 };
 

@@ -2,29 +2,29 @@ NAME = webserv
 
 FLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRC = main.cpp Config.cpp Server.cpp Socket.cpp Cgi.cpp Request.cpp \
-			Response.cpp File.cpp utils.cpp
-OBJ = $(SRC:%.cpp=%.o)
+SRC_DIR = srcs/
+INC_DIR = includes/
+OBJ_DIR = .obj/
 
-all : $(NAME)
+SRC = main.cpp Config.cpp Server.cpp Context.cpp File.cpp utils.cpp
+OBJ = $(addprefix $(OBJ_DIR), $(SRC:%.cpp=%.o))
 
-test_config:
-	c++ $(FLAGS) -o test_config test_config.cpp Config.cpp Server.cpp Cgi.cpp File.cpp Context.cpp utils.cpp
-
-test_cgi:
-	c++ $(FLAGS) -o test_cgi test_cgi.cpp Cgi.cpp File.cpp
+all : $(OBJ_DIR) $(NAME)
 
 test_file:
 	c++ $(FLAGS) -o test_file test_file.cpp File.cpp
 
 $(NAME) : $(OBJ)
-	c++ $(FLAGS) -o $(NAME) $(OBJ)
+	c++ $(FLAGS) -o $(NAME) $^ -I $(INC_DIR)
 
-%.o : %.cpp
-	c++ -c $(FLAGS) $^
+$(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
+	c++ -c $(FLAGS) $^ -o $@ -I $(INC_DIR)
+
+$(OBJ_DIR) :
+	mkdir -p $(OBJ_DIR)
 
 clean :
-	rm -rf $(OBJ)
+	rm -rf $(OBJ_DIR)
 
 fclean : clean
 	rm -rf $(NAME)

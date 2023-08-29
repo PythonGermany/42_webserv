@@ -32,8 +32,10 @@
 *.app
 webserv
 test_config
-test_cgi
 test_file
 
 # Log files
 *.log
+
+# VS Code
+.vscode

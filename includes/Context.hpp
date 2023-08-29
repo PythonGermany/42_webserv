@@ -1,0 +1,78 @@
+#ifndef CONTEXT_HPP
+#define CONTEXT_HPP
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "utils.hpp"
+#include "webserv.hpp"
+
+typedef struct s_token {
+  std::string name;
+  std::string parent;
+  bool isContext;
+  size_t minOccurence;
+  size_t maxOccurence;
+  size_t minArgs;
+  size_t maxArgs;
+} t_token;
+
+static const t_token tokens[15] = {
+    {"server", "_", true, 1, -1, 0, 0},
+    {"host", "server", false, 1, 1, 1, 1},
+    {"port", "server", false, 1, 1, 1, 1},
+    {"server_name", "server", false, 0, -1, 1, -1},
+    {"error_page", "server", false, 0, -1, 2, 2},
+    {"client_max_body_size", "server", false, 1, 1, 1, 1},
+
+    {"location", "server", true, 1, -1, 0, 0},
+    {"url", "location", false, 1, 1, 1, 1},
+    {"method", "location", false, 0, -1, 1, -1},
+    {"root", "location", false, 1, 1, 1, 1},
+    {"index", "location", false, 1, -1, 1, -1},
+    {"autoindex", "location", false, 0, 1, 1, 1},
+    {"upload", "location", false, 0, 1, 1, 1},
+    {"cgi", "location", false, 0, 1, 2, 2},
+    {"redirect", "location", false, 0, 1, 1, 1}};
+
+class Context {
+ private:
+  std::string _name;
+  std::string _parent;
+  std::map<std::string, size_t> _tokenOccurences;
+  std::map<std::string, std::vector<std::string> > _directives;
+  std::map<std::string, std::vector<Context> > _contexts;
+
+ public:
+  Context();
+  Context(std::string name, std::string parent);
+  Context(const Context &rhs);
+  Context &operator=(const Context &rhs);
+  ~Context();
+
+  // Getters
+  std::string getName();
+  std::string getParent();
+  size_t getTokenOccurence(std::string token);
+  std::vector<std::string> getDirective(std::string directive);
+  std::vector<Context> getContext(std::string context);
+
+  // Setters/Adders
+  void addDirective(std::string directive, std::vector<std::string> values);
+  void addContext(Context context);
+
+  bool isContext(std::string token);
+  bool isDirective(std::string token);
+  bool isValid();
+
+  void print(int indent = 0);
+
+ private:
+  void addTokenOccurence(std::string token);
+  bool validArguments(std::string token, std::vector<std::string> args);
+  void throwExeption(std::string func, std::string msg);
+};
+
+#endif

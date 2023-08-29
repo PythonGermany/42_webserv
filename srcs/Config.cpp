@@ -9,6 +9,7 @@ Config::Config(const Config &rhs) { *this = rhs; }
 Config &Config::operator=(const Config &rhs) {
   if (this == &rhs) return *this;
   _file = rhs._file;
+  _config = rhs._config;
   return *this;
 }
 
@@ -28,6 +29,7 @@ std::vector<Server> Config::parseConfig() {
   std::vector<Server> servers;
   std::string data = trim(_config);
 
+  writeToLog("Parsing config file", INFO);
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
     if (token != "server")
@@ -36,48 +38,42 @@ std::vector<Server> Config::parseConfig() {
     servers.push_back(Server(parseContext(contextData, token, "_")));
     data = trim(data);
   }
+  if (servers.size() == 0)
+    throwExeption("parseConfig", "No server blocks found");
+  writeToLog("Sucessfully parsed config file", INFO);
   return servers;
-}
-
-void printVector(std::vector<std::string> vec) {
-  for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end();
-       it++)
-    std::cout << "'" << *it << "' ";
-  std::cout << std::endl;
 }
 
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent) {
   Context context(name, parent);
+  writeToLog("Parsing context '" + name + "'", DEBUG);
   if (startsWith(data, "{") == false)
     throwExeption("parseContext", "Expected token '{' not found");
   data = trim(cut(data, 1, findContextEnd(data) - 1));
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
-    if (context.validTokenName(token) == false)
-      throwExeption("parseContext", "Unknown token '" + token + "'");
     if (context.isContext(token)) {
       std::string contextData = trim(cut(data, 0, findContextEnd(data)));
-      Context childContext = parseContext(contextData, token, name);
-      context.addContext(childContext);
+      context.addContext(parseContext(contextData, token, name));
     } else if (context.isDirective(token)) {
-      std::vector<std::string> values =
-          split(cut(data, 0, findToken(data, ";")), " ");
-      if (context.validDirective(token, values) == false)
-        throwExeption("parseContext",
-                      "Invalid values for token '" + token + "'");
-      context.addDirectives(token, values);
+      context.addDirective(token,
+                           split(cut(data, 0, findToken(data, ";")), " "));
       data = data.substr(1);
-    }
+    } else
+      throwExeption("parseContext", "Unknown token '" + token + "'");
     data = trim(data);
   }
+  writeToLog("Sucessfully parsed context '" + name + "'", DEBUG);
   return context;
 }
 
-void Config::validateConfig(
-    std::vector<Server>
-        &servers) {  // TODO: complete, improve and test validation
-  (void)servers;
+void Config::validateConfig(std::vector<Server> &servers) {
+  for (std::vector<Server>::iterator it = servers.begin(); it != servers.end();
+       it++) {
+    if (it->getContext().isValid() == false)
+      throwExeption("validateConfig", "Invalid server block configuration");
+  }
 }
 
 int Config::findContextEnd(const std::string &context) {
@@ -105,5 +101,6 @@ int Config::findToken(const std::string &data, std::string token) {
 }
 
 void Config::throwExeption(std::string func, std::string msg) {
+  writeToErrorLog("Config: " + func + ": " + msg);
   throw std::runtime_error("Config: " + func + ": " + msg);
 }

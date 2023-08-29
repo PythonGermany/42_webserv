@@ -22,7 +22,7 @@ void Server::setContext(Context context) { _context = context; }
 
 void Server::setIsDefault(bool isDefault) { _isDefault = isDefault; }
 
-Context &Server::getContext() { return _context; }
+Context Server::getContext() { return _context; }
 
 bool Server::getIsDefault() { return _isDefault; }
 

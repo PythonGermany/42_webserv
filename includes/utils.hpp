@@ -4,10 +4,14 @@
 #include <netdb.h>
 #include <sys/stat.h>
 
+#include <ctime>
+#include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <ctime>
+
+#include "webserv.hpp"
 
 // Trims thhe start and end of the string from whitespace
 // @param str The string to trim
@@ -57,5 +61,9 @@ std::string inet_ntoa(uint32_t addr);
 // Get the current timestamp in the format "HH:MM:SS"
 // @return The current timestamp
 std::string getTimeStamp();
+
+void writeToLog(std::string msg, t_log_level level);
+
+void writeToErrorLog(std::string msg);
 
 #endif

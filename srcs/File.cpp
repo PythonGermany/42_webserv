@@ -4,6 +4,14 @@ File::File() {}
 
 File::File(std::string path) { _path = path; }
 
+File::File(const File &rhs) { *this = rhs; }
+
+File &File::operator=(const File &rhs) {
+  if (this == &rhs) return *this;
+  _path = rhs._path;
+  return *this;
+}
+
 File::~File() {}
 
 std::string File::getPath() { return _path; }
@@ -48,7 +56,7 @@ long int File::size() {
 std::string File::Read() {
   std::string data;
   int fd = open(_path.c_str(), O_RDONLY);
-  
+
   if (fd == -1) throwException("read", "Could not open file");
   while (true) {
     char buffer[1024];
@@ -68,8 +76,6 @@ void File::Write(std::string data) {
     throwException("Write", "Could not write file");
   if (close(fd) == -1) throwException("Write", "Could not close file");
 }
-
-void File::append(std::string data) { (void)data; }
 
 void File::throwException(std::string func, std::string msg) {
   throw std::runtime_error("File::" + func + ": " + msg);
