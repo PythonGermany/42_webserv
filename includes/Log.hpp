@@ -10,11 +10,16 @@
 #include "webserv.hpp"
 
 class Log {
+ private:
+  static t_log_level _log_level;
+
  public:
   Log();
   ~Log();
 
- public:
+  static void setLogLevel(t_log_level level);
+  static t_log_level getLogLevel();
+
   static void write(std::string msg, t_log_level level,
                     std::string color = RESET);
   static void writeError(std::string msg);

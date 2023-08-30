@@ -1,8 +1,14 @@
 #include "Log.hpp"
 
+t_log_level Log::_log_level = LOG_LEVEL;
+
 Log::Log() {}
 
 Log::~Log() {}
+
+void Log::setLogLevel(t_log_level level) { _log_level = level; }
+
+t_log_level Log::getLogLevel() { return _log_level; }
 
 void Log::write(std::string msg, t_log_level level, std::string color) {
   if (level <= LOG_LEVEL) {

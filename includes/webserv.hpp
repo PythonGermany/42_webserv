@@ -8,8 +8,7 @@
 #define LOG_PATH "access.log"
 #define ERROR_LOG_PATH "error.log"
 
-const t_token tokens[15] = {
-    {"server", "_", true, 1, -1, 0, 0},
+const t_token tokens[14] = {
     {"host", "server", false, 1, 1, 1, 1},
     {"port", "server", false, 1, 1, 1, 1},
     {"server_name", "server", false, 0, -1, 1, -1},
