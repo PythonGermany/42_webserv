@@ -47,6 +47,12 @@ bool File::readable() {
   return buf.st_mode & S_IRUSR;
 }
 
+bool File::writable() {
+  struct stat buf;
+  stat(_path.c_str(), &buf);
+  return buf.st_mode & S_IWUSR;
+}
+
 long int File::size() {
   struct stat buf;
   stat(_path.c_str(), &buf);

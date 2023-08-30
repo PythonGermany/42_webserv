@@ -15,6 +15,8 @@ class Log {
   static t_log_level _log_level;
   static File _log_file;
   static File _error_log_file;
+  static bool _log_works;
+  static bool _error_log_works;
 
  public:
   Log();

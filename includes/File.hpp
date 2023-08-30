@@ -32,6 +32,7 @@ class File {
   bool file();
   bool dir();
   bool readable();
+  bool writable();
   long int size();
 
   // Reads the file

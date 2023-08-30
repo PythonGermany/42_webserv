@@ -6,6 +6,10 @@ File Log::_log_file = File(LOG_PATH);
 
 File Log::_error_log_file = File(ERROR_LOG_PATH);
 
+bool Log::_log_works = true;
+
+bool Log::_error_log_works = true;
+
 Log::Log() {}
 
 Log::~Log() {}
@@ -24,14 +28,16 @@ File Log::getErrorLogFile() { return _error_log_file; }
 
 void Log::write(std::string msg, t_log_level level, std::string color) {
   if (level <= _log_level) {
-    std::string terminal = highlight(msg, BRIGHT_BLUE);
-    std::cout << "[" << getTimeStamp() << "] " << color << terminal << RESET
-              << std::endl;
-    try {
-      _log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
-    } catch (const std::exception& e) {
-      std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
-                << "Error: Log: " << e.what() << RESET << std::endl;
+    std::cout << "[" << getTimeStamp() << "] " << color
+              << highlight(msg, BRIGHT_BLUE) << RESET << std::endl;
+    if (_log_works) {
+      try {
+        _log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
+      } catch (const std::exception& e) {
+        std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
+                  << "Error:" << RESET << " Log: " << e.what() << std::endl;
+        _log_works = false;
+      }
     }
   }
 }
@@ -39,11 +45,14 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
 void Log::writeError(std::string msg, std::string color) {
   std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED << "Error: " << color
             << msg << RESET << std::endl;
-  try {
-    _error_log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
-  } catch (const std::exception& e) {
-    std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
-              << "Error: Log: " << e.what() << RESET << std::endl;
+  if (_error_log_works) {
+    try {
+      _error_log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
+    } catch (const std::exception& e) {
+      std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
+                << "Error:" << RESET << " Log: " << e.what() << std::endl;
+      _error_log_works = false;
+    }
   }
 }
 
