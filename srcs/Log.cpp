@@ -2,19 +2,31 @@
 
 t_log_level Log::_log_level = LOG_LEVEL;
 
+std::string Log::_log_file = LOG_PATH;
+
+std::string Log::_error_log_file = ERROR_LOG_PATH;
+
 Log::Log() {}
 
 Log::~Log() {}
 
 void Log::setLogLevel(t_log_level level) { _log_level = level; }
 
+void Log::setLogFile(std::string path) { _log_file = path; }
+
+void Log::setErrorLogFile(std::string path) { _error_log_file = path; }
+
 t_log_level Log::getLogLevel() { return _log_level; }
 
+std::string Log::getLogFile() { return _log_file; }
+
+std::string Log::getErrorLogFile() { return _error_log_file; }
+
 void Log::write(std::string msg, t_log_level level, std::string color) {
-  if (level <= LOG_LEVEL) {
+  if (level <= _log_level) {
     std::cout << "[" << getTimeStamp() << "] " << color << msg << RESET
               << std::endl;
-    std::ofstream log(LOG_PATH, std::ios::app);
+    std::ofstream log(_log_file, std::ios::app);
     log << "[" << getTimeStamp() << "] " << msg << std::endl;
     log.close();
   }
@@ -23,7 +35,7 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
 void Log::writeError(std::string msg) {
   std::cerr << "[" << getTimeStamp() << "] " << RED << "Error: " << RESET << msg
             << std::endl;
-  std::ofstream errorLog(ERROR_LOG_PATH, std::ios::app);
+  std::ofstream errorLog(_error_log_file, std::ios::app);
   errorLog << "[" << getTimeStamp() << "] "
            << "Error: " << msg << std::endl;
   errorLog.close();
