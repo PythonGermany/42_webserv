@@ -1,18 +1,15 @@
 #include "Config.hpp"
-#include "Log.hpp"
 #include "webserv.hpp"
 
-int main(int argc, char** argv) {
-  std::vector<Server> servers;
-
+int loadConfig(std::vector<Server>& servers, std::string path) {
   Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
   try {
-    Config config(argc > 1 ? argv[1] : CONFIG_PATH);
+    Config config(path);
     servers = config.parseConfig();
   } catch (std::exception& e) {
+    Log::writeError(e.what(), BRIGHT_YELLOW);
     return 1;
   }
-  Log::write("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
   if (LOG_LEVEL >= DEBUG) {
     for (std::vector<Server>::iterator it = servers.begin();
          it != servers.end(); it++) {
@@ -20,5 +17,17 @@ int main(int argc, char** argv) {
       std::cout << std::endl;
     }
   }
+  Log::write("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
   return 0;
+}
+
+int main(int argc, char** argv) {
+  std::vector<Server> servers;
+
+  Log::write("--------- Starting webserv ----------", INFO, BRIGHT_GREEN);
+  if (loadConfig(servers, argc > 1 ? argv[1] : CONFIG_PATH) == 1) {
+    Log::writeError("Error while loading config file", BRIGHT_RED);
+    return 1;
+  }
+  Log::write("---------- Stopped webserv ----------", INFO, BRIGHT_GREEN);
 }

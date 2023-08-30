@@ -4,7 +4,7 @@
 #include "structure.hpp"
 
 #define CONFIG_PATH "server.conf"
-#define LOG_LEVEL INFO
+#define LOG_LEVEL DEBUG
 #define LOG_PATH "access.log"
 #define ERROR_LOG_PATH "error.log"
 

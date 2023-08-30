@@ -27,7 +27,7 @@ std::string Context::getParent() { return _parent; }
 
 void Context::addDirective(std::string token, std::vector<std::string> values) {
   if (validToAdd(token) == false)
-    throwExeption("addDirective", "Invalid directive '" + token + "'");
+    throwExeption("addDirective", "Directive '" + token + "' not valid to add");
   if (validArguments(token, values) == false)
     throwExeption("addDirective", "Invalid arguments for '" + token + "'");
   for (std::vector<std::string>::iterator it = values.begin();
@@ -91,6 +91,26 @@ bool Context::validArguments(std::string token, std::vector<std::string> args) {
   return false;
 }
 
+void Context::validate(bool recursive) {
+  Log::write("Context '" + _name + "' -> Validating", DEBUG);
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+    if (tokens[i].parent == _name &&
+        getTokenOccurence(tokens[i].name) < tokens[i].minOccurence)
+      throwExeption("validate",
+                    "Missing required directive '" + tokens[i].name + "'");
+  if (recursive) {
+    for (std::map<std::string, std::vector<Context> >::iterator it =
+             _contexts.begin();
+         it != _contexts.end(); it++) {
+      for (std::vector<Context>::iterator it2 = it->second.begin();
+           it2 != it->second.end(); it2++) {
+        it2->validate();
+      }
+    }
+  }
+  Log::write("Context '" + _name + "' -> Sucessfully validated", DEBUG);
+}
+
 void Context::print(int indent) {
   std::string spaces = "";
   for (int i = 0; i < indent; i++) spaces += "| ";
@@ -123,6 +143,5 @@ void Context::addTokenOccurence(std::string token) {
 }
 
 void Context::throwExeption(std::string func, std::string msg) {
-  Log::writeError("Context: " + func + ": " + msg);
   throw std::runtime_error("Context: " + func + ": " + msg);
 }

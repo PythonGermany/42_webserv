@@ -42,6 +42,8 @@ class Context {
   bool validToAdd(std::string token);
   bool validArguments(std::string token, std::vector<std::string> args);
 
+  void validate(bool recursive = true);
+
   void print(int indent = 0);
 
  private:

@@ -24,18 +24,19 @@ std::string Log::getErrorLogFile() { return _error_log_file; }
 
 void Log::write(std::string msg, t_log_level level, std::string color) {
   if (level <= _log_level) {
-    std::cout << "[" << getTimeStamp() << "] " << color << msg << RESET
+    std::string terminal = highlight(msg, BRIGHT_BLUE);
+    std::cout << "[" << getTimeStamp() << "] " << color << terminal << RESET
               << std::endl;
-    std::ofstream log(_log_file, std::ios::app);
+    std::ofstream log(_log_file.c_str(), std::ios::app);
     log << "[" << getTimeStamp() << "] " << msg << std::endl;
     log.close();
   }
 }
 
-void Log::writeError(std::string msg) {
-  std::cerr << "[" << getTimeStamp() << "] " << RED << "Error: " << RESET << msg
-            << std::endl;
-  std::ofstream errorLog(_error_log_file, std::ios::app);
+void Log::writeError(std::string msg, std::string color) {
+  std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED << "Error: " << color
+            << msg << RESET << std::endl;
+  std::ofstream errorLog(_error_log_file.c_str(), std::ios::app);
   errorLog << "[" << getTimeStamp() << "] "
            << "Error: " << msg << std::endl;
   errorLog.close();

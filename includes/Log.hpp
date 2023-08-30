@@ -7,6 +7,7 @@
 #include <string>
 
 #include "colors.hpp"
+#include "utils.hpp"
 #include "webserv.hpp"
 
 class Log {
@@ -31,7 +32,7 @@ class Log {
 
   static void write(std::string msg, t_log_level level,
                     std::string color = RESET);
-  static void writeError(std::string msg);
+  static void writeError(std::string msg, std::string color = RESET);
   static std::string getTimeStamp();
 };
 

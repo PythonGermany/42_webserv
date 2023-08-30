@@ -44,3 +44,18 @@ std::string inet_ntoa(uint32_t addr) {
   }
   return str;
 }
+
+std::string highlight(std::string str, std::string color, std::string delim) {
+  bool first = true;
+  size_t i = str.find_first_of(delim);
+  while (i != std::string::npos) {
+    if (first == true) {
+      str.insert(i, color);
+      i += color.length();
+    } else
+      str.insert(i + delim.length(), RESET);
+    first = !first;
+    i = str.find_first_of(delim, i + delim.length());
+  }
+  return str;
+}

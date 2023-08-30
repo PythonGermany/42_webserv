@@ -41,13 +41,14 @@ std::vector<Server> Config::parseConfig() {
   if (servers.size() == 0)
     throwExeption("parseConfig", "No server blocks found");
   Log::write("Sucessfully parsed config file", INFO);
+  Log::write("Validating config file", INFO);
   return servers;
 }
 
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent) {
   Context context(name, parent);
-  Log::write("Parsing context '" + name + "'", DEBUG);
+  Log::write("Context '" + name + "' -> Parsing", DEBUG);
   if (startsWith(data, "{") == false)
     throwExeption("parseContext", "Expected token '{' not found");
   data = trim(cut(data, 1, findContextEnd(data) - 1));
@@ -65,7 +66,8 @@ Context Config::parseContext(std::string data, std::string name,
                                         "' for context '" + name + "'");
     data = trim(data);
   }
-  Log::write("Context sucessfully parsed  '" + name + "'", DEBUG);
+  Log::write("Context '" + name + "' -> Sucessfully parsed", DEBUG);
+  context.validate(false);
   return context;
 }
 
@@ -94,6 +96,5 @@ int Config::findToken(const std::string &data, std::string token) {
 }
 
 void Config::throwExeption(std::string func, std::string msg) {
-  Log::writeError("Config: " + func + ": " + msg);
   throw std::runtime_error("Config: " + func + ": " + msg);
 }

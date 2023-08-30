@@ -28,4 +28,7 @@ std::string toString(T val) {
 
 std::string inet_ntoa(uint32_t addr);
 
+std::string highlight(std::string str, std::string color,
+                      std::string delim = "'");
+
 #endif
