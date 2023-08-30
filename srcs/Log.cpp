@@ -6,10 +6,6 @@ File Log::_log_file = File(LOG_PATH);
 
 File Log::_error_log_file = File(ERROR_LOG_PATH);
 
-bool Log::_log_works = true;
-
-bool Log::_error_log_works = true;
-
 Log::Log() {}
 
 Log::~Log() {}
@@ -26,20 +22,35 @@ File Log::getLogFile() { return _log_file; }
 
 File Log::getErrorLogFile() { return _error_log_file; }
 
-void Log::createLogFiles() {
+void Log::init() {
   try {
-    if (!_log_file.exists()) _log_file.Create();
+    if (!_log_file.exists()) _log_file.create();
+    _log_file.open(O_WRONLY | O_APPEND);
   } catch (const std::exception& e) {
     std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
               << "Error:" << RESET << " Log: " << e.what() << std::endl;
-    _log_works = false;
   }
   try {
-    if (!_error_log_file.exists()) _error_log_file.Create();
+    if (!_error_log_file.exists()) _error_log_file.create();
+    _error_log_file.open(O_WRONLY | O_APPEND);
   } catch (const std::exception& e) {
     std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
               << "Error:" << RESET << " Log: " << e.what() << std::endl;
-    _error_log_works = false;
+  }
+}
+
+void Log::clear() {
+  try {
+    _log_file.close();
+  } catch (const std::exception& e) {
+    std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
+              << "Error:" << RESET << " Log: " << e.what() << std::endl;
+  }
+  try {
+    _error_log_file.close();
+  } catch (const std::exception& e) {
+    std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
+              << "Error:" << RESET << " Log: " << e.what() << std::endl;
   }
 }
 
@@ -48,12 +59,11 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
     std::cout << "[" << getTimeStamp() << "] " << color
               << highlight(msg, BRIGHT_BLUE) << RESET << std::endl;
     try {
-      if (_log_works)
-        _log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
+      if (_log_file.isOpen())
+        _log_file.write("[" + getTimeStamp() + "] " + msg + "\n");
     } catch (const std::exception& e) {
       std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
                 << "Error:" << RESET << " Log: " << e.what() << std::endl;
-      _log_works = false;
     }
   }
 }
@@ -62,12 +72,11 @@ void Log::writeError(std::string msg, std::string color) {
   std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED << "Error: " << color
             << msg << RESET << std::endl;
   try {
-    if (_error_log_works)
-      _error_log_file.Write("[" + getTimeStamp() + "] " + msg + "\n", true);
+    if (_error_log_file.isOpen())
+      _error_log_file.write("[" + getTimeStamp() + "] " + msg + "\n");
   } catch (const std::exception& e) {
     std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
               << "Error:" << RESET << " Log: " << e.what() << std::endl;
-    _error_log_works = false;
   }
 }
 

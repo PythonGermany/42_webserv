@@ -14,6 +14,8 @@
 // Class to check file properties and read/write files
 class File {
  private:
+  static int _filesOpen;
+  int _fd;
   std::string _path;
 
  public:
@@ -22,6 +24,8 @@ class File {
   File(const File &rhs);
   File &operator=(const File &rhs);
   ~File();
+
+  static int getFilesOpen();
 
   // Getters
   std::string getPath();
@@ -37,11 +41,14 @@ class File {
   bool writable();
   long int size();
 
-  void Create();
+  bool isOpen();
 
-  std::string Read();
+  void create();
+  void open(int flags = O_RDONLY, mode_t mode = 0644);
+  void close();
 
-  void Write(std::string data, bool append = false);
+  std::string read();
+  void write(std::string data);
 
  private:
   void throwException(std::string func, std::string msg);

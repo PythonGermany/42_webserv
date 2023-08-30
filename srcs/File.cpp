@@ -1,18 +1,23 @@
 #include "File.hpp"
 
-File::File() {}
+int File::_filesOpen = 0;
 
-File::File(std::string path) { _path = path; }
+File::File() : _fd(-1) {}
+
+File::File(std::string path) : _fd(-1) { _path = path; }
 
 File::File(const File &rhs) { *this = rhs; }
 
 File &File::operator=(const File &rhs) {
   if (this == &rhs) return *this;
+  _fd = rhs._fd;
   _path = rhs._path;
   return *this;
 }
 
 File::~File() {}
+
+int File::getFilesOpen() { return _filesOpen; }
 
 std::string File::getPath() { return _path; }
 
@@ -59,53 +64,59 @@ long int File::size() {
   return buf.st_size;
 }
 
-void File::Create() {
+bool File::isOpen() { return _fd != -1; }
+
+void File::create() {
   if (exists()) return;
   size_t pos = _path.find_first_of('/');
   while (pos != std::string::npos) {
     std::string dir = _path.substr(0, pos);
     if (dir != "" && !File(dir).exists()) {
       if (mkdir(dir.c_str(), 0755) == -1)
-        throwException("Create", "Could not create directory: " +
+        throwException("create", "Could not create directory: " +
                                      std::string(strerror(errno)) + " " +
                                      _path);
     }
     pos = _path.find_first_of('/', pos + 1);
   }
-  int fd = open(_path.c_str(), O_WRONLY | O_CREAT, 0644);
-  if (fd == -1)
-    throwException("Create", "Could not create file: " +
-                                 std::string(strerror(errno)) + " " + _path);
-  if (close(fd) == -1) throwException("Create", "Could not close file");
+  open(O_WRONLY | O_CREAT);
+  close();
 }
 
-std::string File::Read() {
-  std::string data;
-  int fd = open(_path.c_str(), O_RDONLY);
-
-  if (fd == -1)
-    throwException("Read", "Could not open file :" +
+void File::open(int flags, mode_t mode) {
+  if (_fd != -1) return;
+  _fd = ::open(_path.c_str(), flags, mode);
+  if (_fd == -1)
+    throwException("open", "Could not open file: " +
                                std::string(strerror(errno)) + " " + _path);
+  _filesOpen++;
+}
+
+void File::close() {
+  if (_fd == -1) return;
+  if (::close(_fd) == -1)
+    throwException("close", "Could not close file: " +
+                                std::string(strerror(errno)) + " " + _path);
+  _fd = -1;
+  _filesOpen--;
+}
+
+std::string File::read() {
+  std::string data;
+
   while (true) {
     char buffer[1024];
-    int bytes_read = read(fd, buffer, 1024);
-    if (bytes_read < 0) throwException("Read", "Could not read file");
+    int bytes_read = ::read(_fd, buffer, 1024);
+    if (bytes_read < 0) throwException("read", "Failed to read file");
     data += std::string(buffer, bytes_read);
     if (bytes_read < 1024) break;
   }
-  if (close(fd) == -1) throwException("Read", "Could not close file");
   return data;
 }
 
-void File::Write(std::string data, bool append) {
-  int fd = open(_path.c_str(),
-                O_WRONLY | O_CREAT | (append ? O_APPEND : O_TRUNC), 0644);
-  if (fd == -1)
-    throwException("Write", "Could not open file :" +
-                                std::string(strerror(errno)) + " " + _path);
-  if (write(fd, data.c_str(), data.length()) == -1)
-    throwException("Write", "Could not write file");
-  if (close(fd) == -1) throwException("Write", "Could not close file");
+void File::write(std::string data) {
+  if (::write(_fd, data.c_str(), data.length()) == -1)
+    throwException("write", "Could not write file");
 }
 
 void File::throwException(std::string func, std::string msg) {

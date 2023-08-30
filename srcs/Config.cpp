@@ -15,14 +15,16 @@ Config &Config::operator=(const Config &rhs) {
 
 Config::~Config() {}
 
-std::string Config::getFile() { return _file.Read(); }
+std::string Config::getFile() { return _file.read(); }
 
 void Config::setFile(std::string path) {
   _file = File(path);
   if (!_file.exists()) throwExeption("setFile", "File does not exist");
   if (!_file.file()) throwExeption("setFile", "Path is not a file");
   if (!_file.readable()) throwExeption("setFile", "File is not readable");
-  _config = _file.Read();
+  _file.open();
+  _config = _file.read();
+  _file.close();
 }
 
 std::vector<Server> Config::parseConfig() {

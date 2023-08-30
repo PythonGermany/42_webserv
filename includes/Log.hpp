@@ -15,8 +15,6 @@ class Log {
   static t_log_level _log_level;
   static File _log_file;
   static File _error_log_file;
-  static bool _log_works;
-  static bool _error_log_works;
 
  public:
   Log();
@@ -32,7 +30,8 @@ class Log {
   static File getLogFile();
   static File getErrorLogFile();
 
-  static void createLogFiles();
+  static void init();
+  static void clear();
 
   static void write(std::string msg, t_log_level level,
                     std::string color = RESET);
