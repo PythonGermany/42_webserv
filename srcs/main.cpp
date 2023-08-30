@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "Log.hpp"
 #include "webserv.hpp"
 
 int loadConfig(std::vector<Server>& servers, std::string path) {

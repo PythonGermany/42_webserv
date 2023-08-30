@@ -6,3 +6,4 @@ Implement request method checking
 Implement correct default server selection
 Implement correct server selection based on host and port
 Implement support for multiple ports per server
+File class: Maybe find better solution to handle log file write error

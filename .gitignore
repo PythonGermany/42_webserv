@@ -35,6 +35,7 @@ test_config
 test_file
 
 # Log files
+logs
 *.log
 
 # VS Code

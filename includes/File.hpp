@@ -9,8 +9,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "Log.hpp"
-
 // Class to check file properties and read/write files
 class File {
  private:
@@ -44,7 +42,7 @@ class File {
   // Writes data to the file
   // @param data The data to write
   // @exception std::runtime_error Thrown if the file could not be written
-  void Write(std::string data);
+  void Write(std::string data, bool append = false);
 
  private:
   // Throws an exeption using the format "File: [func]: [msg]"

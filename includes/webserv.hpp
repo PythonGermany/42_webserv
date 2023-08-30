@@ -4,9 +4,9 @@
 #include "structure.hpp"
 
 #define CONFIG_PATH "server.conf"
-#define LOG_LEVEL DEBUG
-#define LOG_PATH "access.log"
-#define ERROR_LOG_PATH "error.log"
+#define LOG_LEVEL INFO
+#define LOG_PATH "logs/access.log"
+#define ERROR_LOG_PATH "logs/error.log"
 
 const t_token tokens[14] = {
     {"host", "server", false, 1, 1, 1, 1},
@@ -15,7 +15,7 @@ const t_token tokens[14] = {
     {"error_page", "server", false, 0, -1, 2, 2},
     {"client_max_body_size", "server", false, 1, 1, 1, 1},
 
-    {"location", "server", true, 1, -1, 0, 0},
+    {"location", "server", true, 0, -1, 0, 0},
     {"url", "location", false, 1, 1, 1, 1},
     {"method", "location", false, 0, -1, 1, -1},
     {"root", "location", false, 1, 1, 1, 1},

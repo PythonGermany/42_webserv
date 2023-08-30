@@ -69,8 +69,9 @@ std::string File::Read() {
   return data;
 }
 
-void File::Write(std::string data) {
-  int fd = open(_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+void File::Write(std::string data, bool append) {
+  int fd = open(_path.c_str(),
+                O_WRONLY | O_CREAT | (append ? O_APPEND : O_TRUNC), 0644);
   if (fd == -1) throwException("Write", "Could not open file");
   if (write(fd, data.c_str(), data.length()) == -1)
     throwException("Write", "Could not write file");
@@ -78,6 +79,5 @@ void File::Write(std::string data) {
 }
 
 void File::throwException(std::string func, std::string msg) {
-  Log::writeError("File::" + func + ": " + msg);
-  throw std::runtime_error("File::" + func + ": " + msg);
+  throw std::runtime_error("File: " + func + ": " + msg);
 }
