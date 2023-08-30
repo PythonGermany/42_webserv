@@ -31,5 +31,5 @@ int main(int argc, char** argv) {
     Log::writeError("Error while loading config file", BRIGHT_RED);
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
   Log::write("---------- Stopped webserv ----------", INFO, BRIGHT_GREEN);
-  Log::clear();
+  Log::close();
 }

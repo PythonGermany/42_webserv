@@ -39,7 +39,7 @@ void Log::init() {
   }
 }
 
-void Log::clear() {
+void Log::close() {
   try {
     _log_file.close();
   } catch (const std::exception& e) {
