@@ -62,8 +62,8 @@ Context Config::parseContext(std::string data, std::string name,
                            split(cut(data, 0, findToken(data, ";")), " "));
       data = data.substr(1);
     } else
-      throwExeption("parseContext", "Error for token '" + token +
-                                        "' for context '" + name + "'");
+      throwExeption("parseContext",
+                    "Unknown token '" + token + "' for context '" + name + "'");
     data = trim(data);
   }
   Log::write("Context '" + name + "' -> Sucessfully parsed", DEBUG);

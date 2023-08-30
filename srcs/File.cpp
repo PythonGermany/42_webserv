@@ -59,11 +59,33 @@ long int File::size() {
   return buf.st_size;
 }
 
+void File::Create() {
+  if (exists()) return;
+  size_t pos = _path.find_first_of('/');
+  while (pos != std::string::npos) {
+    std::string dir = _path.substr(0, pos);
+    if (dir != "" && !File(dir).exists()) {
+      if (mkdir(dir.c_str(), 0755) == -1)
+        throwException("Create", "Could not create directory: " +
+                                     std::string(strerror(errno)) + " " +
+                                     _path);
+    }
+    pos = _path.find_first_of('/', pos + 1);
+  }
+  int fd = open(_path.c_str(), O_WRONLY | O_CREAT, 0644);
+  if (fd == -1)
+    throwException("Create", "Could not create file: " +
+                                 std::string(strerror(errno)) + " " + _path);
+  if (close(fd) == -1) throwException("Create", "Could not close file");
+}
+
 std::string File::Read() {
   std::string data;
   int fd = open(_path.c_str(), O_RDONLY);
 
-  if (fd == -1) throwException("read", "Could not open file");
+  if (fd == -1)
+    throwException("Read", "Could not open file :" +
+                               std::string(strerror(errno)) + " " + _path);
   while (true) {
     char buffer[1024];
     int bytes_read = read(fd, buffer, 1024);
@@ -78,7 +100,9 @@ std::string File::Read() {
 void File::Write(std::string data, bool append) {
   int fd = open(_path.c_str(),
                 O_WRONLY | O_CREAT | (append ? O_APPEND : O_TRUNC), 0644);
-  if (fd == -1) throwException("Write", "Could not open file");
+  if (fd == -1)
+    throwException("Write", "Could not open file :" +
+                                std::string(strerror(errno)) + " " + _path);
   if (write(fd, data.c_str(), data.length()) == -1)
     throwException("Write", "Could not write file");
   if (close(fd) == -1) throwException("Write", "Could not close file");

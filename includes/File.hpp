@@ -5,7 +5,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <stdexcept>
 #include <string>
 
@@ -35,21 +37,13 @@ class File {
   bool writable();
   long int size();
 
-  // Reads the file
-  // @return The file contents
-  // @exception std::runtime_error Thrown if the file could not be read
+  void Create();
+
   std::string Read();
 
-  // Writes data to the file
-  // @param data The data to write
-  // @exception std::runtime_error Thrown if the file could not be written
   void Write(std::string data, bool append = false);
 
  private:
-  // Throws an exeption using the format "File: [func]: [msg]"
-  // @param func The function that threw the exeption
-  // @param msg The message of the exeption
-  // @exception std::runtime_error Thrown with the formatted message
   void throwException(std::string func, std::string msg);
 };
 

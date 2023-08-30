@@ -26,10 +26,10 @@ std::string Context::getName() { return _name; }
 std::string Context::getParent() { return _parent; }
 
 void Context::addDirective(std::string token, std::vector<std::string> values) {
-  if (validToAdd(token) == false)
-    throwExeption("addDirective", "Directive '" + token + "' not valid to add");
-  if (validArguments(token, values) == false)
-    throwExeption("addDirective", "Invalid arguments for '" + token + "'");
+  std::string error = validToAdd(token);
+  if (error.size() > 0) throwExeption("addDirective", error);
+  error = validArguments(token, values);
+  if (error.size() > 0) throwExeption("addDirective", error);
   for (std::vector<std::string>::iterator it = values.begin();
        it != values.end(); it++)
     _directives[token].push_back(*it);
@@ -37,8 +37,8 @@ void Context::addDirective(std::string token, std::vector<std::string> values) {
 }
 
 void Context::addContext(Context context) {
-  if (!validToAdd(context.getName()))
-    throwExeption("addContext", "Invalid context '" + context.getName() + "'");
+  std::string error = validToAdd(context.getName());
+  if (error.size() > 0) throwExeption("addDirective", error);
   _contexts[context.getName()].push_back(context);
   addTokenOccurence(context.getName());
 }
@@ -75,20 +75,35 @@ bool Context::isValidDirective(std::string token) {
   return false;
 }
 
-bool Context::validToAdd(std::string token) {
+std::string Context::validToAdd(std::string token) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].name == token && tokens[i].parent == _name)
-      return getTokenOccurence(token) < tokens[i].maxOccurence;
-  return false;
+      return getTokenOccurence(token) < tokens[i].maxOccurence
+                 ? ""
+                 : "validToAdd: '" + token + "' -> Max occurence reached";
+  return "validToAdd: '" + token + "' -> Token not found";
 }
 
-bool Context::validArguments(std::string token, std::vector<std::string> args) {
+std::string Context::validArguments(std::string token,
+                                    std::vector<std::string> args) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-    if (tokens[i].name == token && tokens[i].parent == _name)
-      return tokens[i].minArgs <= args.size() &&
-             tokens[i].maxArgs >= args.size();
+    if (tokens[i].name == token && tokens[i].parent == _name) {
+      if (tokens[i].func != NULL) {
+        for (std::vector<std::string>::iterator it = args.begin();
+             it != args.end(); it++) {
+          std::string error = tokens[i].func(*it);
+          if (error != "")
+            return "validArguments: '" + token + "' -> '" + *it + "': " + error;
+        }
+      }
+      if (tokens[i].minArgs <= args.size() && tokens[i].maxArgs >= args.size())
+        return "";
+      return "validArguments: Token '" + token + "' requires " +
+             toString(tokens[i].minArgs) + " to " +
+             toString(tokens[i].maxArgs) + " arguments";
+    }
   }
-  return false;
+  return "validArguments: Token '" + token + "' not found";
 }
 
 void Context::validate(bool recursive) {

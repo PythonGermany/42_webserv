@@ -25,6 +25,7 @@ int loadConfig(std::vector<Server>& servers, std::string path) {
 int main(int argc, char** argv) {
   std::vector<Server> servers;
 
+  Log::createLogFiles();
   Log::write("--------- Starting webserv ----------", INFO, BRIGHT_GREEN);
   if (loadConfig(servers, argc > 1 ? argv[1] : CONFIG_PATH) == 1) {
     Log::writeError("Error while loading config file", BRIGHT_RED);

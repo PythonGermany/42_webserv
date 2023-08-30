@@ -39,8 +39,8 @@ class Context {
 
   bool isValidContext(std::string token);
   bool isValidDirective(std::string token);
-  bool validToAdd(std::string token);
-  bool validArguments(std::string token, std::vector<std::string> args);
+  std::string validToAdd(std::string token);
+  std::string validArguments(std::string token, std::vector<std::string> args);
 
   void validate(bool recursive = true);
 
