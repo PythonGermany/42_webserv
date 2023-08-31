@@ -5,11 +5,16 @@
 #include "utils.hpp"
 
 #define CONFIG_PATH "conf/server.conf"
-#define LOG_LEVEL INFO
+#define LOG_LEVEL DEBUG
 #define LOG_PATH "logs/access.log"
 #define ERROR_LOG_PATH "logs/error.log"
 
-const t_token tokens[18] = {
+const t_token tokens[22] = {
+    {"log_level", "_", false, 1, 1, 1, 1, NULL},
+    {"log_path", "_", false, 1, 1, 1, 1, isPath},
+    {"error_log_path", "_", false, 1, 1, 1, 1, isPath},
+
+    {"server", "_", true, 1, -1, 0, 0, NULL},
     {"host", "server", false, 1, 1, 1, 1, NULL},
     {"port", "server", false, 1, 1, 1, 1, isNumeric},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},

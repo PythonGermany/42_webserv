@@ -15,8 +15,6 @@ Config &Config::operator=(const Config &rhs) {
 
 Config::~Config() {}
 
-std::string Config::getFile() { return _file.read(); }
-
 void Config::setFile(std::string path) {
   _file = File(path);
   if (!_file.exists()) throwExeption("setFile", "File does not exist");
@@ -27,42 +25,24 @@ void Config::setFile(std::string path) {
   _file.close();
 }
 
-std::vector<Server> Config::parseConfig() {
-  std::vector<Server> servers;
-  std::string data = trim(_config);
-
-  Log::write("Parsing config file", INFO);
-  while (data.length() > 0) {
-    std::string token = trim(cut(data, 0, findToken(data, " ")));
-    if (token != "server")
-      throwExeption("parseConfig", "Unknown token '" + token + "'");
-    std::string contextData = trim(cut(data, 0, findContextEnd(data)));
-    servers.push_back(Server(parseContext(contextData, token, "_")));
-    data = trim(data);
-  }
-  if (servers.size() == 0)
-    throwExeption("parseConfig", "No server blocks found");
-  Log::write("Sucessfully parsed config file", INFO);
-  Log::write("Validating config file", INFO);
-  return servers;
-}
+std::string Config::getConfig() { return _config; }
 
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent) {
   Context context(name, parent);
   Log::write("Context '" + name + "' -> Parsing", DEBUG);
-  if (startsWith(data, "{") == false)
-    throwExeption("parseContext", "Expected token '{' not found");
-  data = trim(cut(data, 1, findContextEnd(data) - 1));
+  data = trim(data);
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
     if (context.isValidContext(token)) {
-      std::string contextData = trim(cut(data, 0, findContextEnd(data)));
-      context.addContext(parseContext(contextData, token, name));
+      data = trim(data);
+      context.addContext(parseContext(
+          trim(cut(data, 1, findContextEnd(data) - 1)), token, name));
+      data.erase(0, 2);
     } else if (context.isValidDirective(token)) {
       context.addDirective(token,
                            split(cut(data, 0, findToken(data, ";")), " "));
-      data = data.substr(1);
+      data.erase(0, 1);
     } else
       throwExeption("parseContext",
                     "Unknown token '" + token + "' for context '" + name + "'");

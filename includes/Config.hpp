@@ -22,16 +22,15 @@ class Config {
   Config &operator=(const Config &rhs);
   ~Config();
 
-  // Getters
-  std::string getFile();
-
   // Setters
   void setFile(std::string path);
 
-  std::vector<Server> parseConfig();
+  // Getters
+  std::string getConfig();
+
+  Context parseContext(std::string data, std::string name, std::string parent);
 
  private:
-  Context parseContext(std::string data, std::string name, std::string parent);
   int findContextEnd(const std::string &context);
   int findToken(const std::string &data, std::string token);
   void throwExeption(std::string func, std::string msg);
