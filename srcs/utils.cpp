@@ -1,9 +1,9 @@
 #include "utils.hpp"
 
-std::string trim(std::string str) {
-  size_t first = str.find_first_not_of(" \f\n\r\t\v");
+std::string trim(const std::string& str, std::string chars) {
+  size_t first = str.find_first_not_of(chars);
   if (first == std::string::npos) return "";
-  size_t last = str.find_last_not_of(" \f\n\r\t\v");
+  size_t last = str.find_last_not_of(chars);
   return str.substr(first, (last - first + 1));
 }
 
@@ -19,7 +19,7 @@ std::vector<std::string> split(const std::string& str, std::string delim) {
   size_t end = str.find_first_of(delim);
   while (end != std::string::npos) {
     if (start != end) tokens.push_back(str.substr(start, end - start));
-    start = end + delim.length();
+    start = end + 1;
     end = str.find_first_of(delim, start);
   }
   if (start < str.length() && start != end)

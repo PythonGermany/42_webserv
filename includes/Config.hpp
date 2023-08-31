@@ -29,12 +29,13 @@ class Config {
   std::string getConfig();
 
   void removeComments();
-  Context parseContext(std::string data, std::string name, std::string parent);
+  Context parseContext(std::string data, std::string name, std::string parent,
+                       int line = 1);
 
  private:
-  int findContextEnd(const std::string &context);
+  size_t findContextEnd(const std::string &context);
   int findToken(const std::string &data, std::string token);
-  void throwExeption(std::string func, std::string msg);
+  void throwExeption(size_t line, std::string msg);
 };
 
 #endif

@@ -9,7 +9,7 @@
 #include "colors.hpp"
 #include "webserv.hpp"
 
-std::string trim(std::string str);
+std::string trim(const std::string& str, std::string chars = " \f\n\r\t\v");
 
 std::string cut(std::string& str, int start, int end);
 

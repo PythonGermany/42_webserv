@@ -25,22 +25,23 @@ std::string Context::getName() { return _name; }
 
 std::string Context::getParent() { return _parent; }
 
-void Context::addDirective(std::string token, std::vector<std::string> values) {
+std::string Context::addDirective(std::string token,
+                                  std::vector<std::string> values) {
   std::string error = validToAdd(token);
-  if (error.size() > 0) throwExeption("addDirective", error);
-  error = validArguments(token, values);
-  if (error.size() > 0) throwExeption("addDirective", error);
+  if (error.size() > 0) return error;
   for (std::vector<std::string>::iterator it = values.begin();
        it != values.end(); it++)
     _directives[token].push_back(*it);
   addTokenOccurence(token);
+  return "";
 }
 
-void Context::addContext(Context context) {
+std::string Context::addContext(Context context) {
   std::string error = validToAdd(context.getName());
-  if (error.size() > 0) throwExeption("addDirective", error);
+  if (error.size() > 0) return error;
   _contexts[context.getName()].push_back(context);
   addTokenOccurence(context.getName());
+  return "";
 }
 
 bool Context::exists(std::string token) {
@@ -85,7 +86,7 @@ std::string Context::validToAdd(std::string token) {
     if (tokens[i].name == token && tokens[i].parent == _name)
       return getTokenOccurence(token) < tokens[i].maxOccurence
                  ? ""
-                 : "validToAdd: '" + token + "' -> Max occurence reached";
+                 : "validToAdd: '" + token + "' -> Too many occurences";
   return "validToAdd: '" + token + "' -> Token not found";
 }
 
@@ -111,13 +112,12 @@ std::string Context::validArguments(std::string token,
   return "validArguments: Token '" + token + "' not found";
 }
 
-void Context::validate(bool recursive) {
+std::string Context::validate(bool recursive) {
   Log::write("Context: '" + _name + "' -> Validating", DEBUG);
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].parent == _name &&
         getTokenOccurence(tokens[i].name) < tokens[i].minOccurence)
-      throwExeption("validate",
-                    "Missing required directive '" + tokens[i].name + "'");
+      return "Missing required directive '" + tokens[i].name + "'";
   if (recursive) {
     for (std::map<std::string, std::vector<Context> >::iterator it =
              _contexts.begin();
@@ -129,6 +129,7 @@ void Context::validate(bool recursive) {
     }
   }
   Log::write("Context: '" + _name + "' -> Sucessfully validated", DEBUG);
+  return "";
 }
 
 void Context::print(int indent) {

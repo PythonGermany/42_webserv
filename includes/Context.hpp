@@ -34,8 +34,8 @@ class Context {
   std::vector<Context> getContext(std::string token);
 
   // Setters/Adders
-  void addDirective(std::string token, std::vector<std::string> values);
-  void addContext(Context context);
+  std::string addDirective(std::string token, std::vector<std::string> values);
+  std::string addContext(Context context);
 
   bool exists(std::string token);
 
@@ -44,7 +44,7 @@ class Context {
   std::string validToAdd(std::string token);
   std::string validArguments(std::string token, std::vector<std::string> args);
 
-  void validate(bool recursive = true);
+  std::string validate(bool recursive = true);
 
   void print(int indent = 0);
 

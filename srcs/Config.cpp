@@ -17,9 +17,8 @@ Config::~Config() {}
 
 void Config::setFile(std::string path) {
   _file = File(path);
-  if (!_file.exists()) throwExeption("setFile", "File does not exist");
-  if (!_file.file()) throwExeption("setFile", "Path is not a file");
-  if (!_file.readable()) throwExeption("setFile", "File is not readable");
+  if (!_file.exists()) throw std::runtime_error("Config: File not found");
+  if (!_file.readable()) throw std::runtime_error("Config: File not readable");
   _file.open();
   _config = _file.read();
   _file.close();
@@ -39,56 +38,74 @@ void Config::removeComments() {
   Log::write("Config: Comments removed", DEBUG);
 }
 
+int linesUntilPos(const std::string &data, size_t pos) {
+  int lines = 0;
+  size_t i = data.find_first_of("\n", 0);
+  while (i < pos) {
+    lines++;
+    i = data.find_first_of("\n", i + 1);
+  }
+  return lines;
+}
+
 Context Config::parseContext(std::string data, std::string name,
-                             std::string parent) {
+                             std::string parent, int line) {
   Context context(name, parent);
+  std::string error;
   Log::write("Context: '" + name + "' -> Parsing", DEBUG);
+  line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
   data = trim(data);
   while (data.length() > 0) {
-    std::string token = trim(cut(data, 0, findToken(data, " ")));
+    size_t nextEnd = data.find_first_of(" \n");
+    if (nextEnd == std::string::npos || data[nextEnd] != ' ')
+      throwExeption(line, "Expected token ' ' not found");
+    line += linesUntilPos(data, nextEnd);
+    std::string token = trim(cut(data, 0, nextEnd));
     if (context.isValidContext(token)) {
+      line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
       data = trim(data);
-      context.addContext(
-          parseContext(cut(data, 1, findContextEnd(data)), token, name));
+      size_t contextEnd = findContextEnd(data);
+      if (contextEnd == std::string::npos)
+        throwExeption(line, "No context end found for '" + token + "'");
+      std::string contextData = cut(data, 1, contextEnd);
+      error = context.addContext(parseContext(contextData, token, name, line));
+      line += linesUntilPos(contextData, contextData.length() + 2);
       data.erase(0, 2);
     } else if (context.isValidDirective(token)) {
-      context.addDirective(token,
-                           split(cut(data, 0, findToken(data, ";")), " "));
+      nextEnd = data.find_first_of(";\n");
+      if (nextEnd == std::string::npos || data[nextEnd] != ';')
+        throwExeption(line, "Expected token ';' not found");
+      line += linesUntilPos(data, nextEnd + 1);
+      error = context.addDirective(token,
+                                   split(cut(data, 0, nextEnd), " \f\n\r\t\v"));
       data.erase(0, 1);
     } else
-      throwExeption("parseContext",
-                    "Unknown token '" + token + "' for context '" + name + "'");
+      throwExeption(line, "Invalid token '" + token + "'");
+    if (error != "") throwExeption(line, error);
+    line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
     data = trim(data);
   }
   Log::write("Context: '" + name + "' -> Sucessfully parsed", DEBUG);
-  context.validate(false);
+  error = context.validate(false);
+  if (error != "") throwExeption(line, "Context '" + name + "': " + error);
   return context;
 }
 
-int Config::findContextEnd(const std::string &context) {
+size_t Config::findContextEnd(const std::string &context) {
   int depth = 0;
   int i = -1;
   while (i < (int)context.length()) {
     i = context.find_first_of("{}", i + 1);
-    if (i == -1)
-      throwExeption("findContextEnd", "Expected token '{' or '}' not found");
+    if (i == -1) return std::string::npos;
     if (context[i] == '{')
       depth++;
     else if (context[i] == '}')
       depth--;
     if (depth == 0) return i;
   }
-  throwExeption("findContextEnd", "No context end found");
-  return -1;
+  return std::string::npos;
 }
 
-int Config::findToken(const std::string &data, std::string token) {
-  int i = data.find(token);
-  if (i == -1)
-    throwExeption("find_token", "Expected token '" + token + "' not found");
-  return i;
-}
-
-void Config::throwExeption(std::string func, std::string msg) {
-  throw std::runtime_error("Config: " + func + ": " + msg);
+void Config::throwExeption(size_t line, std::string msg) {
+  throw std::runtime_error("Config: Line " + toString(line) + ": " + msg);
 }
