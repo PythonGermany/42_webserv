@@ -21,7 +21,7 @@ class Log {
   ~Log();
 
   // Setters
-  static void setLogLevel(t_log_level level);
+  static void setLevel(t_log_level level);
   static void setLogFile(File path);
   static void setErrorLogFile(File path);
 

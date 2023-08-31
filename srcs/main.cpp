@@ -17,14 +17,34 @@ int loadConfig(Context& context, std::string path) {
   return 0;
 }
 
+void initDefaults(Context& context) {
+  if (context.exists("log_level")) {
+    std::string level = context.getDirective("log_level")[0];
+    if (level == "DEBUG")
+      Log::setLevel(DEBUG);
+    else if (level == "INFO")
+      Log::setLevel(INFO);
+    else if (level == "WARNING")
+      Log::setLevel(WARNING);
+  }
+  if (context.exists("access_log"))
+    Log::setLogFile(context.getDirective("access_log")[0]);
+  if (context.exists("error_log"))
+    Log::setErrorLogFile(context.getDirective("error_log")[0]);
+  Log::init();
+}
+
 int main(int argc, char** argv) {
   Context context;
 
-  Log::init();
   Log::write("--------- Starting webserv ----------", INFO, BRIGHT_GREEN);
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);
+  else {
+    initDefaults(context);
+  }
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
   Log::write("---------- Stopped webserv ----------", INFO, BRIGHT_GREEN);
   Log::close();
+  return 0;
 }

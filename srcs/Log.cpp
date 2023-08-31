@@ -10,7 +10,7 @@ Log::Log() {}
 
 Log::~Log() {}
 
-void Log::setLogLevel(t_log_level level) { _log_level = level; }
+void Log::setLevel(t_log_level level) { _log_level = level; }
 
 void Log::setLogFile(File path) { _log_file = path; }
 

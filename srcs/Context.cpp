@@ -43,6 +43,11 @@ void Context::addContext(Context context) {
   addTokenOccurence(context.getName());
 }
 
+bool Context::exists(std::string token) {
+  if (_tokenOccurences.find(token) == _tokenOccurences.end()) return false;
+  return true;
+}
+
 size_t Context::getTokenOccurence(std::string token) {
   if (_tokenOccurences.find(token) == _tokenOccurences.end()) return 0;
   return _tokenOccurences[token];

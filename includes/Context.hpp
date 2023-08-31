@@ -37,6 +37,8 @@ class Context {
   void addDirective(std::string token, std::vector<std::string> values);
   void addContext(Context context);
 
+  bool exists(std::string token);
+
   bool isValidContext(std::string token);
   bool isValidDirective(std::string token);
   std::string validToAdd(std::string token);

@@ -7,21 +7,23 @@ std::string trim(std::string str) {
   return str.substr(first, (last - first + 1));
 }
 
-std::string cut(std::string &str, int start, int end) {
+std::string cut(std::string& str, int start, int end) {
   std::string cut = str.substr(start, end - start);
   str.erase(start, end - start);
   return cut;
 }
 
-std::vector<std::string> split(std::string str, std::string delim) {
+std::vector<std::string> split(const std::string& str, std::string delim) {
   std::vector<std::string> tokens;
-  size_t pos = 0;
-  std::string token;
-  while ((pos = str.find(delim)) != std::string::npos) {
-    if (pos != 0) tokens.push_back(str.substr(0, pos));
-    str.erase(0, pos + delim.length());
+  size_t start = 0;
+  size_t end = str.find_first_of(delim);
+  while (end != std::string::npos) {
+    if (start != end) tokens.push_back(str.substr(start, end - start));
+    start = end + delim.length();
+    end = str.find_first_of(delim, start);
   }
-  if (str.length() > 0) tokens.push_back(str);
+  if (start < str.length() && start != end)
+    tokens.push_back(str.substr(start, end - start));
   return tokens;
 }
 

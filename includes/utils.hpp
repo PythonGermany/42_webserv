@@ -11,9 +11,9 @@
 
 std::string trim(std::string str);
 
-std::string cut(std::string &str, int start, int end);
+std::string cut(std::string& str, int start, int end);
 
-std::vector<std::string> split(std::string str, std::string delim);
+std::vector<std::string> split(const std::string& str, std::string delim);
 
 bool startsWith(std::string str, std::string suffix);
 

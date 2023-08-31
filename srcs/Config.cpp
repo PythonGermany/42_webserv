@@ -48,8 +48,8 @@ Context Config::parseContext(std::string data, std::string name,
     std::string token = trim(cut(data, 0, findToken(data, " ")));
     if (context.isValidContext(token)) {
       data = trim(data);
-      context.addContext(parseContext(
-          trim(cut(data, 1, findContextEnd(data) - 1)), token, name));
+      context.addContext(
+          parseContext(cut(data, 1, findContextEnd(data)), token, name));
       data.erase(0, 2);
     } else if (context.isValidDirective(token)) {
       context.addDirective(token,
@@ -76,7 +76,7 @@ int Config::findContextEnd(const std::string &context) {
       depth++;
     else if (context[i] == '}')
       depth--;
-    if (depth == 0) return i + 1;
+    if (depth == 0) return i;
   }
   throwExeption("findContextEnd", "No context end found");
   return -1;
