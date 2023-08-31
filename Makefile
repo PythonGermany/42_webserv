@@ -11,9 +11,6 @@ OBJ = $(addprefix $(OBJ_DIR), $(SRC:%.cpp=%.o))
 
 all : $(OBJ_DIR) $(NAME)
 
-test_file:
-	c++ $(FLAGS) -o test_file test_file.cpp File.cpp
-
 $(NAME) : $(OBJ)
 	c++ $(FLAGS) -o $(NAME) $^ -I $(INC_DIR)
 
