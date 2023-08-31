@@ -20,7 +20,9 @@ std::string isNumeric(std::string const &value);
 
 std::string isMethod(std::string const &value);
 
-std::string isPath(std::string const &value);
+std::string isLogLevel(std::string const &value);
+
+std::string isAbsolutePath(std::string const &value);
 
 std::string isBoolean(std::string const &value);
 

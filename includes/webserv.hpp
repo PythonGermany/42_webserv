@@ -10,9 +10,9 @@
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 
 const t_token tokens[22] = {
-    {"log_level", "_", false, 0, 1, 1, 1, NULL},
-    {"access_log", "_", false, 0, 1, 1, 1, isPath},
-    {"error_log", "_", false, 0, 1, 1, 1, isPath},
+    {"log_level", "_", false, 0, 1, 1, 1, isLogLevel},
+    {"access_log", "_", false, 0, 1, 1, 1, isAbsolutePath},
+    {"error_log", "_", false, 0, 1, 1, 1, isAbsolutePath},
 
     {"server", "_", true, 1, -1, 0, 0, NULL},
     {"host", "server", false, 1, 1, 1, 1, NULL},
@@ -22,19 +22,19 @@ const t_token tokens[22] = {
 
     {"error_page", "server", true, 0, -1, 0, 0, NULL},
     {"code", "error_page", false, 1, 1, 1, -1, isNumeric},
-    {"path", "error_page", false, 1, 1, 1, 1, isPath},
+    {"path", "error_page", false, 1, 1, 1, 1, isAbsolutePath},
 
     {"location", "server", true, 0, -1, 0, 0, NULL},
-    {"url", "location", false, 1, 1, 1, 1, isPath},
+    {"url", "location", false, 1, 1, 1, 1, isAbsolutePath},
     {"method", "location", false, 0, -1, 1, -1, isMethod},
-    {"root", "location", false, 1, 1, 1, 1, isPath},
+    {"root", "location", false, 1, 1, 1, 1, isAbsolutePath},
     {"index", "location", false, 1, -1, 1, -1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
-    {"upload", "location", false, 0, 1, 1, 1, NULL},
+    {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
 
     {"cgi", "location", true, 0, 1, 0, 0, NULL},
     {"extension", "cgi", false, 1, 1, 1, 1, NULL},
-    {"path", "cgi", false, 1, 1, 1, 1, isPath}};
+    {"path", "cgi", false, 1, 1, 1, 1, isAbsolutePath}};
 
 #endif

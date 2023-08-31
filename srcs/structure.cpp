@@ -13,7 +13,12 @@ std::string isMethod(std::string const &value) {
   return "Invalid method";
 }
 
-std::string isPath(std::string const &value) {
+std::string isLogLevel(std::string const &value) {
+  if (value == "DEBUG" || value == "INFO" || value == "WARNING") return "";
+  return "Invalid log level";
+}
+
+std::string isAbsolutePath(std::string const &value) {
   if (value.length() == 0) return "Path cannot be empty";
   if (value[0] != '/') return "Path must start with a '/'";
   return "";
