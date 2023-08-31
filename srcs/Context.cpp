@@ -107,7 +107,7 @@ std::string Context::validArguments(std::string token,
 }
 
 void Context::validate(bool recursive) {
-  Log::write("Context '" + _name + "' -> Validating", DEBUG);
+  Log::write("Context: '" + _name + "' -> Validating", DEBUG);
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].parent == _name &&
         getTokenOccurence(tokens[i].name) < tokens[i].minOccurence)
@@ -123,7 +123,7 @@ void Context::validate(bool recursive) {
       }
     }
   }
-  Log::write("Context '" + _name + "' -> Sucessfully validated", DEBUG);
+  Log::write("Context: '" + _name + "' -> Sucessfully validated", DEBUG);
 }
 
 void Context::print(int indent) {

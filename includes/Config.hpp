@@ -28,6 +28,7 @@ class Config {
   // Getters
   std::string getConfig();
 
+  void removeComments();
   Context parseContext(std::string data, std::string name, std::string parent);
 
  private:

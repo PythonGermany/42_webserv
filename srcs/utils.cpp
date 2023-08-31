@@ -9,7 +9,7 @@ std::string trim(std::string str) {
 
 std::string cut(std::string &str, int start, int end) {
   std::string cut = str.substr(start, end - start);
-  str = str.substr(0, start) + str.substr(end);
+  str.erase(start, end - start);
   return cut;
 }
 

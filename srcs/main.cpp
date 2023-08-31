@@ -6,6 +6,7 @@ int loadConfig(Context& context, std::string path) {
   Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
   try {
     Config config(path);
+    config.removeComments();
     context = config.parseContext(config.getConfig(), "_", "");
   } catch (std::exception& e) {
     Log::writeError(e.what(), BRIGHT_YELLOW);

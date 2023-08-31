@@ -27,10 +27,22 @@ void Config::setFile(std::string path) {
 
 std::string Config::getConfig() { return _config; }
 
+void Config::removeComments() {
+  Log::write("Config: Removing comments", DEBUG);
+  size_t i = _config.find_first_of("#");
+  while (i != std::string::npos) {
+    size_t j = _config.find_first_of("\n", i);
+    if (j == std::string::npos) j = _config.length();
+    _config.erase(i, j - i);
+    i = _config.find_first_of("#");
+  }
+  Log::write("Config: Comments removed", DEBUG);
+}
+
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent) {
   Context context(name, parent);
-  Log::write("Context '" + name + "' -> Parsing", DEBUG);
+  Log::write("Context: '" + name + "' -> Parsing", DEBUG);
   data = trim(data);
   while (data.length() > 0) {
     std::string token = trim(cut(data, 0, findToken(data, " ")));
@@ -48,7 +60,7 @@ Context Config::parseContext(std::string data, std::string name,
                     "Unknown token '" + token + "' for context '" + name + "'");
     data = trim(data);
   }
-  Log::write("Context '" + name + "' -> Sucessfully parsed", DEBUG);
+  Log::write("Context: '" + name + "' -> Sucessfully parsed", DEBUG);
   context.validate(false);
   return context;
 }
