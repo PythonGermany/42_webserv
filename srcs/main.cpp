@@ -37,14 +37,12 @@ void initDefaults(Context& context) {
 int main(int argc, char** argv) {
   Context context;
 
-  Log::write("--------- Starting webserv ----------", INFO, BRIGHT_GREEN);
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);
   else {
     initDefaults(context);
   }
-  Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
-  Log::write("---------- Stopped webserv ----------", INFO, BRIGHT_GREEN);
   Log::close();
+  Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
   return 0;
 }

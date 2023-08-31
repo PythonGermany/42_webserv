@@ -33,8 +33,8 @@ class Config {
                        size_t line = 1);
 
  private:
+  int linesUntilPos(const std::string &data, size_t pos);
   size_t findContextEnd(const std::string &context);
-  int findToken(const std::string &data, std::string token);
   void throwExeption(size_t line, std::string msg);
 };
 

@@ -38,16 +38,6 @@ void Config::removeComments() {
   Log::write("Config: Comments removed", DEBUG);
 }
 
-int linesUntilPos(const std::string &data, size_t pos) {
-  int lines = 0;
-  size_t i = data.find_first_of("\n", 0);
-  while (i < pos) {
-    lines++;
-    i = data.find_first_of("\n", i + 1);
-  }
-  return lines;
-}
-
 Context Config::parseContext(std::string data, std::string name,
                              std::string parent, size_t line) {
   Context context(name, parent);
@@ -90,6 +80,16 @@ Context Config::parseContext(std::string data, std::string name,
   error = context.validate(false);
   if (error != "") throwExeption(startLine, "Context '" + name + "': " + error);
   return context;
+}
+
+int Config::linesUntilPos(const std::string &data, size_t pos) {
+  int lines = 0;
+  size_t i = data.find_first_of("\n", 0);
+  while (i < pos) {
+    lines++;
+    i = data.find_first_of("\n", i + 1);
+  }
+  return lines;
 }
 
 size_t Config::findContextEnd(const std::string &context) {

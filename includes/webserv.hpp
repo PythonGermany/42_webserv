@@ -5,7 +5,7 @@
 #include "utils.hpp"
 
 #define CONFIG_PATH "/etc/webserv/server.conf"
-#define LOG_LEVEL DEBUG
+#define LOG_LEVEL INFO
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 
