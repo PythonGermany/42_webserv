@@ -30,7 +30,7 @@ class Config {
 
   void removeComments();
   Context parseContext(std::string data, std::string name, std::string parent,
-                       int line = 1);
+                       size_t line = 1);
 
  private:
   size_t findContextEnd(const std::string &context);

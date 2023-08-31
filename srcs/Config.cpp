@@ -49,8 +49,9 @@ int linesUntilPos(const std::string &data, size_t pos) {
 }
 
 Context Config::parseContext(std::string data, std::string name,
-                             std::string parent, int line) {
+                             std::string parent, size_t line) {
   Context context(name, parent);
+  size_t startLine = line;
   std::string error;
   Log::write("Context: '" + name + "' -> Parsing", DEBUG);
   line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
@@ -87,7 +88,7 @@ Context Config::parseContext(std::string data, std::string name,
   }
   Log::write("Context: '" + name + "' -> Sucessfully parsed", DEBUG);
   error = context.validate(false);
-  if (error != "") throwExeption(line, "Context '" + name + "': " + error);
+  if (error != "") throwExeption(startLine, "Context '" + name + "': " + error);
   return context;
 }
 
