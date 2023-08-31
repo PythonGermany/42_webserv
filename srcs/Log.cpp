@@ -60,7 +60,8 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
               << highlight(msg, BRIGHT_BLUE) << RESET << std::endl;
     try {
       if (_log_file.isOpen())
-        _log_file.write("[" + getTimeStamp() + "] " + msg + "\n");
+        _log_file.write("[" + getDate() + "|" + getTimeStamp() + "] " + msg +
+                        "\n");
     } catch (const std::exception& e) {
       std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
                 << "Error:" << RESET << " Log: " << e.what() << std::endl;
@@ -73,7 +74,8 @@ void Log::writeError(std::string msg, std::string color) {
             << msg << RESET << std::endl;
   try {
     if (_error_log_file.isOpen())
-      _error_log_file.write("[" + getTimeStamp() + "] " + msg + "\n");
+      _error_log_file.write("[" + getDate() + "|" + getTimeStamp() + "] " +
+                            msg + "\n");
   } catch (const std::exception& e) {
     std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
               << "Error:" << RESET << " Log: " << e.what() << std::endl;
@@ -89,5 +91,17 @@ std::string Log::getTimeStamp() {
   timeinfo = std::localtime(&rawtime);
 
   std::strftime(buffer, 9, "%H:%M:%S", timeinfo);
+  return std::string(buffer);
+}
+
+std::string Log::getDate() {
+  time_t rawtime;
+  struct tm* timeinfo;
+  char buffer[11];
+
+  std::time(&rawtime);
+  timeinfo = std::localtime(&rawtime);
+
+  std::strftime(buffer, 11, "%d-%m-%Y", timeinfo);
   return std::string(buffer);
 }

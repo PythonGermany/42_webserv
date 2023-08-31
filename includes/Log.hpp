@@ -37,6 +37,7 @@ class Log {
                     std::string color = RESET);
   static void writeError(std::string msg, std::string color = RESET);
   static std::string getTimeStamp();
+  static std::string getDate();
 };
 
 #endif
