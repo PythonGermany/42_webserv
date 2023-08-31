@@ -1,6 +1,9 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+// Holds the default values and the
+// general structure of the config file
+
 #include "structure.hpp"
 #include "utils.hpp"
 

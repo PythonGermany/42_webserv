@@ -25,6 +25,11 @@ std::string Context::getName() { return _name; }
 
 std::string Context::getParent() { return _parent; }
 
+size_t Context::getTokenOccurence(std::string token) {
+  if (_tokenOccurences.find(token) == _tokenOccurences.end()) return 0;
+  return _tokenOccurences[token];
+}
+
 std::string Context::addDirective(std::string token,
                                   std::vector<std::string> values) {
   std::string error = validToAdd(token);
@@ -47,13 +52,7 @@ std::string Context::addContext(Context context) {
 }
 
 bool Context::exists(std::string token) {
-  if (_tokenOccurences.find(token) == _tokenOccurences.end()) return false;
-  return true;
-}
-
-size_t Context::getTokenOccurence(std::string token) {
-  if (_tokenOccurences.find(token) == _tokenOccurences.end()) return 0;
-  return _tokenOccurences[token];
+  return _tokenOccurences.find(token) != _tokenOccurences.end();
 }
 
 std::vector<std::string> Context::getDirective(std::string token) {

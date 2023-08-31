@@ -2,21 +2,6 @@
 #include "Log.hpp"
 #include "webserv.hpp"
 
-int loadConfig(Context& context, std::string path) {
-  Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
-  try {
-    Config config(path);
-    config.removeComments();
-    context = config.parseContext(config.getConfig(), "_", "");
-  } catch (std::exception& e) {
-    Log::writeError(e.what(), BRIGHT_YELLOW);
-    return 1;
-  }
-  if (LOG_LEVEL >= DEBUG) context.print();
-  Log::write("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
-  return 0;
-}
-
 void initDefaults(Context& context) {
   if (context.exists("log_level")) {
     std::string level = context.getDirective("log_level")[0];
@@ -32,6 +17,21 @@ void initDefaults(Context& context) {
   if (context.exists("error_log"))
     Log::setErrorLogFile(context.getDirective("error_log")[0]);
   Log::init();
+}
+
+int loadConfig(Context& context, std::string path) {
+  Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
+  try {
+    Config config(path);
+    config.removeComments();
+    context = config.parseContext(config.getConfig(), "_");
+  } catch (std::exception& e) {
+    Log::writeError(e.what(), BRIGHT_YELLOW);
+    return 1;
+  }
+  if (LOG_LEVEL >= DEBUG) context.print();
+  Log::write("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
+  return 0;
 }
 
 int main(int argc, char** argv) {

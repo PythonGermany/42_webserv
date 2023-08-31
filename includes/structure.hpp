@@ -1,6 +1,8 @@
 #ifndef STRUCTURE_HPP
 #define STRUCTURE_HPP
 
+// Holds the declaration of the webserv structure
+
 #include <iostream>
 
 typedef enum e_log_level { WARNING, INFO, DEBUG } t_log_level;

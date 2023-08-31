@@ -31,8 +31,6 @@ class Server {
   Context getContext();
   bool getIsDefault();
 
-  // Prints the current server block configuration
-  // @exception None
   void print();
 };
 

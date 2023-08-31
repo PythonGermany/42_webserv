@@ -83,6 +83,7 @@ Context Config::parseContext(std::string data, std::string name,
 }
 
 int Config::linesUntilPos(const std::string &data, size_t pos) {
+  if (pos == std::string::npos) pos = data.length();
   int lines = 0;
   size_t i = data.find_first_of("\n", 0);
   while (i < pos) {

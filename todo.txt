@@ -6,3 +6,5 @@ Implement request method checking
 Implement correct default server selection
 Implement correct server selection based on host and port
 Implement support for multiple ports per server
+
+IMPLEMENT FILE CLASS IN A WAY SO THAT IT COMPLIES WITH THE SUBJECT (THROUGH POLL???)

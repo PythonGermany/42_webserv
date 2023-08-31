@@ -30,13 +30,28 @@ class Log {
   static File getLogFile();
   static File getErrorLogFile();
 
+  // This function should be called at the beginning of the program
+  // It will create the log file and the error log file if they don't exist and
+  // open them
+  // @exception No custom exceptions
   static void init();
+  // This function should be called at the end of the program
+  // It will close the log file and the error log file
+  // @exception No custom exceptions
   static void close();
 
+  // Writes a message to the log file and to the standard output
+  // @exception No custom exceptions
   static void write(std::string msg, t_log_level level,
                     std::string color = RESET);
+  // Writes a message to the error log file and to the standard error output
+  // @exception No custom exceptions
   static void writeError(std::string msg, std::string color = RESET);
+  // Returns the current time stamp in the format [HH:MM:SS]
+  // @exception No custom exceptions
   static std::string getTimeStamp();
+  // Returns the current date in the format [DD/MM/YYYY]
+  // @exception No custom exceptions
   static std::string getDate();
 };
 

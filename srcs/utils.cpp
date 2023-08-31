@@ -27,9 +27,9 @@ std::vector<std::string> split(const std::string& str, std::string delim) {
   return tokens;
 }
 
-bool startsWith(std::string str, std::string suffix) {
-  if (str.size() < suffix.size()) return false;
-  return !str.compare(0, suffix.size(), suffix);
+bool startsWith(std::string str, std::string prefix) {
+  if (str.size() < prefix.size()) return false;
+  return !str.compare(0, prefix.size(), prefix);
 }
 
 bool endsWith(std::string str, std::string suffix) {
