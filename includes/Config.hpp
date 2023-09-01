@@ -22,6 +22,9 @@ class Config {
   ~Config();
 
   // Setters
+  // Sets the config file
+  // @exception std::runtime_error If the file is not found or not readable or
+  // if there is an error while reading the file
   void setFile(std::string path);
 
   // Getters
@@ -35,7 +38,7 @@ class Config {
   // @param Name the name of the root context
   // @param The name of the parent context
   // @return The parsed context object
-  // @exception std::runtime_error if the context is invalid
+  // @exception std::runtime_error If the context is invalid
   Context parseContext(std::string data, std::string name,
                        std::string parent = "", size_t line = 1);
 
