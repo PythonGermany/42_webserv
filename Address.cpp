@@ -7,6 +7,8 @@ Address::Address() {}
 */
 Address::Address(char const *const src)
 {
+    ip.v6.sin6_scope_id = 0;
+    ip.v6.sin6_flowinfo = 0;
     if (inet_pton(AF_INET, src, &ip.v4.sin_addr) == 1)
         data()->sa_family = AF_INET;
     else if (inet_pton(AF_INET6, src, &ip.v6.sin6_addr) == 1)
