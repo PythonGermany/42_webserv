@@ -2,6 +2,9 @@
 
 Address::Address() {}
 
+/**
+ * @throw std::runtime_error() if src is not valid ipv4/ipv6 address
+*/
 Address::Address(char const *const src)
 {
     if (inet_pton(AF_INET, src, &ip.v4.sin_addr) == 1)
@@ -67,6 +70,9 @@ in_port_t Address::port() const
         return ntohs(ip.v6.sin6_port);
 }
 
+/**
+ * @throw std::rutnimer_error() if addr.family() is not AF_INET or AF_INET6
+*/
 std::ostream &operator<<(std::ostream &os, Address const &addr)
 {
     char buffer[INET6_ADDRSTRLEN];

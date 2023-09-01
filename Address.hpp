@@ -12,6 +12,7 @@
 
 /**
  * @brief stores either an ipv4 or an ipv6 address with port
+ * @throw std::runtime_error() can be thrown by Constructor and stream insertion operator
 */
 class Address
 {
