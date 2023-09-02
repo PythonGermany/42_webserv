@@ -3,8 +3,9 @@
 #include "webserv.hpp"
 
 void initDefaults(Context& context) {
-  if (context.exists("log_level")) {
-    std::string level = context.getDirective("log_level")[0];
+  Context& http = context.getContext("http")[0];
+  if (http.exists("log_level")) {
+    std::string level = http.getDirective("log_level")[0];
     if (level == "DEBUG")
       Log::setLevel(DEBUG);
     else if (level == "INFO")
@@ -12,10 +13,10 @@ void initDefaults(Context& context) {
     else if (level == "WARNING")
       Log::setLevel(WARNING);
   }
-  if (context.exists("access_log"))
-    Log::setLogFile(context.getDirective("access_log")[0]);
-  if (context.exists("error_log"))
-    Log::setErrorLogFile(context.getDirective("error_log")[0]);
+  if (http.exists("access_log"))
+    Log::setLogFile(http.getDirective("access_log")[0]);
+  if (http.exists("error_log"))
+    Log::setErrorLogFile(http.getDirective("error_log")[0]);
   Log::init();
 }
 
@@ -24,7 +25,7 @@ int loadConfig(Context& context, std::string path) {
   try {
     Config config(path);
     config.removeComments();
-    context = config.parseContext(config.getConfig(), "_");
+    context = config.parseContext(context, config.getConfig());
   } catch (std::exception& e) {
     Log::writeError(e.what(), BRIGHT_YELLOW);
     return 1;
@@ -35,7 +36,7 @@ int loadConfig(Context& context, std::string path) {
 }
 
 int main(int argc, char** argv) {
-  Context context;
+  Context context("_", "");
 
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);

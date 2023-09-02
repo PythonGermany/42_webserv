@@ -7,17 +7,24 @@
 #include "structure.hpp"
 #include "utils.hpp"
 
-#define CONFIG_PATH "/etc/webserv/server.conf"
-#define LOG_LEVEL INFO
+#define CONFIG_PATH "/etc/webserv/webserv.conf"
+#define LOG_LEVEL DEBUG
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 
-const t_token tokens[22] = {
-    {"log_level", "_", false, 0, 1, 1, 1, isLogLevel},
-    {"access_log", "_", false, 0, 1, 1, 1, isAbsolutePath},
-    {"error_log", "_", false, 0, 1, 1, 1, isAbsolutePath},
+const t_token tokens[28] = {
+    {"http", "_", true, 1, 1, 0, 0, NULL},
 
-    {"server", "_", true, 1, -1, 0, 0, NULL},
+    {"types", "http", true, 1, 1, 0, 0, NULL},
+    {"type", "types", true, 1, -1, 0, 0, NULL},
+    {"mime", "type", false, 1, 1, 1, 1, NULL},
+    {"extension", "type", false, 1, 1, 1, -1, NULL},
+
+    {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
+    {"access_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
+    {"error_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
+
+    {"server", "http", true, 1, -1, 0, 0, NULL},
     {"host", "server", false, 1, 1, 1, 1, NULL},
     {"port", "server", false, 1, 1, 1, 1, isNumeric},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},

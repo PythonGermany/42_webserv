@@ -30,6 +30,25 @@ size_t Context::getTokenOccurence(std::string token) {
   return _tokenOccurences[token];
 }
 
+std::map<std::string, size_t> Context::getTokenOccurences() {
+  return _tokenOccurences;
+}
+
+std::vector<std::string> Context::getDirective(std::string token) {
+  if (_directives.find(token) == _directives.end())
+    return std::vector<std::string>();
+  return _directives[token];
+}
+
+std::vector<Context> &Context::getContext(std::string token) {
+  return _contexts[token];
+}
+
+void Context::setTokenOccurences(
+    std::map<std::string, size_t> tokenOccurences) {
+  _tokenOccurences = tokenOccurences;
+}
+
 std::string Context::addDirective(std::string token,
                                   std::vector<std::string> values) {
   std::string error = validToAdd(token);
@@ -53,17 +72,6 @@ std::string Context::addContext(Context context) {
 
 bool Context::exists(std::string token) {
   return _tokenOccurences.find(token) != _tokenOccurences.end();
-}
-
-std::vector<std::string> Context::getDirective(std::string token) {
-  if (_directives.find(token) == _directives.end())
-    return std::vector<std::string>();
-  return _directives[token];
-}
-
-std::vector<Context> Context::getContext(std::string token) {
-  if (_contexts.find(token) == _contexts.end()) return std::vector<Context>();
-  return _contexts[token];
 }
 
 bool Context::isValidContext(std::string token) {
@@ -132,10 +140,11 @@ std::string Context::validate(bool recursive) {
 }
 
 void Context::print(int indent) {
-  std::string spaces = "";
+  std::string spaces = GRAY;
   for (int i = 0; i < indent; i++) spaces += "| ";
   std::cout << spaces << RED << _name << RESET << std::endl;
   spaces += "| ";
+  spaces += RESET;
   for (std::map<std::string, std::vector<std::string> >::iterator it =
            _directives.begin();
        it != _directives.end(); it++) {
@@ -160,8 +169,4 @@ void Context::addTokenOccurence(std::string token) {
     _tokenOccurences[token] = 1;
   else
     _tokenOccurences[token]++;
-}
-
-void Context::throwExeption(std::string func, std::string msg) {
-  throw std::runtime_error("Context: " + func + ": " + msg);
 }

@@ -39,8 +39,13 @@ class Config {
   // @param The name of the parent context
   // @return The parsed context object
   // @exception std::runtime_error If the context is invalid
-  Context parseContext(std::string data, std::string name,
-                       std::string parent = "", size_t line = 1);
+  Context &parseContext(Context &context, std::string data, size_t line = 1,
+                        bool validate = true);
+
+  // Processes an include directive
+  // @param The context to add the included context to
+  // @param The path to the included config file
+  void processInclude(Context &context, std::string path);
 
  private:
   // Returns the number of lines until the given position

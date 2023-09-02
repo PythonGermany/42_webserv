@@ -30,10 +30,12 @@ class Context {
   std::string getName();
   std::string getParent();
   size_t getTokenOccurence(std::string token);
+  std::map<std::string, size_t> getTokenOccurences();
   std::vector<std::string> getDirective(std::string token);
-  std::vector<Context> getContext(std::string token);
+  std::vector<Context> &getContext(std::string token);
 
   // Setters/Adders
+  void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
   std::string addDirective(std::string token, std::vector<std::string> values);
   std::string addContext(Context context);
 
@@ -69,9 +71,6 @@ class Context {
   // Adds a token occurence to the member _tokenOccurences
   // @exception No custom exceptions
   void addTokenOccurence(std::string token);
-  // Throws an exception indicating the function and message
-  // @exception std::runtime_error
-  void throwExeption(std::string func, std::string msg);
 };
 
 #endif
