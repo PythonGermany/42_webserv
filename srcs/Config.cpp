@@ -90,7 +90,12 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
 }
 
 void Config::processInclude(Context &context, std::string path) {
-  std::vector<std::string> files = processWildcard(path);
+  std::vector<std::string> files;
+  try {
+    files = processWildcard(path);
+  } catch (const std::exception &e) {
+    Log::writeError("Context: '" + context.getName() + "' -> " + e.what());
+  }
   for (std::vector<std::string>::iterator it = files.begin(); it != files.end();
        it++) {
     Log::write(

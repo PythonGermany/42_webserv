@@ -74,17 +74,18 @@ std::vector<std::string> processWildcard(std::string str) {
   std::string path = str.substr(0, str.find_last_of("/"));
   std::string pattern = str.substr(str.find_last_of("/") + 1);
   DIR* dir = opendir(path.c_str());
+  if (dir == NULL) throw std::runtime_error("opendir() failed");
   struct dirent* ent;
-  if (dir != NULL) {
+  errno = 0;
+  ent = readdir(dir);
+  while (ent != NULL) {
+    if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
+      continue;
+    else if (fnmatch(pattern.c_str(), ent->d_name, 0) == 0)
+      files.push_back(path + "/" + ent->d_name);
     ent = readdir(dir);
-    while (ent != NULL) {
-      if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
-        continue;
-      else if (fnmatch(pattern.c_str(), ent->d_name, 0) == 0)
-        files.push_back(path + "/" + ent->d_name);
-      ent = readdir(dir);
-    }
-    closedir(dir);
   }
+  if (errno != 0) throw std::runtime_error("readdir() failed");
+  if (closedir(dir) == -1) throw std::runtime_error("closedir() failed");
   return files;
 }
