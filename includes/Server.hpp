@@ -17,7 +17,7 @@ class Server {
   bool _isDefault;
 
  public:
-  Server();  // TODO: Add copy constructor
+  Server();
   Server(Context context);
   Server(const Server &rhs);
   Server &operator=(const Server &rhs);

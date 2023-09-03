@@ -90,10 +90,16 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
 }
 
 void Config::processInclude(Context &context, std::string path) {
-  Config config(path);
-
-  config.removeComments();
-  config.parseContext(context, config.getConfig(), 1, false);
+  std::vector<std::string> files = processWildcard(path);
+  for (std::vector<std::string>::iterator it = files.begin(); it != files.end();
+       it++) {
+    Log::write(
+        "Context: '" + context.getName() + "' -> Including '" + *it + "'",
+        DEBUG);
+    Config config(*it);
+    config.removeComments();
+    config.parseContext(context, config.getConfig(), 1, false);
+  }
 }
 
 int Config::linesUntilPos(const std::string &data, size_t pos) {

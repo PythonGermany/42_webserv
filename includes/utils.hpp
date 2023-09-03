@@ -1,6 +1,8 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <dirent.h>
+#include <fnmatch.h>
 #include <netdb.h>
 
 #include <sstream>
@@ -75,5 +77,7 @@ std::string inet_ntoa(uint32_t addr);
 // @exception No custom exceptions
 std::string highlight(std::string str, std::string color,
                       std::string delim = "'");
+
+std::vector<std::string> processWildcard(std::string str);
 
 #endif
