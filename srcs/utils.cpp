@@ -7,6 +7,12 @@ std::string trim(const std::string& str, std::string chars) {
   return str.substr(first, (last - first + 1));
 }
 
+std::string& trimStart(std::string& str, std::string chars) {
+  size_t first = str.find_first_not_of(chars);
+  if (first == std::string::npos) first = str.length();
+  return str.erase(0, first);
+}
+
 std::string cut(std::string& str, int start, int end) {
   std::string cut = str.substr(start, end - start);
   str.erase(start, end - start);

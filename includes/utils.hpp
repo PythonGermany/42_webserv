@@ -15,6 +15,13 @@
 // @exception No custom exceptions
 std::string trim(const std::string& str, std::string chars = " \f\n\r\t\v");
 
+// Trim the start of a string
+// @param str The string to trim
+// @param chars The characters to trim
+// @return The trimmed string
+// @exception No custom exceptions
+std::string& trimStart(std::string& str, std::string chars = " \f\n\r\t\v");
+
 // Cuts a string from start to end
 // @param str The string to cut from
 // @param start The start index

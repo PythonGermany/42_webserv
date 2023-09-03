@@ -44,7 +44,7 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
   std::string error;
   Log::write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
   line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
-  data = trim(data);
+  trimStart(data);
   while (data.length() > 0) {
     size_t nextEnd = data.find_first_of(" \n");
     if (nextEnd == std::string::npos || data[nextEnd] != ' ')
@@ -61,12 +61,13 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       processInclude(context, trim(cut(data, 0, nextEnd)));
       data.erase(0, 1);
     } else if (context.isValidContext(token)) {
-      line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
-      data = trim(data);
-      size_t contextEnd = findContextEnd(data);
-      if (contextEnd == std::string::npos)
+      line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
+      trimStart(data, " \f\t\v");
+      if (data[0] != '{') throwExeption(line, "Expected token '{' not found");
+      nextEnd = findContextEnd(data);
+      if (nextEnd == std::string::npos)
         throwExeption(line, "No context end found for '" + token + "'");
-      std::string contextData = cut(data, 1, contextEnd);
+      std::string contextData = cut(data, 1, nextEnd);
       Context child(token, context.getName());
       error = context.addContext(parseContext(child, contextData, line));
       line += linesUntilPos(contextData, contextData.length() + 2);
@@ -79,13 +80,12 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       throwExeption(line, "Invalid token '" + token + "'");
     if (error != "") throwExeption(line, error);
     line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
-    data = trim(data);
+    trimStart(data);
   }
   Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
              DEBUG);
   if (validate) error = context.validate(false);
-  if (error != "")
-    throwExeption(startLine, "Context '" + context.getName() + "': " + error);
+  if (error != "") throwExeption(startLine, error);
   return context;
 }
 

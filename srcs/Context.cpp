@@ -124,7 +124,7 @@ std::string Context::validate(bool recursive) {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].parent == _name &&
         getTokenOccurence(tokens[i].name) < tokens[i].minOccurence)
-      return "Missing required directive '" + tokens[i].name + "'";
+      return "Context missing required directive '" + tokens[i].name + "'";
   if (recursive) {
     for (std::map<std::string, std::vector<Context> >::iterator it =
              _contexts.begin();
