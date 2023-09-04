@@ -5,6 +5,7 @@
 #include <fnmatch.h>
 #include <netdb.h>
 
+#include <cerrno>
 #include <sstream>
 #include <vector>
 

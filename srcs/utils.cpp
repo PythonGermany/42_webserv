@@ -68,29 +68,32 @@ std::string highlight(std::string str, std::string color, std::string delim) {
   return str;
 }
 
-// TODO: Error handling
+#include <iostream>
+
 std::vector<std::string> processWildcard(std::string str) {
   std::vector<std::string> files;
   std::string path = str.substr(0, str.find_last_of("/"));
   std::string pattern = str.substr(str.find_last_of("/") + 1);
-  DIR* dir = opendir(path.c_str());
-  if (dir == NULL) throw std::runtime_error("opendir() failed");
-  struct dirent* ent;
-  errno = 0;
-  ent = readdir(dir);
-  while (ent != NULL) {
-    if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
-      continue;
-    int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
-    if (ret == FNM_NOMATCH)
-      continue;
-    else if (ret == 0)
-      files.push_back(path + "/" + ent->d_name);
-    else if (ret == FNM_NOSYS)
-      throw std::runtime_error("fnmatch() failed");
+  if (pattern.find("*") == std::string::npos) {
+    files.push_back(str);
+  } else {
+    DIR* dir = opendir(path.c_str());
+    if (dir == NULL) throw std::runtime_error("opendir() failed");
+    struct dirent* ent;
+    errno = 0;
     ent = readdir(dir);
+    while (ent != NULL) {
+      if (ent->d_name != std::string(".") && ent->d_name != std::string("..")) {
+        int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
+        if (ret == 0)
+          files.push_back(path + "/" + ent->d_name);
+        else if (ret != FNM_NOMATCH)
+          throw std::runtime_error("fnmatch() failed");
+      }
+      ent = readdir(dir);
+    }
+    if (errno != 0) throw std::runtime_error("readdir() failed");
+    if (closedir(dir) == -1) throw std::runtime_error("closedir() failed");
   }
-  if (errno != 0) throw std::runtime_error("readdir() failed");
-  if (closedir(dir) == -1) throw std::runtime_error("closedir() failed");
   return files;
 }
