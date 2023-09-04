@@ -81,8 +81,13 @@ std::vector<std::string> processWildcard(std::string str) {
   while (ent != NULL) {
     if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
       continue;
-    else if (fnmatch(pattern.c_str(), ent->d_name, 0) == 0)
+    int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
+    if (ret == FNM_NOMATCH)
+      continue;
+    else if (ret == 0)
       files.push_back(path + "/" + ent->d_name);
+    else if (ret == FNM_NOSYS)
+      throw std::runtime_error("fnmatch() failed");
     ent = readdir(dir);
   }
   if (errno != 0) throw std::runtime_error("readdir() failed");
