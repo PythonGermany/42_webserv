@@ -13,6 +13,7 @@ class Config {
  private:
   File _file;
   std::string _config;
+  std::string error;
 
  public:
   Config();
@@ -42,12 +43,19 @@ class Config {
   Context &parseContext(Context &context, std::string data, size_t line = 1,
                         bool validate = true);
 
+ private:
+  // Processes a context
+  // @param The context to add data to
+  // @param The data to process
+  // @param The token name of the context to process
+  // @param The line in the config file where the context starts
+  // @exception std::runtime_error If the context is invalid
+  void processContext(Context &context, std::string &data, std::string token,
+                      size_t &line);
   // Processes an include directive
   // @param The context to add the included context to
   // @param The path to the included config file
   std::string processInclude(Context &context, std::string path);
-
- private:
   // Returns the number of lines until the given position
   // @param The string to search in
   // @param The position to search until

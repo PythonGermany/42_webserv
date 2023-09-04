@@ -43,11 +43,11 @@ void Config::removeComments() {
 Context &Config::parseContext(Context &context, std::string data, size_t line,
                               bool validate) {
   size_t startLine = line;
-  std::string error;
   Log::write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
-  line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
-  trimStart(data);
-  while (data.length() > 0) {
+  while (true) {
+    line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
+    trimStart(data);
+    if (data.length() == 0) break;
     size_t nextEnd = data.find_first_of(" \n");
     if (nextEnd == std::string::npos || data[nextEnd] != ' ')
       throwExeption(line, "Expected token ' ' not found");
@@ -63,17 +63,7 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       error = processInclude(context, trim(cut(data, 0, nextEnd)));
       data.erase(0, 1);
     } else if (context.isValidContext(token)) {
-      line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
-      trimStart(data, " \f\t\v");
-      if (data[0] != '{') throwExeption(line, "Expected token '{' not found");
-      nextEnd = findContextEnd(data);
-      if (nextEnd == std::string::npos)
-        throwExeption(line, "No context end found for '" + token + "'");
-      std::string contextData = cut(data, 1, nextEnd);
-      Context child(token, context.getName());
-      error = context.addContext(parseContext(child, contextData, line));
-      line += linesUntilPos(contextData, contextData.length() + 2);
-      data.erase(0, 2);
+      processContext(context, data, token, line);
     } else if (context.isValidDirective(token)) {
       error = context.addDirective(token,
                                    split(cut(data, 0, nextEnd), " \f\n\r\t\v"));
@@ -81,14 +71,27 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
     } else
       throwExeption(line, "Invalid token '" + token + "'");
     if (error != "") throwExeption(line, error);
-    line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
-    trimStart(data);
   }
   Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
              DEBUG);
   if (validate) error = context.validate(false);
   if (error != "") throwExeption(startLine, error);
   return context;
+}
+
+void Config::processContext(Context &context, std::string &data,
+                            std::string token, size_t &line) {
+  line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
+  trimStart(data, " \f\t\v");
+  if (data[0] != '{') throwExeption(line, "Expected token '{' not found");
+  size_t nextEnd = findContextEnd(data);
+  if (nextEnd == std::string::npos)
+    throwExeption(line, "No context end found for '" + token + "'");
+  std::string contextData = cut(data, 1, nextEnd);
+  Context child(token, context.getName());
+  error = context.addContext(parseContext(child, contextData, line));
+  line += linesUntilPos(contextData, contextData.length() + 2);
+  data.erase(0, 2);
 }
 
 std::string Config::processInclude(Context &context, std::string path) {
