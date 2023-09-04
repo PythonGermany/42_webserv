@@ -5,7 +5,7 @@ Connection::Connection(Address const &addr, Address const &host)
         _host(host),
         _maxreadsize(8192),
         _msgsize(std::string::npos),
-        _msgdelimeter("\r\n\r\n")
+        _msgdelimiter("\r\n\r\n")
 {}
 
 void Connection::send(std::string msg)
@@ -50,18 +50,24 @@ void Connection::pollin(std::vector<struct pollfd>::iterator pollfd)
         pollfd->revents = 0;
         return;
     }
-    std::string::size_type pos = _readbuffer.find(_msgdelimeter);
-    while (pos != std::string::npos)
+    std::string::size_type pos;
+    while (true)
     {
-        pos += _msgdelimeter.size();
-        recv(_readbuffer.substr(0, pos));
-        _readbuffer.erase(0, pos);
-        pos = _readbuffer.find(_msgdelimeter);
-    }
-    while (_readbuffer.size() > _msgsize)
-    {
-        recv(_readbuffer.substr(0, _msgsize));
-        _readbuffer.erase(0, _msgsize);
+        pos = _readbuffer.find(_msgdelimiter);
+        if (pos != std::string::npos)
+        {
+            pos += _msgdelimiter.size();
+            recv(_readbuffer.substr(0, pos));
+            _readbuffer.erase(0, pos);
+            continue;
+        }
+        if (_readbuffer.size() > _msgsize)
+        {
+            recv(_readbuffer.substr(0, _msgsize));
+            _readbuffer.erase(0, _msgsize);
+            continue;
+        }
+        break;
     }
     if (!_writebuffer.empty())
     {

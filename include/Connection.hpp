@@ -25,7 +25,7 @@ public:
 protected:
     std::string::size_type _maxreadsize;
     std::string::size_type _msgsize;
-    std::string _msgdelimeter;
+    std::string _msgdelimiter;
 private:
     std::string _writebuffer;
     std::string _readbuffer;
