@@ -26,6 +26,8 @@ std::string isLogLevel(std::string const &value);
 
 std::string isAbsolutePath(std::string const &value);
 
+std::string isExtension(std::string const &value);
+
 std::string isBoolean(std::string const &value);
 
 #endif

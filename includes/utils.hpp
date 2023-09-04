@@ -6,6 +6,7 @@
 #include <netdb.h>
 
 #include <cerrno>
+#include <cstring>
 #include <sstream>
 #include <vector>
 

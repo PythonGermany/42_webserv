@@ -78,22 +78,26 @@ std::vector<std::string> processWildcard(std::string str) {
     files.push_back(str);
   } else {
     DIR* dir = opendir(path.c_str());
-    if (dir == NULL) throw std::runtime_error("opendir() failed");
+    if (dir == NULL)
+      throw std::runtime_error("opendir: " + std::string(strerror(errno)));
     struct dirent* ent;
     errno = 0;
     ent = readdir(dir);
     while (ent != NULL) {
-      if (ent->d_name != std::string(".") && ent->d_name != std::string("..")) {
+      if (ent->d_name != std::string(".") && ent->d_name != std::string("..") &&
+          (ent->d_type == DT_REG || ent->d_type == DT_LNK)) {
         int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
         if (ret == 0)
           files.push_back(path + "/" + ent->d_name);
         else if (ret != FNM_NOMATCH)
-          throw std::runtime_error("fnmatch() failed");
+          throw std::runtime_error("fnmatch: " + std::string(strerror(errno)));
       }
       ent = readdir(dir);
     }
-    if (errno != 0) throw std::runtime_error("readdir() failed");
-    if (closedir(dir) == -1) throw std::runtime_error("closedir() failed");
+    if (errno != 0)
+      throw std::runtime_error("readdir: " + std::string(strerror(errno)));
+    if (closedir(dir) == -1)
+      throw std::runtime_error("closedir: " + std::string(strerror(errno)));
   }
   return files;
 }

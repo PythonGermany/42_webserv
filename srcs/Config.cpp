@@ -17,8 +17,10 @@ Config::~Config() {}
 
 void Config::setFile(std::string path) {
   _file = File(path);
-  if (!_file.exists()) throw std::runtime_error("Config: File not found");
-  if (!_file.readable()) throw std::runtime_error("Config: File not readable");
+  if (!_file.exists())
+    throw std::runtime_error("Config: File '" + path + "' not found");
+  if (!_file.readable())
+    throw std::runtime_error("Config: File '" + path + "' not readable");
   _file.open();
   _config = _file.read();
   _file.close();
@@ -58,7 +60,7 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       line += linesUntilPos(data, nextEnd + 1);
     }
     if (token == "include") {
-      processInclude(context, trim(cut(data, 0, nextEnd)));
+      error = processInclude(context, trim(cut(data, 0, nextEnd)));
       data.erase(0, 1);
     } else if (context.isValidContext(token)) {
       line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
@@ -89,12 +91,12 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
   return context;
 }
 
-void Config::processInclude(Context &context, std::string path) {
+std::string Config::processInclude(Context &context, std::string path) {
   std::vector<std::string> files;
   try {
     files = processWildcard(path);
   } catch (const std::exception &e) {
-    Log::writeError("Context: '" + context.getName() + "' -> " + e.what());
+    return e.what();
   }
   for (std::vector<std::string>::iterator it = files.begin(); it != files.end();
        it++) {
@@ -105,6 +107,7 @@ void Config::processInclude(Context &context, std::string path) {
     config.removeComments();
     config.parseContext(context, config.getConfig(), 1, false);
   }
+  return "";
 }
 
 int Config::linesUntilPos(const std::string &data, size_t pos) {

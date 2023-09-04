@@ -2,7 +2,7 @@
 
 Server::Server() {}
 
-Server::Server(Context context) {
+Server::Server(const Context &context) {
   _context = context;
   _isDefault = false;
 }
@@ -17,6 +17,11 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 Server::~Server() {}
+
+void Server::setMimeTypes(std::map<std::string, std::string> mimeTypes) {
+  (void)mimeTypes;  // TODO: Remove this line
+  //_mimeTypes = mimeTypes;
+}
 
 void Server::setContext(Context context) { _context = context; }
 

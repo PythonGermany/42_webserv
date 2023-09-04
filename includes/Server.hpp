@@ -1,31 +1,29 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "Context.hpp"
-#include "utils.hpp"
 
-// Class to store the server block
 class Server {
  private:
+  static std::map<std::string, std::string> _mimeTypes;
   Context _context;
   bool _isDefault;
 
  public:
   Server();
-  Server(Context context);
+  Server(const Context &context);
   Server(const Server &rhs);
   Server &operator=(const Server &rhs);
   ~Server();
 
   // Setters/Adders
+  static void setMimeTypes(std::map<std::string, std::string> mimeTypes);
   void setContext(Context context);
-  void setIsDefault(bool idDefault);
+  void setIsDefault(bool isDefault);
 
   // Getters
   Context getContext();

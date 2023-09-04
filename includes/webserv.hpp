@@ -18,7 +18,7 @@ const t_token tokens[28] = {
     {"types", "http", true, 1, 1, 0, 0, NULL},
     {"type", "types", true, 1, -1, 0, 0, NULL},
     {"mime", "type", false, 1, 1, 1, 1, NULL},
-    {"extension", "type", false, 1, 1, 1, -1, NULL},
+    {"extension", "type", false, 1, 1, 1, -1, isExtension},
 
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
@@ -44,7 +44,7 @@ const t_token tokens[28] = {
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
 
     {"cgi", "location", true, 0, 1, 0, 0, NULL},
-    {"extension", "cgi", false, 1, 1, 1, 1, NULL},
+    {"extension", "cgi", false, 1, 1, 1, 1, isExtension},
     {"path", "cgi", false, 1, 1, 1, 1, isAbsolutePath}};
 
 #endif

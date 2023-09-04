@@ -45,7 +45,7 @@ class Config {
   // Processes an include directive
   // @param The context to add the included context to
   // @param The path to the included config file
-  void processInclude(Context &context, std::string path);
+  std::string processInclude(Context &context, std::string path);
 
  private:
   // Returns the number of lines until the given position

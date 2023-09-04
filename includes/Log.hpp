@@ -26,7 +26,7 @@ class Log {
   static void setErrorLogFile(File path);
 
   // Getters
-  static t_log_level getLogLevel();
+  static t_log_level getLevel();
   static File getLogFile();
   static File getErrorLogFile();
 
