@@ -10,15 +10,19 @@
 # include <ostream> //overload
 # include <cstdlib> //atoi
 
+# include <string>
+# include <sstream>
+
 /**
  * @brief stores either an ipv4 or an ipv6 address with port
  * @throw std::runtime_error() can be thrown by Constructor and stream insertion operator
 */
-class Address
+union Address
 {
 public:
     Address();
     Address(char const *const src);
+    Address(std::string const &src, std::string const &port);
     Address(Address const &other);
     Address &operator=(Address const &other);
     ~Address();
@@ -30,12 +34,8 @@ public:
     void port(in_port_t port);
     in_port_t port() const;
 private:
-    union AddressStruct
-    {
-        struct  sockaddr_in v4;
-        struct  sockaddr_in6 v6;
-    };
-    AddressStruct   ip;
+    struct  sockaddr_in _inet;
+    struct  sockaddr_in6 _inet6;
 };
 
 std::ostream &operator<<(std::ostream &os, Address const &addr);

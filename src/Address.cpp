@@ -7,21 +7,52 @@ Address::Address() {}
 */
 Address::Address(char const *const src)
 {
-    ip.v6.sin6_scope_id = 0;
-    ip.v6.sin6_flowinfo = 0;
-    if (inet_pton(AF_INET, src, &ip.v4.sin_addr) == 1)
-        data()->sa_family = AF_INET;
-    else if (inet_pton(AF_INET6, src, &ip.v6.sin6_addr) == 1)
-        data()->sa_family = AF_INET6;
+    _inet6.sin6_scope_id = 0;
+    _inet6.sin6_flowinfo = 0;
+    if (inet_pton(AF_INET, src, &_inet.sin_addr) == 1)
+        this->data()->sa_family = AF_INET;
+    else if (inet_pton(AF_INET6, src, &_inet6.sin6_addr) == 1)
+        this->data()->sa_family = AF_INET6;
     else
-        throw std::runtime_error(std::string("Address(): invalid address: ") + src);
+        throw std::invalid_argument(std::string("Address::Address(): invalid address: ") + src);
 }
 
-Address::Address(Address const &other) : ip(other.ip) {}
+Address::Address(std::string const &src, std::string const &port)
+{
+    std::string         tmp(src);
+    std::stringstream   ss(port);
+    in_port_t           _p;
+
+    if (port.empty() || std::isspace(port[0]))
+        throw std::invalid_argument("Address::Address(): invalid port: " + port);
+    ss >> _p;
+    if (!ss.fail() && ss.eof())
+        this->port(_p);
+    else
+        throw std::invalid_argument("Address::Address(): invalid port: " + port);
+
+    if (tmp.empty())
+        tmp = "0.0.0.0";
+    std::string::iterator end = tmp.end() - 1;
+    std::string::iterator start = tmp.begin();
+    if (*end == ']' && *start == '[')
+        tmp = std::string(start + 1, end);
+
+    _inet6.sin6_scope_id = 0;
+    _inet6.sin6_flowinfo = 0;
+    if (inet_pton(AF_INET, tmp.c_str(), &_inet.sin_addr) == 1)
+        this->data()->sa_family = AF_INET;
+    else if (inet_pton(AF_INET6, tmp.c_str(), &_inet6.sin6_addr) == 1)
+        this->data()->sa_family = AF_INET6;
+    else
+        throw std::invalid_argument("Address::Address(): invalid address: " + src);
+}
+
+Address::Address(Address const &other)  :   _inet6(other._inet6) {}
 
 Address &Address::operator=(Address const &other)
 {
-    ip = other.ip;
+    _inet6 = other._inet6;
     return *this;
 }
 
@@ -29,47 +60,47 @@ Address::~Address() {}
 
 sa_family_t Address::family() const
 {
-    return data()->sa_family;
+    return this->data()->sa_family;
 }
 
 void const *Address::addr() const
 {
-    if (family() == AF_INET)
-        return &ip.v4.sin_addr;
+    if (this->family() == AF_INET)
+        return &_inet.sin_addr;
     else
-        return &ip.v6.sin6_addr;
+        return &_inet6.sin6_addr;
 }
 
 sockaddr *Address::data()
 {
-    return reinterpret_cast<sockaddr *>(&ip);
+    return reinterpret_cast<sockaddr *>(&_inet);
 }
 
 sockaddr const *Address::data() const
 {
-    return reinterpret_cast<sockaddr const *>(&ip);
+    return reinterpret_cast<sockaddr const *>(&_inet);
 }
 
 socklen_t Address::size() const
 {
-    return family() == AF_INET ? sizeof(ip.v4) : sizeof(ip.v6);
+    return this->family() == AF_INET ? sizeof(_inet) : sizeof(_inet6);
 }
 
 void Address::port(in_port_t port)
 {
     port = htons(port);
-    if (family() == AF_INET)
-        ip.v4.sin_port = port;
+    if (this->family() == AF_INET)
+        _inet.sin_port = port;
     else
-        ip.v6.sin6_port = port;
+        _inet6.sin6_port = port;
 }
 
 in_port_t Address::port() const
 {
-    if (family() == AF_INET)
-        return ntohs(ip.v4.sin_port);
+    if (this->family() == AF_INET)
+        return ntohs(_inet.sin_port);
     else
-        return ntohs(ip.v6.sin6_port);
+        return ntohs(_inet6.sin6_port);
 }
 
 /**
