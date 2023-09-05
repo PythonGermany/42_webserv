@@ -12,6 +12,7 @@
 
 # include <string>
 # include <sstream>
+# include <limits>
 
 /**
  * @brief stores either an ipv4 or an ipv6 address with port

@@ -8,13 +8,14 @@ Address::Address()
 Address::Address(std::string const &src, std::string const &port)
 {
     std::string         tmp(src);
-    std::stringstream   ss(port);
-    in_port_t           _p;
+    std::stringstream   ss;
+    int32_t            _p;
 
     if (port.empty() || std::isspace(port[0]))
         throw std::invalid_argument("Address::Address(): invalid port: " + port);
+    ss << port;
     ss >> _p;
-    if (!ss.fail() && ss.eof())
+    if (!ss.fail() && ss.eof() && _p >= 0 && _p <= std::numeric_limits<in_port_t>::max())
         this->port(_p);
     else
         throw std::invalid_argument("Address::Address(): invalid port: " + port);
