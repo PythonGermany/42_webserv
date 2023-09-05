@@ -1,3 +1,9 @@
 obj/
-webserv
 .vscode/
+
+tests/googletest/build
+tests/obj/
+
+#executables
+tests/test
+webserv
