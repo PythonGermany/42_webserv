@@ -1,20 +1,8 @@
 #include "../include/Address.hpp"
 
-Address::Address() {}
-
-/**
- * @throw std::runtime_error() if src is not valid ipv4/ipv6 address
-*/
-Address::Address(char const *const src)
+Address::Address()
 {
-    _inet6.sin6_scope_id = 0;
-    _inet6.sin6_flowinfo = 0;
-    if (inet_pton(AF_INET, src, &_inet.sin_addr) == 1)
-        this->data()->sa_family = AF_INET;
-    else if (inet_pton(AF_INET6, src, &_inet6.sin6_addr) == 1)
-        this->data()->sa_family = AF_INET6;
-    else
-        throw std::invalid_argument(std::string("Address::Address(): invalid address: ") + src);
+    this->data()->sa_family = 0;
 }
 
 Address::Address(std::string const &src, std::string const &port)

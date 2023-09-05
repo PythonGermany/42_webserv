@@ -21,7 +21,6 @@ union Address
 {
 public:
     Address();
-    Address(char const *const src);
     Address(std::string const &src, std::string const &port);
     Address(Address const &other);
     Address &operator=(Address const &other);

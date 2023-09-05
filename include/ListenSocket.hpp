@@ -6,18 +6,18 @@
 # include <stdexcept>
 # include <cerrno>
 # include <cstring>
+# include <string>
 
-/**
- * TODO:
- * @param max_queue_size default should be SOMAXCONN
-*/
 class ListenSocket
 {
 public:
     int fd;
     Address _addr;
-    ListenSocket(char const *ip, char const *port);
+    ListenSocket();
+    ListenSocket(std::string const &addr, std::string const &port, int backlog = SOMAXCONN);
     ListenSocket(ListenSocket const &other);
+    ~ListenSocket();
+    ListenSocket &operator=(ListenSocket const &other);
     int accept(Address &addr) const;
 };
 
