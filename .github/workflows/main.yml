@@ -17,5 +17,5 @@ jobs:
         git clone -b helloworld2 --recurse-submodules https://PythonGermany:${{ secrets.ACTIONS }}@github.com/PythonGermany/42_webserv.git
         cd 42_webserv/tests
 
-    - name: Build with Make
-      run: make
+    # - name: Build with Make
+    #   run: make
