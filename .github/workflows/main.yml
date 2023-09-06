@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout code
       run: |
+        git config --global user.name "github action"
+        git config --global user.email "action@github.com"
         git clone -b helloworld2 --recurse-submodules https://github.com/PythonGermany/42_webserv.git
         cd 42_webserv/tests
 
