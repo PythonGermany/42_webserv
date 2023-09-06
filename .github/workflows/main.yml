@@ -1,4 +1,4 @@
-name: Build with Make
+name: gtest
 
 on:
   push:
