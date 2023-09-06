@@ -16,6 +16,4 @@ jobs:
         submodules: recursive
 
     - name: Build with Make
-      run: |
-        cd ${{ github.workspace }}/tests
-        make
+      run: make -C ${{ github.workspace }}/tests

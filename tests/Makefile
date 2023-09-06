@@ -18,7 +18,6 @@ INC_DIR		:= ../include
 TEST_DIR	:= src
 
 SRC			+= Address.cpp
-TEST_SRC	+= mainTest.cpp
 TEST_SRC	+= AddressTest.cpp
 
 HEADERS		+= Address.hpp
