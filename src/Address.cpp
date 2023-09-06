@@ -2,7 +2,7 @@
 
 Address::Address()
 {
-    this->data()->sa_family = 0;
+    this->_family = 0;
 }
 
 Address::Address(std::string const &src, std::string const &port)
@@ -27,21 +27,28 @@ Address::Address(std::string const &src, std::string const &port)
     if (*end == ']' && *start == '[')
         tmp = std::string(start + 1, end);
 
-    _inet6.sin6_scope_id = 0;
-    _inet6.sin6_flowinfo = 0;
-    if (inet_pton(AF_INET, tmp.c_str(), &_inet.sin_addr) == 1)
-        this->data()->sa_family = AF_INET;
-    else if (inet_pton(AF_INET6, tmp.c_str(), &_inet6.sin6_addr) == 1)
-        this->data()->sa_family = AF_INET6;
+    _addr.inet6.sin6_scope_id = 0;
+    _addr.inet6.sin6_flowinfo = 0;
+    if (inet_pton(AF_INET, tmp.c_str(), &_addr.inet.sin_addr) == 1)
+    {
+        this->_family = AF_INET;
+        this->_addr.inet.sin_family = this->_family;
+    }
+    else if (inet_pton(AF_INET6, tmp.c_str(), &_addr.inet6.sin6_addr) == 1)
+    {
+        this->_family = AF_INET6;
+        this->_addr.inet.sin_family = this->_family;
+    }
     else
         throw std::invalid_argument("Address::Address(): invalid address: " + src);
 }
 
-Address::Address(Address const &other)  :   _inet6(other._inet6) {}
+Address::Address(Address const &other)  :  _addr(other._addr), _family(other._family) {}
 
 Address &Address::operator=(Address const &other)
 {
-    _inet6 = other._inet6;
+    _addr = other._addr;
+    _family = other._family;
     return *this;
 }
 
@@ -49,51 +56,65 @@ Address::~Address() {}
 
 sa_family_t Address::family() const
 {
-    return this->data()->sa_family;
+    return this->_family;
 }
 
 void const *Address::addr() const
 {
-    if (this->family() == AF_INET)
-        return &_inet.sin_addr;
+    if (this->_family == AF_INET)
+        return &_addr.inet.sin_addr;
     else
-        return &_inet6.sin6_addr;
+        return &_addr.inet6.sin6_addr;
 }
 
 sockaddr *Address::data()
 {
-    return reinterpret_cast<sockaddr *>(&_inet);
+    return reinterpret_cast<sockaddr *>(&_addr);
 }
 
 sockaddr const *Address::data() const
 {
-    return reinterpret_cast<sockaddr const *>(&_inet);
+    return reinterpret_cast<sockaddr const *>(&_addr);
 }
 
 socklen_t Address::size() const
 {
-    return this->family() == AF_INET ? sizeof(_inet) : sizeof(_inet6);
+    return this->_family == AF_INET ? sizeof(_addr.inet) : sizeof(_addr.inet6);
+}
+
+void Address::size(socklen_t size)
+{
+    if (size == sizeof(sockaddr_in))
+        this->_family = AF_INET;
+    else if (size == sizeof(sockaddr_in6))
+        this->_family = AF_INET6;
+    else
+    {
+        std::ostringstream oss;
+        oss << size;
+        throw std::invalid_argument("Address::size(): invalid size: " + oss.str());
+    }
 }
 
 void Address::port(in_port_t port)
 {
     port = htons(port);
-    if (this->family() == AF_INET)
-        _inet.sin_port = port;
+    if (this->_family == AF_INET)
+        _addr.inet.sin_port = port;
     else
-        _inet6.sin6_port = port;
+        _addr.inet6.sin6_port = port;
 }
 
 in_port_t Address::port() const
 {
-    if (this->family() == AF_INET)
-        return ntohs(_inet.sin_port);
+    if (this->_family == AF_INET)
+        return ntohs(_addr.inet.sin_port);
     else
-        return ntohs(_inet6.sin6_port);
+        return ntohs(_addr.inet6.sin6_port);
 }
 
 /**
- * @throw std::rutnimer_error() if addr.family() is not AF_INET or AF_INET6
+ * @throw std::runtime_error() if addr.family() is not AF_INET or AF_INET6
 */
 std::ostream &operator<<(std::ostream &os, Address const &addr)
 {

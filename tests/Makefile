@@ -19,6 +19,7 @@ TEST_DIR	:= src
 
 SRC			+= Address.cpp
 TEST_SRC	+= mainTest.cpp
+TEST_SRC	+= AddressTest.cpp
 
 HEADERS		+= Address.hpp
 
@@ -37,6 +38,7 @@ LDFLAGS		:= -Lgoogletest/build/lib -pthread $(LIBS)
 
 
 all: $(NAME)
+	@./$<
 
 $(NAME): $(OBJ) $(TEST_OBJ) $(LIBS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@

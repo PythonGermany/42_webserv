@@ -47,6 +47,7 @@ int ListenSocket::accept(Address &addr) const
     int _newfd;
     socklen_t len = sizeof(sockaddr_in6);
     _newfd = ::accept(fd, addr.data(), &len);
+    addr.size(len);
     if (_newfd < 0)
         throw std::runtime_error(std::string("ListenSocket::accept(): ") + std::strerror(errno));
     return _newfd;
