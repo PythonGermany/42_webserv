@@ -12,7 +12,7 @@ jobs:
     steps:
     - name: Checkout code
       run: |
-        git clone -b helloworld2 --recurse-submodules git@github.com:PythonGermany/42_webserv.git
+        git clone -b helloworld2 --recurse-submodules https://github.com/PythonGermany/42_webserv.git
         cd 42_webserv/tests
 
     - name: Build with Make
