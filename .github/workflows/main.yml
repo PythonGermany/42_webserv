@@ -10,14 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: LS
-        run: ls ${{ github.workspace }}
-    # - name: Checkout code
-    #   run: |
-    #     git config --global user.name "YourUsername"
-    #     git config --global user.email "youremail@example.com"
-    #     git clone -b helloworld2 --recurse-submodules https://PythonGermany:${{ secrets.ACTIONS }}@github.com/PythonGermany/42_webserv.git
-    #     cd 42_webserv/tests
 
-    # - name: Build with Make
-    #   run: make
+    - name: Build with Make
+      run: |
+        cd ${{ github.workspace }}/tests
+        make
