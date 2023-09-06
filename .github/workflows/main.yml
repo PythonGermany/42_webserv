@@ -15,5 +15,6 @@ jobs:
 
     - name: Build with Make
       run: |
+        git submodule update --init
         cd ${{ github.workspace }}/tests
         make
