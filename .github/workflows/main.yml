@@ -1,19 +1,19 @@
-# name: Build with Make
+name: Build with Make
 
-# on:
-#   push:
-#     branches:
-#       - helloworld2
+on:
+  push:
+    branches:
+      - helloworld2
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - name: Checkout code
-#       run: |
-#         git clone -b helloworld2 --recurse-submodules https://jharrach:${{ secrets.ACCESS_TOKEN }}@github.com/PythonGermany/42_webserv.git
-#         cd 42_webserv/tests
+    steps:
+    - name: Checkout code
+      run: |
+        git clone -b helloworld2 --recurse-submodules https://PythonGermany:${{ secrets.ACTIONS }}@github.com/PythonGermany/42_webserv.git
+        cd 42_webserv/tests
 
-#     - name: Build with Make
-#       run: make
+    - name: Build with Make
+      run: make
