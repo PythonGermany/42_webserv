@@ -7,6 +7,5 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: List files in the repository
-        run: make && ./webserv conf/webserv.conf
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Make and run webserv
+        run: ls -la
