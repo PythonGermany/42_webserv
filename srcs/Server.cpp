@@ -2,10 +2,7 @@
 
 Server::Server() {}
 
-Server::Server(const Context &context) {
-  _context = context;
-  _isDefault = false;
-}
+Server::Server(const Context &context) { _context = context; }
 
 Server::Server(const Server &rhs) { *this = rhs; }
 
@@ -19,16 +16,11 @@ Server &Server::operator=(const Server &rhs) {
 Server::~Server() {}
 
 void Server::setMimeTypes(std::map<std::string, std::string> mimeTypes) {
-  (void)mimeTypes;  // TODO: Remove this line
-  //_mimeTypes = mimeTypes;
+  _mimeTypes = mimeTypes;
 }
 
-void Server::setContext(Context context) { _context = context; }
+void Server::setContext(const Context &context) { _context = context; }
 
-void Server::setIsDefault(bool isDefault) { _isDefault = isDefault; }
-
-Context Server::getContext() { return _context; }
-
-bool Server::getIsDefault() { return _isDefault; }
+Context &Server::getContext() { return _context; }
 
 void Server::print() { _context.print(); }

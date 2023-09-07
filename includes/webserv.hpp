@@ -12,7 +12,7 @@
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 
-const t_token tokens[28] = {
+const t_token tokens[27] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
 
     {"types", "http", true, 1, 1, 0, 0, NULL},
@@ -25,8 +25,7 @@ const t_token tokens[28] = {
     {"error_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
 
     {"server", "http", true, 1, -1, 0, 0, NULL},
-    {"host", "server", false, 1, 1, 1, 1, NULL},
-    {"port", "server", false, 1, 1, 1, 1, isNumeric},
+    {"listen", "server", false, 1, -1, 1, 1, NULL},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},
     {"client_max_body_size", "server", false, 1, 1, 1, 1, isNumeric},
 

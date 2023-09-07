@@ -9,9 +9,9 @@
 
 class Server {
  private:
-  static std::map<std::string, std::string> _mimeTypes;
+  std::map<std::string, std::string> _mimeTypes;
   Context _context;
-  bool _isDefault;
+  std::vector<bool> _isDefault;
 
  public:
   Server();
@@ -21,13 +21,11 @@ class Server {
   ~Server();
 
   // Setters/Adders
-  static void setMimeTypes(std::map<std::string, std::string> mimeTypes);
-  void setContext(Context context);
-  void setIsDefault(bool isDefault);
+  void setMimeTypes(std::map<std::string, std::string> mimeTypes);
+  void setContext(const Context &context);
 
   // Getters
-  Context getContext();
-  bool getIsDefault();
+  Context &getContext();
 
   void print();
 };

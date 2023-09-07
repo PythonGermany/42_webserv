@@ -1,3 +1,0 @@
-Config.* -> Usable (tweaks and bugchecking left)
-Log.* -> Usable
-main.cpp -> Only config loading part working

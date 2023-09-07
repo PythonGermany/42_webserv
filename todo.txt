@@ -6,5 +6,11 @@ Implement request method checking
 Implement correct default server selection
 Implement correct server selection based on host and port
 Implement support for multiple ports per server
-
 IMPLEMENT FILE CLASS IN A WAY SO THAT IT COMPLIES WITH THE SUBJECT (THROUGH POLL???)
+
+Needed from rfc 2616: -----------------------------------------------------------
+- URL Decode/Encode (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)
+- URL Parsing (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.2)
+- URL Comparison (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.3)
+
+- Transfer-Encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6) ?

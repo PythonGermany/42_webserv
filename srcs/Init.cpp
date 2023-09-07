@@ -5,15 +5,15 @@ Init::Init() {}
 Init::~Init() {}
 
 std::vector<Server> Init::initServers(
-    Context& context, std::map<std::string, std::string> mimeTypes) {
+    Context& context, std::map<std::string, std::string>& mimeTypes) {
   Log::write("-------- Loading servers -----------", INFO, BRIGHT_GREEN);
-  Server::setMimeTypes(mimeTypes);
   std::vector<Server> servers;
   std::vector<Context> serverContexts =
       context.getContext("http")[0].getContext("server");
   for (std::vector<Context>::iterator it = serverContexts.begin();
        it != serverContexts.end(); it++) {
     Server server(*it);
+    server.setMimeTypes(mimeTypes);
     servers.push_back(server);
   }
   Log::write("Number of servers: " + toString(servers.size()), INFO);
