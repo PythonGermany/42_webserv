@@ -11,12 +11,12 @@ jobs:
 
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Cache Google Test directory
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: tests/googletest/
         key: googletest-${{ runner.os }}
