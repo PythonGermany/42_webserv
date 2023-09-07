@@ -15,7 +15,13 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Cache Google Test directory
+    uses: actions/cache@v2
+    with:
+      path: tests/googletest/
+      key: googletest-${{ runner.os }}
+
     - name: Build with Make
-      run: make test -C ${{ github.workspace }}/tests
+      run: make test -C tests
     - name: TEST
-      run: make -C ${{ github.workspace }}/tests
+      run: make -C tests

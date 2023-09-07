@@ -22,6 +22,6 @@ jobs:
         key: googletest-${{ runner.os }}
 
     - name: Build with Make
-      run: make test -C ${{ github.workspace }}/tests
+      run: make test -C tests
     - name: TEST
-      run: pwd && make -C ${{ github.workspace }}/tests
+      run: make -C tests
