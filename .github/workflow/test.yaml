@@ -1,0 +1,12 @@
+name: Test
+run-name: ${{ github.actor }} is testing GitHub Actions 🚀
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: List files in the repository
+        run: make && ./webserv conf/webserv.conf
+      - run: echo "🍏 This job's status is ${{ job.status }}."
