@@ -1,11 +1,10 @@
 #include "../include/ListenSocket.hpp"
-#include "../include/Pollstructs.hpp"
+#include "../include/Poll.hpp"
+#include <signal.h>
 
 int main()
 {
-    Pollstructs data;
-    data.add(ListenSocket("127.0.0.1", "8080"));
-    data.add(ListenSocket("::1", "8080"));
-    data.add(ListenSocket("127.0.0.1", "9000"));
-    data.poll();
+    signal(SIGINT, Poll::signalHandler);    
+    Poll::add(new ListenSocket("127.0.0.1", "8080"));
+    Poll::poll();
 }

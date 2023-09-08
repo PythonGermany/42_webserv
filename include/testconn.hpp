@@ -1,36 +1,30 @@
 #ifndef TESTCONN_HPP
 # define TESTCONN_HPP
 
-# include <iostream>
-# include "Connection.hpp"
+# include "AConnection.hpp"
 
-/**
- * implements recv() and can use:
- * send()
- * _msgsize
- * _msgdelimiter
- * _addr: address of the client (READ ONLY)
- * _host: address of the host socket (READ ONLY)
- * 
- * TODO:
- * no functionality to close connection
-*/
-class testconn : public Connection
+# include <iostream>
+
+class testconn : public AConnection
 {
 public:
-    testconn(Address const &addr, Address const &host) : Connection(addr, host) {}
-private:
-    void recv(std::string msg)
+    testconn(Address const &client, Address const &host)
     {
-        (void)_msgsize;
-        (void)_msgdelimiter;
-        (void)_addr;
-        (void)_host;
-        std::cout << "########### BEGIN ##########" << std::endl;
-        std::cout << msg;
-        std::cout << "###########  END  ##########" << std::endl;
-        send("Welcome to this server\n");
-    };
+        this->client = client;
+        this->host = host;
+        this->msgdelimiter = "\r\n\r\n";
+        this->msgsizelimit = 10000;
+        this->msgsize = 100;
+    }
+    void OnHeadRecv(std::string msg)
+    {
+        std::cout << "$$$$$$$$$ BEGIN $$$$$$$$$$" << std::endl;
+        std::cout << msg << std::endl;
+        std::cout << "$$$$$$$$$$ END $$$$$$$$$$$" << std::endl;
+        send("Welcome!\n");
+    }
+    void OnBodyRecv(std::string) {}
+    void OnCgiRecv(std::string) {}
 };
 
 #endif //TESTCONN_HPP

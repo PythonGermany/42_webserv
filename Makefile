@@ -6,7 +6,7 @@
 #    By: jharrach <@student.42heilbronn.de>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/16 20:23:47 by jharrach          #+#    #+#              #
-#    Updated: 2023/09/04 16:36:51 by jharrach         ###   ########.fr        #
+#    Updated: 2023/09/08 04:59:47 by jharrach         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,14 +18,15 @@ INC_DIR		:= include
 
 SRC			+= main.cpp
 SRC			+= Address.cpp
-SRC			+= Connection.cpp
+SRC			+= AConnection.cpp
 SRC			+= ListenSocket.cpp
-SRC			+= Pollstructs.cpp
+SRC			+= Poll.cpp
 
 HEADERS		+= Address.hpp
-HEADERS		+= Connection.hpp
+HEADERS		+= AConnection.hpp
 HEADERS		+= ListenSocket.hpp
-HEADERS		+= Pollstructs.hpp
+HEADERS		+= Poll.hpp
+HEADERS		+= IFileDescriptor.hpp
 HEADERS		+= testconn.hpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
