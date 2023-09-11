@@ -85,7 +85,7 @@ void AConnection::pollin(struct pollfd &pollfd)
 	}
 	passReadBuffer();
 	if (!_writeBuffer.empty())
-		pollfd.revents |= POLLOUT;
+		pollfd.events |= POLLOUT;
 }
 
 void AConnection::passReadBuffer()
