@@ -21,6 +21,7 @@ SRC			+= Address.cpp
 SRC			+= AConnection.cpp
 SRC			+= ListenSocket.cpp
 SRC			+= Poll.cpp
+SRC			+= CommonGatewayInterface.cpp
 
 HEADERS		+= Address.hpp
 HEADERS		+= AConnection.hpp
@@ -28,6 +29,7 @@ HEADERS		+= ListenSocket.hpp
 HEADERS		+= Poll.hpp
 HEADERS		+= IFileDescriptor.hpp
 HEADERS		+= testconn.hpp
+HEADERS		+= CommonGatewayInterface.hpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))

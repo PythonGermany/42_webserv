@@ -18,13 +18,29 @@ public:
     }
     void OnHeadRecv(std::string msg)
     {
-        std::cout << "$$$$$$$$$ BEGIN $$$$$$$$$$" << std::endl;
-        std::cout << msg << std::endl;
-        std::cout << "$$$$$$$$$$ END $$$$$$$$$$$" << std::endl;
-        send("Welcome!\n");
+        std::cout << "$$$$$$$$$ BEGIN HEAD $$$$$$$$$$ >";
+        std::cout << msg;
+        std::cout << "< $$$$$$$$$$ END HEAD $$$$$$$$$$$" << std::endl;
+        send("Welcome! you send a HEAD\n");
+        std::vector<std::string> arg;
+        std::vector<std::string> env;
+        env.push_back("CGI_TEST=1234");
+        env.push_back("CGI_TEST2=abc");
+        runCGI("/usr/bin/env", arg, env);
     }
-    void OnBodyRecv(std::string) {}
-    void OnCgiRecv(std::string) {}
+    void OnBodyRecv(std::string msg)
+    {
+        std::cout << "$$$$$$$$$ BEGIN BODY $$$$$$$$$$ >";
+        std::cout << msg;
+        std::cout << "< $$$$$$$$$$ END BODY $$$$$$$$$$$" << std::endl;
+        send("Welcome! you send a BODY\n");
+    }
+    void OnCgiRecv(std::string msg)
+    {
+        std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$ >";
+        std::cout << msg;
+        std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
+    }
 };
 
 #endif //TESTCONN_HPP

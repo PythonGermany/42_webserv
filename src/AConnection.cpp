@@ -13,6 +13,11 @@
 #include <iostream>
 
 #include "../include/AConnection.hpp"
+#include "../include/CommonGatewayInterface.hpp"
+#include "../include/Poll.hpp"
+
+#include <unistd.h>
+#include <fcntl.h>
 
 AConnection::AConnection()
 {
@@ -48,6 +53,49 @@ void AConnection::send(std::string msg)
 	_writeBuffer += msg;
 }
 
+void AConnection::runCGI(std::string program, std::vector<std::string> &arg, std::vector<std::string> &env)
+{
+	int pid;
+	int pipefd[2];
+
+	if (pipe(pipefd) == -1)
+		throw std::runtime_error(std::string("AConnection::runCGI(): ") + std::strerror(errno));
+	pid = fork();
+	if (pid == -1)
+		throw std::runtime_error(std::string("AConnection::runCGI(): ") + std::strerror(errno));
+	if (pid == 0)
+	{
+		if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+		{
+			std::cerr << "webserv: error: dup2(): " << std::strerror(errno) << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		close(pipefd[0]);
+		close(pipefd[1]);
+		std::vector<char *> c_arg;
+		std::vector<char *> c_env;
+		c_arg.push_back(const_cast<char *>(program.c_str()));
+		for (std::vector<std::string>::iterator it = arg.begin(); it != arg.end(); ++it)
+			c_arg.push_back(const_cast<char *>(it->c_str()));
+		c_arg.push_back(NULL);
+		for (std::vector<std::string>::iterator it = env.begin(); it != env.end(); ++it)
+			c_env.push_back(const_cast<char *>(it->c_str()));
+		c_env.push_back(NULL);
+		execve(program.c_str(), c_arg.data(), c_env.data());
+		std::cerr << "webserv: error: execve(): " << std::strerror(errno) << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	Poll::add(new CommonGatewayInterface(*this));
+	struct pollfd pollfd;
+
+	pollfd.events = POLLIN;
+	pollfd.fd = pipefd[0];
+	close(pipefd[1]);
+	std::cout << "fd: " << pollfd.fd << std::endl;
+	pollfd.revents = 0;
+	Poll::add(pollfd);
+}
+
 void AConnection::pollout(struct pollfd &pollfd)
 {
 	size_t lenToSend;
@@ -75,7 +123,10 @@ void AConnection::pollin(struct pollfd &pollfd)
 	if (msglen == -1)
 		throw std::runtime_error(std::string("AConnection::pollin(): ") + std::strerror(errno));
 	if (msglen == 0)
+	{
 		pollfd.events &= ~POLLIN;
+		return;
+	}
 	_readBuffer += std::string(tmpbuffer, tmpbuffer + msglen);
 	if (_readBuffer.size() > msgsizelimit)
 	{

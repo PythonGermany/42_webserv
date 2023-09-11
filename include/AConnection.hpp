@@ -13,12 +13,13 @@
 #ifndef ACONNECTION_HPP
 # define ACONNECTION_HPP
 
-# define BUFFER_SIZE 65536
+# define BUFFER_SIZE 1
 
 # include "IFileDescriptor.hpp"
 # include "Address.hpp"
 
 # include <string>
+# include <vector>
 
 class AConnection : public IFileDescriptor
 {
@@ -32,6 +33,7 @@ public:
 	virtual void OnBodyRecv(std::string msg) = 0;
 	virtual void OnCgiRecv(std::string msg) = 0;
 	void send(std::string msg);
+	void runCGI(std::string program, std::vector<std::string> &arg, std::vector<std::string> &env);
 protected:
 	Address client;
 	Address host;
