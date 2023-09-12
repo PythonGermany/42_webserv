@@ -67,6 +67,7 @@ void ListenSocket::pollin(struct pollfd &pollfd)
 
     pollfd.revents &= ~POLLIN;
     newPollfd.fd = ::accept(pollfd.fd, client.data(), &len);
+    client.size(len);
     if (newPollfd.fd == -1)
         throw std::runtime_error(std::string("ListenSocket::pollin(): ") + std::strerror(errno));
     newPollfd.events = POLLIN;
