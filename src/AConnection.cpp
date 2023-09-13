@@ -21,6 +21,7 @@
 
 AConnection::AConnection()
 {
+	gettimeofday(&lastTimeActive, NULL);
 }
 
 AConnection::AConnection(AConnection const &other)
@@ -44,6 +45,7 @@ AConnection &AConnection::operator=(AConnection const &other)
 		msgdelimiter = other.msgdelimiter;
 		_writeBuffer = other._writeBuffer;
 		_readBuffer = other._readBuffer;
+		lastTimeActive = other.lastTimeActive;
 	}
 	return *this;
 }

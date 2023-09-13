@@ -13,17 +13,20 @@
 #ifndef ACONNECTION_HPP
 # define ACONNECTION_HPP
 
-# define BUFFER_SIZE 1
+# define BUFFER_SIZE 4096
 
 # include "IFileDescriptor.hpp"
 # include "Address.hpp"
 
 # include <string>
 # include <vector>
+# include <sys/time.h>
 
 class AConnection : public IFileDescriptor
 {
 public:
+	struct timeval lastTimeActive;
+
 	AConnection();
 	AConnection(AConnection const &other);
 	virtual ~AConnection();

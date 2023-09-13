@@ -13,7 +13,13 @@
 #ifndef POLL_HPP
 # define POLL_HPP
 
+/**
+ * close connections if they are TIMEOUT milliseconds inactive
+*/
+# define TIMEOUT 10000
+
 # include "IFileDescriptor.hpp"
+# include "AConnection.hpp"
 
 # include <vector>
 
@@ -36,7 +42,8 @@ private:
 	Poll(Poll const &other);
 	~Poll();
 	Poll &operator=(Poll const &other);
-	void _imtl();
+	int _imtl();
+	void _checkTimeout(struct pollfd &pollfd, AConnection *conn, int &timeout);
 	static Poll &get();
 };
 
