@@ -26,11 +26,11 @@ public:
         std::cout << "$$$$$$$$$ BEGIN HEAD $$$$$$$$$$ >";
         std::cout << msg;
         std::cout << "< $$$$$$$$$$ END HEAD $$$$$$$$$$$" << std::endl;
-        // send("HTTP/1.1 200 OK\r\n");
-        // send("Content-Length: 20\r\n");
-        // send("Content-Type: text/html\r\n");
-        // send("\r\n");
-        // send("<h1>Hello World</h1>");
+        send("HTTP/1.1 200 OK\r\n");
+        send("Content-Length: 20\r\n");
+        send("Content-Type: text/html\r\n");
+        send("\r\n");
+        send("<h1>Hello World</h1>");
     }
     void OnBodyRecv(std::string msg)
     {

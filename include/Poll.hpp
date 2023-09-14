@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Poll.hpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: jharrach <@student.42heilbronn.de>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/21 16:39:41 by jharrach          #+#    #+#             */
-/*   Updated: 2023/09/08 22:35:44 by jharrach         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef POLL_HPP
 # define POLL_HPP
 
@@ -22,6 +10,7 @@
 # include "AConnection.hpp"
 
 # include <vector>
+# include <sys/time.h>
 
 class Poll
 {
@@ -33,18 +22,21 @@ public:
 	static void remove(size_type pos);
 	static void poll();
 	static void signalHandler(int);
+	static void setTimeout(int src);
+	static void setPollOut(IFileDescriptor *src);
 private:
-	bool _stop;
-	std::vector<IFileDescriptor *> socket;
-	std::vector<struct pollfd> pollfd;
+	bool stop;
+	int timeout;
+	std::vector<IFileDescriptor *> callbackObjects;
+	std::vector<struct pollfd> pollfds;
 
 	Poll();
 	Poll(Poll const &other);
 	~Poll();
 	Poll &operator=(Poll const &other);
-	int _imtl();
-	void _checkTimeout(struct pollfd &pollfd, AConnection *conn, int &timeout);
-	static Poll &get();
+
+	static Poll &getInstance();
+	void iterate();
 };
 
 #endif //POLL_HPP

@@ -43,18 +43,18 @@ void CommonGatewayInterface::send(std::string msg)
 	_conn.OnCgiRecv("You send me something\n");
 }
 
-void CommonGatewayInterface::pollout(struct pollfd &)
+void CommonGatewayInterface::onPollOut(struct pollfd &)
 {
 }
 
-void CommonGatewayInterface::pollin(struct pollfd &pollfd)
+void CommonGatewayInterface::onPollIn(struct pollfd &pollfd)
 {
 	char tmpbuffer[BUFFER_SIZE];
 
 	pollfd.revents &= ~POLLIN;
 	ssize_t msglen = ::read(pollfd.fd, tmpbuffer, BUFFER_SIZE);
 	if (msglen == -1)
-		throw std::runtime_error(std::string("CommonGatewayInterface::pollin(): ") + std::strerror(errno));
+		throw std::runtime_error(std::string("CommonGatewayInterface::onPollIn(): ") + std::strerror(errno));
 	if (msglen == 0)
 	{
 		pollfd.events = 0;

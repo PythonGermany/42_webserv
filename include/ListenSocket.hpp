@@ -16,8 +16,9 @@ public:
     ListenSocket(ListenSocket const &other);
     ~ListenSocket();
     ListenSocket &operator=(ListenSocket const &other);
-    void pollout(struct pollfd &pollfd);
-    void pollin(struct pollfd &pollfd);
+    void onPollOut(struct pollfd &pollfd);
+    void onPollIn(struct pollfd &pollfd);
+    void onNoPollIn(struct pollfd &pollfd);
 };
 
 #endif //LISTENSOCKET_HPP

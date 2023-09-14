@@ -20,37 +20,37 @@
 
 void Poll::add(IFileDescriptor *src)
 {
-	get().socket.push_back(src);
+	getInstance().callbackObjects.push_back(src);
 }
 
 void Poll::add(struct pollfd &src)
 {
-	get().pollfd.push_back(src);
+	getInstance().pollfds.push_back(src);
 }
 
 void Poll::remove(size_type pos)
 {
-	Poll &poll = get();
-	
-	delete poll.socket[pos];
-	close(poll.pollfd[pos].fd);
-	poll.socket.erase(poll.socket.begin() + pos);
-	poll.pollfd.erase(poll.pollfd.begin() + pos);
+	Poll &poll = getInstance();
+
+	delete poll.callbackObjects[pos];
+	close(poll.pollfds[pos].fd);
+	poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
+	poll.pollfds.erase(poll.pollfds.begin() + pos);
 }
 
 void Poll::poll()
 {
-	int timeout = -1;
+	Poll &poll = getInstance();
 
 	while (true)
 	{
-		std::cout << "poll: " << timeout << std::endl;
-		int ready = ::poll(get().pollfd.data(), get().pollfd.size(), timeout);
-		if (get()._stop)
+		std::cout << "poll: " << poll.timeout << std::endl;
+		int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
+		if (poll.stop)
 			return;
 		if (ready == -1)
 			throw std::runtime_error(std::string("Poll::poll(): ") + std::strerror(errno));
-		timeout = get()._imtl();
+		poll.iterate();
 	}
 }
 
@@ -59,12 +59,14 @@ void Poll::poll()
 */
 void Poll::signalHandler(int)
 {
-	get()._stop = true;
+	getInstance().stop = true;
 	std::cout << std::endl;
 }
 
-Poll::Poll() : _stop(false)
+Poll::Poll()
 {
+	timeout = -1;
+	stop = false;
 }
 
 Poll::Poll(Poll const &)
@@ -74,13 +76,13 @@ Poll::Poll(Poll const &)
 
 Poll::~Poll()
 {
-	std::vector<IFileDescriptor *>::iterator socketIt = socket.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = pollfd.begin();
-	while (socketIt != socket.end())
+	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = callbackObjects.begin();
+	std::vector<struct pollfd>::iterator pollfdIt = pollfds.begin();
+	while (callbackObjectsIt != callbackObjects.end())
 	{
-		delete *socketIt;
+		delete *callbackObjectsIt;
 		close(pollfdIt->fd);
-		++socketIt;
+		++callbackObjectsIt;
 		++pollfdIt;
 	}
 }
@@ -90,60 +92,58 @@ Poll &Poll::operator=(Poll const &)
 	return *this;
 }
 
-timeval operator-(timeval const &lhs, timeval const &rhs)
+// timeval operator-(timeval const &lhs, timeval const &rhs)
+// {
+// 	timeval result;
+//     result.tv_sec = lhs.tv_sec - rhs.tv_sec;
+//     result.tv_usec = lhs.tv_usec - rhs.tv_usec;
+
+//     if (result.tv_usec < 0) {
+//         result.tv_sec -= 1;
+//         result.tv_usec += 1000000;
+//     }
+//     return result;
+// }
+
+// void Poll::_checkTimeout(struct pollfd &pollfd, AConnection *conn, int &timeout)
+// {
+// 	struct timeval currentTime;
+// 	struct timeval delta;
+// 	int newTimeout = TIMEOUT;
+
+// 	gettimeofday(&currentTime, NULL);
+
+// 	if (pollfd.revents & POLLIN || pollfd.revents & POLLOUT)
+// 	{
+// 		conn->lastTimeActive = currentTime;		
+// 	}
+// 	else
+// 	{
+// 		delta = currentTime - conn->lastTimeActive;
+// 		newTimeout -= (delta.tv_sec * 1000 + delta.tv_usec / 1000);
+// 	}
+// 	if (newTimeout > 0 && (newTimeout < timeout || timeout == -1))
+// 		timeout = newTimeout;
+// 	if (newTimeout <= 0)
+// 		pollfd.events = 0;
+// }
+
+void Poll::iterate()
 {
-	timeval result;
-    result.tv_sec = lhs.tv_sec - rhs.tv_sec;
-    result.tv_usec = lhs.tv_usec - rhs.tv_usec;
-
-    if (result.tv_usec < 0) {
-        result.tv_sec -= 1;
-        result.tv_usec += 1000000;
-    }
-    return result;
-}
-
-void Poll::_checkTimeout(struct pollfd &pollfd, AConnection *conn, int &timeout)
-{
-	struct timeval currentTime;
-	struct timeval delta;
-	int newTimeout = TIMEOUT;
-
-	gettimeofday(&currentTime, NULL);
-
-	if (pollfd.revents & POLLIN || pollfd.revents & POLLOUT)
-	{
-		conn->lastTimeActive = currentTime;		
-	}
-	else
-	{
-		delta = currentTime - conn->lastTimeActive;
-		newTimeout -= (delta.tv_sec * 1000 + delta.tv_usec / 1000);
-	}
-	if (newTimeout > 0 && (newTimeout < timeout || timeout == -1))
-		timeout = newTimeout;
-	if (newTimeout <= 0)
-		pollfd.events = 0;
-}
-
-int Poll::_imtl()
-{
-	Poll &poll = get();
-	size_type size = poll.socket.size();
-	int timeout = -1;
+	size_type size = callbackObjects.size();
+	timeout = -1;
 
 	for (size_type i = 0; i < size;)
 	{
-		AConnection *conn = dynamic_cast<AConnection *>(poll.socket[i]);
-		if (conn != NULL)
-			_checkTimeout(poll.pollfd[i], conn, timeout);
-		if (poll.pollfd[i].revents & POLLIN)
-			poll.socket[i]->pollin(poll.pollfd[i]);
-		if (poll.pollfd[i].revents & POLLOUT)
-			poll.socket[i]->pollout(poll.pollfd[i]);
-		if (!(poll.pollfd[i].revents & POLLOUT || poll.pollfd[i].revents & POLLIN) && poll.pollfd[i].revents)
-			throw std::runtime_error("revents");
-		if (!(poll.pollfd[i].events & POLLIN) && !(poll.pollfd[i].events & POLLOUT))
+		if (pollfds[i].revents & POLLOUT)
+			callbackObjects[i]->onPollOut(pollfds[i]);
+		if (pollfds[i].revents & POLLIN)
+			callbackObjects[i]->onPollIn(pollfds[i]);
+		else
+			callbackObjects[i]->onNoPollIn(pollfds[i]);
+		if (pollfds[i].revents & (POLLERR | POLLNVAL))
+			throw std::runtime_error("Poll::iterate(): revents was not handled");
+		if (pollfds[i].events == 0)
 		{
 			remove(i);
 			--size;
@@ -151,11 +151,39 @@ int Poll::_imtl()
 		else
 			++i;
 	}
-	return timeout;
 }
 
-Poll &Poll::get()
+void Poll::setTimeout(int src)
+{
+	Poll &poll = getInstance();
+
+	if (poll.timeout == -1 || src < poll.timeout)
+		poll.timeout = src;
+}
+
+void Poll::setPollOut(IFileDescriptor *src)
+{
+	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = getInstance().callbackObjects.begin();
+	std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+	while (callbackObjectsIt != getInstance().callbackObjects.end())
+	{
+		if (*callbackObjectsIt == src)
+		{
+			pollfdIt->events |= POLLOUT;
+			return;
+		}
+		++callbackObjectsIt;
+		++pollfdIt;
+	}
+	throw std::invalid_argument("Poll::setPollOut");
+}
+
+/**
+ * only if an object exists does the destructor get called
+*/
+Poll &Poll::getInstance()
 {
 	static Poll poll;
+
 	return poll;
 }

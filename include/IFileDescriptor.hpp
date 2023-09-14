@@ -19,8 +19,9 @@ class IFileDescriptor
 {
 public:
 	virtual ~IFileDescriptor() {};
-	virtual void pollout(struct pollfd &pollfd) = 0;
-	virtual void pollin(struct pollfd &pollfd) = 0;
+	virtual void onPollOut(struct pollfd &pollfd) = 0;
+	virtual void onPollIn(struct pollfd &pollfd) = 0;
+	virtual void onNoPollIn(struct pollfd &pollfd) = 0;
 };
 
 #endif //IFILEDESCRIPTOR_HPP

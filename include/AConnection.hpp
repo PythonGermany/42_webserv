@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   AConnection.hpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: jharrach <@student.42heilbronn.de>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/21 16:39:41 by jharrach          #+#    #+#             */
-/*   Updated: 2023/09/08 22:28:53 by jharrach         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef ACONNECTION_HPP
 # define ACONNECTION_HPP
 
@@ -25,8 +13,6 @@
 class AConnection : public IFileDescriptor
 {
 public:
-	struct timeval lastTimeActive;
-
 	AConnection();
 	AConnection(AConnection const &other);
 	virtual ~AConnection();
@@ -36,7 +22,9 @@ public:
 	virtual void OnBodyRecv(std::string msg) = 0;
 	virtual void OnCgiRecv(std::string msg) = 0;
 	void send(std::string msg);
-	void runCGI(std::string program, std::vector<std::string> &arg, std::vector<std::string> &env);
+	// void runCGI(std::string program, std::vector<std::string> &arg, std::vector<std::string> &env);
+	void onPipePollOut(struct pollfd &pollfd);
+	void onPipePollIn(struct pollfd &pollfd);
 protected:
 	Address client;
 	Address host;
@@ -46,9 +34,14 @@ protected:
 private:
 	std::string _writeBuffer;
 	std::string _readBuffer;
+	std::string _cgiWriteBuffer;
+	std::string _cgiReadBuffer;
 
-	void pollout(struct pollfd &pollfd);
-	void pollin(struct pollfd &pollfd);
+	struct timeval lastTimeActive;
+
+	void onPollOut(struct pollfd &pollfd);
+	void onPollIn(struct pollfd &pollfd);
+	void onNoPollIn(struct pollfd &pollfd);
 	void passReadBuffer();
 };
 

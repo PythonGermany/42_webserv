@@ -13,12 +13,12 @@
 #ifndef COMMONGATEWAYINTERFACE_HPP
 # define COMMONGATEWAYINTERFACE_HPP
 
-# include "IFileDescriptor.hpp"
+# include "AFileDescriptor.hpp"
 # include "AConnection.hpp"
 
 # include <string>
 
-class CommonGatewayInterface : public IFileDescriptor
+class CommonGatewayInterface : public AFileDescriptor
 {
 public:
     CommonGatewayInterface(AConnection &Connection);
@@ -31,8 +31,8 @@ private:
     AConnection &_conn;
     std::string _readBuffer;
 	// CommonGatewayInterface();
-    void pollin(struct pollfd &pollfd);
-    void pollout(struct pollfd &pollfd);
+    void onPollIn(struct pollfd &pollfd);
+    void onPollOut(struct pollfd &pollfd);
 };
 
 #endif //COMMONGATEWAYINTERFACE_HPP

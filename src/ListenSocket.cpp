@@ -36,6 +36,7 @@ ListenSocket::ListenSocket(std::string const &addr, std::string const &port, int
     pollfd.events = POLLIN;
     pollfd.revents = 0;
     Poll::add(pollfd);
+    std::cout << "listen: " << _addr << std::endl;
 }
 
 ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr)
@@ -44,6 +45,7 @@ ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr)
 
 ListenSocket::~ListenSocket()
 {
+    std::cout << "stop listening: " << _addr << std::endl;
 }
 
 ListenSocket &ListenSocket::operator=(ListenSocket const &other)
@@ -55,11 +57,11 @@ ListenSocket &ListenSocket::operator=(ListenSocket const &other)
     return *this;
 }
 
-void ListenSocket::pollout(struct pollfd &)
+void ListenSocket::onPollOut(struct pollfd &)
 {
 }
 
-void ListenSocket::pollin(struct pollfd &pollfd)
+void ListenSocket::onPollIn(struct pollfd &pollfd)
 {
     struct pollfd newPollfd;
     socklen_t len = sizeof(sockaddr_in6);
@@ -67,12 +69,19 @@ void ListenSocket::pollin(struct pollfd &pollfd)
 
     pollfd.revents &= ~POLLIN;
     newPollfd.fd = ::accept(pollfd.fd, client.data(), &len);
-    client.size(len);
     if (newPollfd.fd == -1)
-        throw std::runtime_error(std::string("ListenSocket::pollin(): ") + std::strerror(errno));
+        throw std::runtime_error(std::string("ListenSocket::onPollIn(): ") + std::strerror(errno));
+    int flags = fcntl(newPollfd.fd, F_GETFL, 0);
+    if (flags == -1)
+        throw std::runtime_error(std::string("ListenSocket::onPollIn(): ") + std::strerror(errno));
+    std::cout << (flags & O_RDWR) << std::endl;
+    client.size(len);
     newPollfd.events = POLLIN;
     newPollfd.revents = 0;
     Poll::add(new testconn(client, _addr));
     Poll::add(newPollfd);
 }
 
+void ListenSocket::onNoPollIn(struct pollfd &)
+{
+}
