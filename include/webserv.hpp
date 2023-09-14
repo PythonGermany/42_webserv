@@ -28,7 +28,7 @@ const t_token tokens[28] = {
 
     // Server context
     {"server", "http", true, 1, -1, 0, 0, NULL},
-    {"listen", "server", false, 1, -1, 1, 1, NULL},
+    {"listen", "server", false, 1, -1, 1, 1, isListen},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},
     {"client_max_body_size", "server", false, 1, 1, 1, 1, isNumeric},
     // Error page context

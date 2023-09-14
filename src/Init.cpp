@@ -8,7 +8,7 @@ std::vector<Server> Init::initServers(
     Context& context, std::map<std::string, std::string>& mimeTypes) {
   Log::write("-------- Loading servers -----------", INFO, BRIGHT_GREEN);
   std::vector<Server> servers;
-  std::vector<Context> serverContexts =
+  std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
   for (std::vector<Context>::iterator it = serverContexts.begin();
        it != serverContexts.end(); it++) {

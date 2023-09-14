@@ -36,3 +36,11 @@ std::string isBoolean(std::string const &value) {
   if (value == "on" || value == "off") return "";
   return "Invalid boolean value";
 }
+
+std::string isListen(std::string const &value) {
+  size_t pos = value.find(':');
+  if (pos == std::string::npos) return "Invalid listen format (port missing)";
+  std::string port = value.substr(pos + 1);
+  if (isNumeric(port) != "") return "Invalid listen format (invalid port)";
+  return "";
+}

@@ -30,4 +30,6 @@ std::string isExtension(std::string const &value);
 
 std::string isBoolean(std::string const &value);
 
+std::string isListen(std::string const &value);
+
 #endif
