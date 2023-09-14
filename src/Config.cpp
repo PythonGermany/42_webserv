@@ -101,12 +101,11 @@ std::string Config::processInclude(Context &context, std::string path) {
   } catch (const std::exception &e) {
     return e.what();
   }
-  for (std::vector<std::string>::iterator it = files.begin(); it != files.end();
-       it++) {
+  for (size_t i = 0; i < files.size(); i++) {
     Log::write(
-        "Context: '" + context.getName() + "' -> Including '" + *it + "'",
+        "Context: '" + context.getName() + "' -> Include '" + files[i] + "'",
         DEBUG);
-    Config config(*it);
+    Config config(files[i]);
     config.removeComments();
     config.parseContext(context, config.getConfig(), 1, false);
   }

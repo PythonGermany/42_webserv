@@ -9,11 +9,8 @@ std::vector<Server> Init::initServers(Context& context) {
   std::vector<Server> servers;
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
-  for (std::vector<Context>::iterator it = serverContexts.begin();
-       it != serverContexts.end(); it++) {
-    Server server(*it);
-    servers.push_back(server);
-  }
+  for (size_t i = 0; i < serverContexts.size(); i++)
+    servers.push_back(Server(serverContexts[i]));
   Log::write("Number of servers: " + toString(servers.size()), INFO);
   Log::write("-- Servers successfully loaded ------", INFO, BRIGHT_GREEN);
   return servers;
@@ -24,16 +21,14 @@ void Init::initMimeTypes(Context& context) {
   std::map<std::string, std::string> types;
   std::vector<Context>& mimes =
       context.getContext("http")[0].getContext("types")[0].getContext("type");
-  for (std::vector<Context>::iterator it = mimes.begin(); it != mimes.end();
-       it++) {
-    std::string mime = it->getDirective("mime")[0];
-    std::vector<std::string> exts = it->getDirective("extension");
-    for (std::vector<std::string>::iterator it2 = exts.begin();
-         it2 != exts.end(); it2++) {
-      if (types.find(*it2) != types.end())
-        Log::write("WARNING: Duplicate mime type extension '" + *it2 + "'",
+  for (size_t i = 0; i < mimes.size(); i++) {
+    std::string mime = mimes[i].getDirective("mime")[0];
+    std::vector<std::string> exts = mimes[i].getDirective("extension");
+    for (size_t j = 0; j < exts.size(); j++) {
+      if (types.find(exts[j]) != types.end())
+        Log::write("WARNING: Duplicate mime type extension '" + exts[j] + "'",
                    WARNING, YELLOW);
-      types[*it2] = mime;
+      types[exts[j]] = mime;
     }
   }
   context.getContext("http")[0].removeContext("types");
