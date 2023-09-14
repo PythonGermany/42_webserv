@@ -4,14 +4,14 @@
 #include <vector>
 
 #include "Log.hpp"
-#include "Server.hpp"
+#include "VirtualHost.hpp"
 
 class Init {
  public:
   Init();
   ~Init();
 
-  static std::vector<Server> initServers(Context& context);
+  static std::vector<VirtualHost> initVirtualHosts(Context& context);
   static void initMimeTypes(Context& context);
   static void initLogDefaults(Context& context);
 };

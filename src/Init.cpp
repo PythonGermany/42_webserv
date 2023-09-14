@@ -4,13 +4,13 @@ Init::Init() {}
 
 Init::~Init() {}
 
-std::vector<Server> Init::initServers(Context& context) {
+std::vector<VirtualHost> Init::initVirtualHosts(Context& context) {
   Log::write("-------- Loading servers -----------", INFO, BRIGHT_GREEN);
-  std::vector<Server> servers;
+  std::vector<VirtualHost> servers;
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
   for (size_t i = 0; i < serverContexts.size(); i++)
-    servers.push_back(Server(serverContexts[i]));
+    servers.push_back(VirtualHost(serverContexts[i]));
   Log::write("Number of servers: " + toString(servers.size()), INFO);
   Log::write("-- Servers successfully loaded ------", INFO, BRIGHT_GREEN);
   return servers;
@@ -33,7 +33,7 @@ void Init::initMimeTypes(Context& context) {
   }
   context.getContext("http")[0].removeContext("types");
   Log::write("Number of mime extensions: " + toString(types.size()), INFO);
-  Server::setMimeTypes(types);
+  VirtualHost::setMimeTypes(types);
   Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
 }
 

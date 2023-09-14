@@ -1,5 +1,5 @@
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef VIRTUALHOST_HPP
+#define VIRTUALHOST_HPP
 
 #include <map>
 #include <string>
@@ -7,25 +7,22 @@
 
 #include "Context.hpp"
 
-class Server {
+class VirtualHost {
  private:
   static std::map<std::string, std::string> _mimeTypes;
   Context _context;
   std::vector<bool> _isDefault;
 
  public:
-  Server();
-  Server(const Context &context);
-  Server(const Server &rhs);
-  Server &operator=(const Server &rhs);
-  ~Server();
+  VirtualHost();
+  VirtualHost(const Context &context);
+  VirtualHost(const VirtualHost &rhs);
+  VirtualHost &operator=(const VirtualHost &rhs);
+  ~VirtualHost();
 
   // Setters/Adders
   static void setMimeTypes(std::map<std::string, std::string> &mimeTypes);
   void setContext(const Context &context);
-
-  // Getters
-  Context &getContext();
 
   void print();
 };

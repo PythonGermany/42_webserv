@@ -19,14 +19,14 @@ int loadConfig(Context& context, std::string path) {
 
 int main(int argc, char** argv) {
   Context context("_", "");
-  std::vector<Server> servers;
+  std::vector<VirtualHost> servers;
 
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);
   else {
     Init::initLogDefaults(context);
     Init::initMimeTypes(context);
-    servers = Init::initServers(context);
+    servers = Init::initVirtualHosts(context);
   }
   Log::close();
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);

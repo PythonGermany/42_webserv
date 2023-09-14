@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "Context.hpp"
 #include "File.hpp"
-#include "Server.hpp"
 #include "utils.hpp"
 
 class Config {
