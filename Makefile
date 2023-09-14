@@ -2,8 +2,8 @@ NAME = webserv
 
 FLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRC_DIR = srcs/
-INC_DIR = includes/
+SRC_DIR = src/
+INC_DIR = include/
 OBJ_DIR = .obj/
 
 SRC = main.cpp Config.cpp Context.cpp Server.cpp Init.cpp File.cpp Log.cpp structure.cpp utils.cpp
