@@ -13,6 +13,8 @@
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 #define TIMEOUT 10000
 
+// Token structure in the format: {name, parent, isContext, minOccurence,
+// maxOccurence, minArgs, maxArgs, validationFunction}
 const t_token tokens[28] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
