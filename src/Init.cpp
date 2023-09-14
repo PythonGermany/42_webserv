@@ -4,8 +4,7 @@ Init::Init() {}
 
 Init::~Init() {}
 
-std::vector<Server> Init::initServers(
-    Context& context, std::map<std::string, std::string>& mimeTypes) {
+std::vector<Server> Init::initServers(Context& context) {
   Log::write("-------- Loading servers -----------", INFO, BRIGHT_GREEN);
   std::vector<Server> servers;
   std::vector<Context>& serverContexts =
@@ -13,7 +12,6 @@ std::vector<Server> Init::initServers(
   for (std::vector<Context>::iterator it = serverContexts.begin();
        it != serverContexts.end(); it++) {
     Server server(*it);
-    server.setMimeTypes(mimeTypes);
     servers.push_back(server);
   }
   Log::write("Number of servers: " + toString(servers.size()), INFO);
@@ -21,7 +19,7 @@ std::vector<Server> Init::initServers(
   return servers;
 }
 
-std::map<std::string, std::string> Init::initMimeTypes(Context& context) {
+void Init::initMimeTypes(Context& context) {
   Log::write("-------- Loading mime types ---------", INFO, BRIGHT_GREEN);
   std::map<std::string, std::string> types;
   std::vector<Context>& mimes =
@@ -38,9 +36,10 @@ std::map<std::string, std::string> Init::initMimeTypes(Context& context) {
       types[*it2] = mime;
     }
   }
+  context.getContext("http")[0].removeContext("types");
   Log::write("Number of mime extensions: " + toString(types.size()), INFO);
+  Server::setMimeTypes(types);
   Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
-  return types;
 }
 
 void Init::initLogDefaults(Context& context) {

@@ -19,15 +19,14 @@ int loadConfig(Context& context, std::string path) {
 
 int main(int argc, char** argv) {
   Context context("_", "");
-  std::map<std::string, std::string> mimeTypes;
   std::vector<Server> servers;
 
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);
   else {
     Init::initLogDefaults(context);
-    mimeTypes = Init::initMimeTypes(context);
-    servers = Init::initServers(context, mimeTypes);
+    Init::initMimeTypes(context);
+    servers = Init::initServers(context);
   }
   Log::close();
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);

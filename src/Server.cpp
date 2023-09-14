@@ -15,7 +15,7 @@ Server &Server::operator=(const Server &rhs) {
 
 Server::~Server() {}
 
-void Server::setMimeTypes(std::map<std::string, std::string> mimeTypes) {
+void Server::setMimeTypes(std::map<std::string, std::string> &mimeTypes) {
   _mimeTypes = mimeTypes;
 }
 

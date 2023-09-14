@@ -70,6 +70,16 @@ std::string Context::addContext(Context context) {
   return "";
 }
 
+void Context::removeDirective(std::string token) {
+  _directives.erase(token);
+  _tokenOccurences.erase(token);
+}
+
+void Context::removeContext(std::string token) {
+  _contexts.erase(token);
+  _tokenOccurences.erase(token);
+}
+
 bool Context::exists(std::string token) {
   return _tokenOccurences.find(token) != _tokenOccurences.end();
 }

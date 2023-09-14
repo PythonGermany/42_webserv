@@ -39,6 +39,10 @@ class Context {
   std::string addDirective(std::string token, std::vector<std::string> values);
   std::string addContext(Context context);
 
+  // Remove
+  void removeDirective(std::string token);
+  void removeContext(std::string token);
+
   // Checks if the token exists in the context
   // @exception No custom exceptions
   bool exists(std::string token);

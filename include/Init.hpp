@@ -11,9 +11,8 @@ class Init {
   Init();
   ~Init();
 
-  static std::vector<Server> initServers(
-      Context& context, std::map<std::string, std::string>& mimeTypes);
-  static std::map<std::string, std::string> initMimeTypes(Context& context);
+  static std::vector<Server> initServers(Context& context);
+  static void initMimeTypes(Context& context);
   static void initLogDefaults(Context& context);
 };
 
