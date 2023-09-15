@@ -1,5 +1,7 @@
 #include "Config.hpp"
 #include "Init.hpp"
+#include "ListenSocket.hpp"
+#include "Poll.hpp"
 #include "webserv.hpp"
 
 int loadConfig(Context& context, std::string path) {
@@ -19,15 +21,12 @@ int loadConfig(Context& context, std::string path) {
 
 int main(int argc, char** argv) {
   Context context("_", "");
-  std::vector<VirtualHost> servers;
 
   if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
     Log::writeError("Error while loading config file", BRIGHT_RED);
-  else {
-    Init::initLogDefaults(context);
-    Init::initMimeTypes(context);
-    servers = Init::initVirtualHosts(context);
-  }
+  else
+    Init::init(context);
+  Poll::poll();
   Log::close();
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
   return 0;

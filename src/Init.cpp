@@ -4,16 +4,22 @@ Init::Init() {}
 
 Init::~Init() {}
 
-std::vector<VirtualHost> Init::initVirtualHosts(Context& context) {
-  Log::write("-------- Loading servers -----------", INFO, BRIGHT_GREEN);
-  std::vector<VirtualHost> servers;
+void Init::init(Context& context) {
+  initLogDefaults(context);
+  initMimeTypes(context);
+  initVirtualHosts(context);
+  initPoll();
+}
+
+void Init::initVirtualHosts(Context& context) {
+  Log::write("------- Loading Virtual Hosts -------", INFO, BRIGHT_GREEN);
+  std::vector<VirtualHost> virtualHosts;
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
   for (size_t i = 0; i < serverContexts.size(); i++)
-    servers.push_back(VirtualHost(serverContexts[i]));
-  Log::write("Number of servers: " + toString(servers.size()), INFO);
-  Log::write("-- Servers successfully loaded ------", INFO, BRIGHT_GREEN);
-  return servers;
+    VirtualHost::add(VirtualHost(serverContexts[i]));
+  Log::write("Number of servers: " + toString(virtualHosts.size()), INFO);
+  Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
 }
 
 void Init::initMimeTypes(Context& context) {
@@ -57,4 +63,27 @@ void Init::initLogDefaults(Context& context) {
   Log::write("Log level: " + toString(Log::getLevel()), INFO);
   Log::write("Access log file: " + Log::getLogFile().getPath(), INFO);
   Log::write("Error log file: " + Log::getErrorLogFile().getPath(), INFO);
+}
+
+void Init::initPoll() {
+  size_t sockets = 0;
+  Log::write("-------- Generating sockets ---------", INFO, BRIGHT_GREEN);
+  std::vector<VirtualHost>& virtualHosts = VirtualHost::getVirtualHosts();
+  std::set<std::string> connections;
+  for (size_t i = 0; i < virtualHosts.size(); i++) {
+    std::vector<std::string>& listen =
+        virtualHosts[i].getContext().getDirective("listen");
+    for (size_t j = 0; j < listen.size(); j++) {
+      if (connections.find(listen[j]) == connections.end()) {
+        connections.insert(listen[j]);
+        size_t pos = listen[j].find(":");
+        std::string host = listen[j].substr(0, pos);
+        std::string port = listen[j].substr(pos + 1);
+        Poll::add(new ListenSocket(host, port));
+        sockets++;
+      }
+    }
+  }
+  Log::write("Number of sockets: " + toString(sockets), INFO);
+  Log::write("-------- Sockets generated ---------", INFO, BRIGHT_GREEN);
 }

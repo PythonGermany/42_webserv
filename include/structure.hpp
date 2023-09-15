@@ -18,8 +18,8 @@ typedef struct s_token {
   std::string (*func)(std::string const &value);
 } t_token;
 
-// Validation functions (supposed to be return a non-empty string if the value
-// is invalid)
+// Validation functions are supposed to return a non-empty string if value is
+// invalid
 
 std::string isNumeric(std::string const &value);
 

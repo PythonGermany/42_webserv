@@ -1,19 +1,25 @@
 #ifndef INIT_HPP
 #define INIT_HPP
 
+#include <set>
 #include <vector>
 
+#include "ListenSocket.hpp"
 #include "Log.hpp"
+#include "Poll.hpp"
 #include "VirtualHost.hpp"
 
 class Init {
- public:
+ private:
   Init();
   ~Init();
 
-  static std::vector<VirtualHost> initVirtualHosts(Context& context);
+ public:
+  static void init(Context& context);
+  static void initVirtualHosts(Context& context);
   static void initMimeTypes(Context& context);
   static void initLogDefaults(Context& context);
+  static void initPoll();
 };
 
 #endif

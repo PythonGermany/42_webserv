@@ -31,7 +31,7 @@ class Context {
   std::string getParent();
   size_t getTokenOccurence(std::string token);
   std::map<std::string, size_t> getTokenOccurences();
-  std::vector<std::string> getDirective(std::string token);
+  std::vector<std::string> &getDirective(std::string token);
   std::vector<Context> &getContext(std::string token);
 
   // Setters/Adders

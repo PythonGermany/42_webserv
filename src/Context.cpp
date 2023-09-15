@@ -34,9 +34,7 @@ std::map<std::string, size_t> Context::getTokenOccurences() {
   return _tokenOccurences;
 }
 
-std::vector<std::string> Context::getDirective(std::string token) {
-  if (_directives.find(token) == _directives.end())
-    return std::vector<std::string>();
+std::vector<std::string> &Context::getDirective(std::string token) {
   return _directives[token];
 }
 

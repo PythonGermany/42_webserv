@@ -9,9 +9,9 @@
 
 class VirtualHost {
  private:
+  static std::vector<VirtualHost> _virtualHosts;
   static std::map<std::string, std::string> _mimeTypes;
   Context _context;
-  std::vector<bool> _isDefault;
 
  public:
   VirtualHost();
@@ -21,8 +21,13 @@ class VirtualHost {
   ~VirtualHost();
 
   // Setters/Adders
+  static void add(const VirtualHost &virtualHost);
   static void setMimeTypes(std::map<std::string, std::string> &mimeTypes);
   void setContext(const Context &context);
+
+  // Getters
+  static std::vector<VirtualHost> &getVirtualHosts();
+  Context &getContext();
 
   void print();
 };
