@@ -10,6 +10,7 @@ Config &Config::operator=(const Config &rhs) {
   if (this == &rhs) return *this;
   _file = rhs._file;
   _config = rhs._config;
+
   return *this;
 }
 
@@ -42,8 +43,8 @@ void Config::removeComments() {
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
                               bool validate) {
-  size_t startLine = line;
   Log::write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
+  size_t startLine = line;
   while (true) {
     line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
     trimStart(data);
@@ -58,24 +59,22 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       if (nextEnd == std::string::npos || data[nextEnd] != ';')
         throwExeption(line, "Expected token ';' not found");
       line += linesUntilPos(data, nextEnd + 1);
-    }
-    if (token == "include") {
-      error = processInclude(context, trim(cut(data, 0, nextEnd)));
+      if (token == "include")
+        _error = processInclude(context, trim(cut(data, 0, nextEnd)));
+      else
+        _error = context.addDirective(
+            token, split(cut(data, 0, nextEnd), " \f\n\r\t\v"));
       data.erase(0, 1);
     } else if (context.isValidContext(token)) {
       processContext(context, data, token, line);
-    } else if (context.isValidDirective(token)) {
-      error = context.addDirective(token,
-                                   split(cut(data, 0, nextEnd), " \f\n\r\t\v"));
-      data.erase(0, 1);
     } else
-      throwExeption(line, "Invalid token '" + token + "'");
-    if (error != "") throwExeption(line, error);
+      _error = "Invalid token '" + token + "'";
+    if (_error != "") throwExeption(line, _error);
   }
   Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
              DEBUG);
-  if (validate) error = context.validate(false);
-  if (error != "") throwExeption(startLine, error);
+  if (validate) _error = context.validate(false);
+  if (_error != "") throwExeption(startLine, _error);
   return context;
 }
 
@@ -89,7 +88,8 @@ void Config::processContext(Context &context, std::string &data,
     throwExeption(line, "No context end found for '" + token + "'");
   std::string contextData = cut(data, 1, nextEnd);
   Context child(token, context.getName());
-  error = context.addContext(parseContext(child, contextData, line));
+  parseContext(child, contextData, line);
+  _error = context.addContext(child);
   line += linesUntilPos(contextData, contextData.length() + 2);
   data.erase(0, 2);
 }

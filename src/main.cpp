@@ -4,29 +4,25 @@
 #include "Poll.hpp"
 #include "webserv.hpp"
 
-int loadConfig(Context& context, std::string path) {
+Context loadConfig(std::string path) {
   Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
-  try {
-    Config config(path);
-    config.removeComments();
-    context = config.parseContext(context, config.getConfig());
-  } catch (std::exception& e) {
-    Log::writeError(e.what(), BRIGHT_YELLOW);
-    return 1;
-  }
+  Context context("_", "");
+  Config config(path);
+  config.removeComments();
+  context = config.parseContext(context, config.getConfig());
   if (LOG_LEVEL >= DEBUG) context.print();
   Log::write("-- Config file successfully loaded --", INFO, BRIGHT_GREEN);
-  return 0;
+  return context;
 }
 
 int main(int argc, char** argv) {
-  Context context("_", "");
-
-  if (loadConfig(context, argc > 1 ? argv[1] : CONFIG_PATH) == 1)
-    Log::writeError("Error while loading config file", BRIGHT_RED);
-  else
+  try {
+    Context context = loadConfig(argc > 1 ? argv[1] : CONFIG_PATH);
     Init::init(context);
-  Poll::poll();
+    Poll::poll();
+  } catch (const std::exception& e) {
+    Log::writeError(e.what(), BRIGHT_YELLOW);
+  }
   Log::close();
   Log::write("Number of open files: " + toString(File::getFilesOpen()), INFO);
   return 0;

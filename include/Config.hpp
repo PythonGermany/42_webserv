@@ -13,7 +13,7 @@ class Config {
  private:
   File _file;
   std::string _config;
-  std::string error;
+  std::string _error;
 
  public:
   Config();

@@ -12,6 +12,7 @@
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 #define TIMEOUT 10000
+#define CLIENT_MAX_BODY_SIZE 1048576
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}

@@ -39,8 +39,10 @@ std::string isBoolean(std::string const &value) {
 
 std::string isListen(std::string const &value) {
   size_t pos = value.find(':');
+  if (pos == 0) return "Invalid listen format (address missing)";
   if (pos == std::string::npos) return "Invalid listen format (port missing)";
   std::string port = value.substr(pos + 1);
+  if (port.length() == 0) return "Invalid listen format (port missing)";
   if (isNumeric(port) != "") return "Invalid listen format (invalid port)";
   return "";
 }
