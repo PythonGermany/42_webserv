@@ -2,8 +2,8 @@
 
 #include <fcntl.h>
 
+#include "Http.hpp"
 #include "Poll.hpp"
-#include "testconn.hpp"
 
 ListenSocket::ListenSocket() {}
 
@@ -78,7 +78,7 @@ void ListenSocket::onPollIn(struct pollfd &pollfd) {
   client.size(len);
   newPollfd.events = POLLIN;
   newPollfd.revents = 0;
-  Poll::add(new testconn(client, _addr));
+  Poll::add(new Http(client, _addr));
   Poll::add(newPollfd);
 }
 

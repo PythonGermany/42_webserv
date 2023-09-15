@@ -67,7 +67,7 @@ void Init::initLogDefaults(Context& context) {
 
 void Init::initPoll() {
   size_t sockets = 0;
-  Log::write("-------- Generating sockets ---------", INFO, BRIGHT_GREEN);
+  Log::write("--------- Creating sockets ----------", INFO, BRIGHT_GREEN);
   std::vector<VirtualHost>& virtualHosts = VirtualHost::getVirtualHosts();
   std::set<std::string> connections;
   for (size_t i = 0; i < virtualHosts.size(); i++) {
@@ -85,5 +85,5 @@ void Init::initPoll() {
     }
   }
   Log::write("Number of sockets: " + toString(sockets), INFO);
-  Log::write("-------- Sockets generated ---------", INFO, BRIGHT_GREEN);
+  Log::write("---------- Sockets created ----------", INFO, BRIGHT_GREEN);
 }
