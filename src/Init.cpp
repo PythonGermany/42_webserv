@@ -13,12 +13,12 @@ void Init::init(Context& context) {
 
 void Init::initVirtualHosts(Context& context) {
   Log::write("------- Loading Virtual Hosts -------", INFO, BRIGHT_GREEN);
-  std::vector<VirtualHost> virtualHosts;
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
   for (size_t i = 0; i < serverContexts.size(); i++)
     VirtualHost::add(VirtualHost(serverContexts[i]));
-  Log::write("Number of servers: " + toString(virtualHosts.size()), INFO);
+  size_t size = VirtualHost::getVirtualHosts().size();
+  Log::write("Number of Virtual Hosts: " + toString(size), INFO);
   Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
 }
 
