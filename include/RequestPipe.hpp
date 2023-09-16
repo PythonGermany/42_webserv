@@ -4,20 +4,17 @@
 # include "IFileDescriptor.hpp"
 # include "AConnection.hpp"
 
-class RequestPipe : IFileDescriptor
+class RequestPipe : public IFileDescriptor
 {
 public:
-	RequestPipe(AConnection *src, int pid);
+	RequestPipe(AConnection *src);
 	RequestPipe(RequestPipe const &other);
 	~RequestPipe();
 	RequestPipe &operator=(RequestPipe const &other);
 
-	void onPollOut(struct pollfd &pollfd);
-	void onPollIn(struct pollfd &pollfd);
-	void onNoPollIn(struct pollfd &pollfd);
+	void onPollEvent(struct pollfd &pollfd);
 private:
-	AConnection *connection;
-	std::string _writeBuffer;
+	AConnection *callbackObject;
 	RequestPipe();
 };
 

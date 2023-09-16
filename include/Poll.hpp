@@ -23,7 +23,11 @@ public:
 	static void poll();
 	static void signalHandler(int);
 	static void setTimeout(int src);
-	static void setPollOut(IFileDescriptor *src);
+	static void setPollActive(short oldEvents, IFileDescriptor *src);
+	static void addPollEvent(short event, IFileDescriptor *src);
+	static void clearPollEvent(short event, IFileDescriptor *src);
+	static short setPollInactive(IFileDescriptor *src);
+	static void cleanUp();
 private:
 	bool stop;
 	int timeout;

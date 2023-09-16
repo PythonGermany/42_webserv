@@ -15,13 +15,13 @@
 
 # include <poll.h>
 
+# define POLLINACTIVE POLLERR
+
 class IFileDescriptor
 {
 public:
 	virtual ~IFileDescriptor() {};
-	virtual void onPollOut(struct pollfd &pollfd) = 0;
-	virtual void onPollIn(struct pollfd &pollfd) = 0;
-	virtual void onNoPollIn(struct pollfd &pollfd) = 0;
+	virtual void onPollEvent(struct pollfd &pollfd) = 0;
 };
 
 #endif //IFILEDESCRIPTOR_HPP

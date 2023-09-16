@@ -26,24 +26,36 @@ public:
         std::cout << "$$$$$$$$$ BEGIN HEAD $$$$$$$$$$ >";
         std::cout << msg;
         std::cout << "< $$$$$$$$$$ END HEAD $$$$$$$$$$$" << std::endl;
-        send("HTTP/1.1 200 OK\r\n");
-        send("Content-Length: 20\r\n");
-        send("Content-Type: text/html\r\n");
-        send("\r\n");
-        send("<h1>Hello World</h1>");
+        if (msg[0] != 'c')
+        {
+            send("invalid. start with 'c'\n");
+            closeConnection();
+        }
+        if (msg != "cgi\r\n\r\n")
+            return;
+        std::vector<std::string> args;
+        args.push_back("Hello from Cgi program");
+        std::vector<std::string> env;
+        cgiSend("this is from stdin\n");
+        runCGI("./echo.out", args, env);
+        send("You requested a cgi\n");
     }
     void OnBodyRecv(std::string msg)
     {
         std::cout << "$$$$$$$$$ BEGIN BODY $$$$$$$$$$ >";
         std::cout << msg;
         std::cout << "< $$$$$$$$$$ END BODY $$$$$$$$$$$" << std::endl;
-        // send("Welcome! you send a BODY\n");
     }
     void OnCgiRecv(std::string msg)
     {
         std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$ >";
         std::cout << msg;
         std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
+        send(msg);
+    }
+    void OnCgiTimeout()
+    {
+        send("cgi timeout\n");
     }
 };
 
