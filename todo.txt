@@ -1,10 +1,7 @@
-Implement directory listing again
-Recode Request class
-Recode Response class
-Implement request method checking
+Implement correct server selection based on host, port and server name
 Implement correct default server selection
-Implement correct server selection based on host and port
-Implement support for multiple ports per server
+Implement request method checking
+Implement directory listing
 
 Needed from rfc 2616: -----------------------------------------------------------
 - URL Decode/Encode (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)
