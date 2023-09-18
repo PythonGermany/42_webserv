@@ -5,6 +5,8 @@
 #include <fnmatch.h>
 #include <netdb.h>
 
+#include <algorithm>
+#include <cctype>
 #include <cerrno>
 #include <cstring>
 #include <sstream>
@@ -65,6 +67,8 @@ std::string toString(T val) {
   return ss.str();
 }
 
+std::string toHexString(unsigned char c);
+
 // Converts an integer value to a string in the IPv4 format
 // @param addr The integer value to convert
 // @return The string
@@ -80,6 +84,22 @@ std::string inet_ntoa(uint32_t addr);
 std::string highlight(std::string str, std::string color,
                       std::string delim = "'");
 
+// Checks if a string contains a wildcard at the end
+// @param str The string to check
+// @return A vector of paths matching the wildcard
+// @exception std::runtime_error if a function call fails
 std::vector<std::string> processWildcard(std::string str);
+
+// Decodes uri percent encoding
+// @param str The string to decode
+// @return The decoded string
+// @exception std::runtime_error If the input uri is invalid
+std::string uriDecode(std::string str);
+
+// Encodes uri percent encoding
+// @param str The string to encode
+// @return The encoded string
+// @exception No custom exceptions
+std::string uriEncode(std::string str);
 
 #endif

@@ -43,6 +43,14 @@ bool endsWith(std::string str, std::string suffix) {
   return !str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
+std::string toHexString(unsigned char c) {
+  std::stringstream ss;
+  ss << std::hex << (int)c;
+  std::string hex = ss.str();
+  if (hex.length() == 1) hex = "0" + hex;
+  return hex.substr(hex.length() - 2);
+}
+
 std::string inet_ntoa(uint32_t addr) {
   std::string str = "";
   for (int i = 0; i < 4; i++) {
@@ -67,8 +75,6 @@ std::string highlight(std::string str, std::string color, std::string delim) {
   }
   return str;
 }
-
-#include <iostream>
 
 std::vector<std::string> processWildcard(std::string str) {
   std::vector<std::string> files;
@@ -100,4 +106,35 @@ std::vector<std::string> processWildcard(std::string str) {
       throw std::runtime_error("closedir: " + std::string(strerror(errno)));
   }
   return files;
+}
+
+std::string uriDecode(std::string str) {
+  std::string decoded = "";
+  for (size_t i = 0; i < str.length(); i++) {
+    if (str[i] == '%') {
+      if (i + 2 >= str.length())
+        throw std::runtime_error("uriDecode: invalid string");
+      int value;
+      sscanf(str.substr(i + 1, 2).c_str(), "%x", &value);
+      decoded += (char)value;
+      i += 2;
+    } else
+      decoded += str[i];
+  }
+  return decoded;
+}
+
+std::string uriEncode(std::string str) {
+  std::string encoded = "";
+  for (size_t i = 0; i < str.length(); i++) {
+    if (isalnum(str[i]) || str[i] == '-' || str[i] == '_' || str[i] == '.' ||
+        str[i] == '~' || str[i] == '/' || str[i] == ':')
+      encoded += str[i];
+    else {
+      std::string hex = toHexString(str[i]);
+      std::transform(hex.begin(), hex.end(), hex.begin(), ::toupper);
+      encoded += "%" + hex;
+    }
+  }
+  return encoded;
 }
