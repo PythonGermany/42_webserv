@@ -1,0 +1,9 @@
+types {
+  type { mime text/html; extension html htm; }
+  type { mime text/plain; extension txt; }
+  type { mime text/css; extension css; }
+  type { mime text/javascript; extension js; }
+  type { mime image/jpeg; extension jpg jpeg; }
+  type { mime image/png; extension png; }
+  type { mime image/gif; extension gif; }
+}

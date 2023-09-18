@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jharrach <@student.42heilbronn.de>         +#+  +:+       +#+         #
+#    By: jharrach <jharrach@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/16 20:23:47 by jharrach          #+#    #+#              #
-#    Updated: 2023/09/08 04:59:47 by jharrach         ###   ########.fr        #
+#    Updated: 2023/09/18 23:54:54 by jharrach         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,29 +17,54 @@ SRC_DIR		:= src
 INC_DIR		:= include
 
 SRC			+= main.cpp
-SRC			+= Address.cpp
-SRC			+= AConnection.cpp
-SRC			+= ListenSocket.cpp
-SRC			+= Poll.cpp
-SRC			+= ResponsePipe.cpp
-SRC			+= RequestPipe.cpp
-SRC			+= Utils.cpp
 
-HEADERS		+= Address.hpp
-HEADERS		+= AConnection.hpp
-HEADERS		+= ListenSocket.hpp
-HEADERS		+= Poll.hpp
-HEADERS		+= IFileDescriptor.hpp
-HEADERS		+= testconn.hpp
-HEADERS		+= ResponsePipe.hpp
-HEADERS		+= RequestPipe.hpp
-HEADERS		+= Utils.hpp
+SRC			+= poll/Address.cpp
+SRC			+= poll/AConnection.cpp
+SRC			+= poll/ListenSocket.cpp
+SRC			+= poll/Poll.cpp
+SRC			+= poll/ResponsePipe.cpp
+SRC			+= poll/RequestPipe.cpp
+SRC			+= poll/Utils.cpp
+
+SRC			+= config/Config.cpp
+SRC			+= config/Context.cpp
+SRC			+= config/File.cpp
+SRC			+= config/Init.cpp
+SRC			+= config/Log.cpp
+SRC			+= config/structure.cpp
+SRC			+= config/utils.cpp
+SRC			+= config/VirtualHost.cpp
+
+SRC			+= http/Http.cpp
+
+HEADERS		+= webserv.hpp
+
+HEADERS		+= config/colors.hpp
+HEADERS		+= config/Config.hpp
+HEADERS		+= config/Context.hpp
+HEADERS		+= config/File.hpp
+HEADERS		+= config/Init.hpp
+HEADERS		+= config/Log.hpp
+HEADERS		+= config/structure.hpp
+HEADERS		+= config/utils.hpp
+HEADERS		+= config/VirtualHost.hpp
+
+HEADERS		+= poll/Address.hpp
+HEADERS		+= poll/AConnection.hpp
+HEADERS		+= poll/ListenSocket.hpp
+HEADERS		+= poll/Poll.hpp
+HEADERS		+= poll/IFileDescriptor.hpp
+HEADERS		+= poll/ResponsePipe.hpp
+HEADERS		+= poll/RequestPipe.hpp
+HEADERS		+= poll/Utils.hpp
+
+HEADERS		+= http/testconn.hpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http
 
 all: $(NAME)
 
@@ -50,7 +75,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR)/poll
+	mkdir -p $(OBJ_DIR)/http
+	mkdir -p $(OBJ_DIR)/config
 
 clean:
 	$(RM) -r $(OBJ_DIR)
@@ -59,5 +86,10 @@ fclean: clean
 	$(RM) $(NAME)
 
 re: fclean all
+
+cgi: cgi/cgi
+
+cgi/cgi:
+	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
 
 .PHONY: all clean fclean re

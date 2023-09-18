@@ -1,4 +1,5 @@
 obj/
+logs/
 .vscode/
 
 tests/googletest/build
@@ -7,3 +8,4 @@ tests/obj/
 #executables
 tests/test
 webserv
+cgi/cgi
