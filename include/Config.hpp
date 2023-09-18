@@ -35,9 +35,9 @@ class Config {
   // @exception No custom exceptions
   void removeComments();
   // Recursively parses a context
-  // @param Data the data to parse
-  // @param Name the name of the root context
-  // @param The name of the parent context
+  // @param context The context to add data to
+  // @param data The data to parse
+  // @param line The line in the config file where the context starts
   // @return The parsed context object
   // @exception std::runtime_error If the context is invalid
   Context &parseContext(Context &context, std::string data, size_t line = 1,
@@ -45,31 +45,31 @@ class Config {
 
  private:
   // Processes a context
-  // @param The context to add data to
-  // @param The data to process
-  // @param The token name of the context to process
-  // @param The line in the config file where the context starts
+  // @param context The context to add data to
+  // @param data The data to process
+  // @param token The token name of the context to process
+  // @param line The line in the config file where the context starts
   // @exception std::runtime_error If the context is invalid
   void processContext(Context &context, std::string &data, std::string token,
                       size_t &line);
   // Processes an include directive
-  // @param The context to add the included context to
-  // @param The path to the included config file
+  // @param context The context to add the included context to
+  // @param path The path to the included config file
   std::string processInclude(Context &context, std::string path);
   // Returns the number of lines until the given position
-  // @param The string to search in
-  // @param The position to search until
+  // @param data The string to search in
+  // @param pos The position to search until
   // @return The number of lines until the given position
   // @exception No custom exceptions
   int linesUntilPos(const std::string &data, size_t pos);
   // Returns the position of the end of the context
-  // @param The context to search in
+  // @param context The context to search in
   // @return The position of the end of the context
   // @exception No custom exceptions
   size_t findContextEnd(const std::string &context);
   // Throws an exeption with the given message and line
-  // @param The line in the config file where the error occured
-  // @param The message to display
+  // @param line The line in the config file where the error occured
+  // @param msg The message to display
   // @return std::runtime_error
   void throwExeption(size_t line, std::string msg);
 };

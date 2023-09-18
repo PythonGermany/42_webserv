@@ -60,7 +60,7 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
               << highlight(msg, BRIGHT_BLUE) << RESET << std::endl;
     try {
       if (_log_file.isOpen())
-        _log_file.write("[" + getDate() + "|" + getTimeStamp() + "] " + msg +
+        _log_file.write("[" + getDate() + " | " + getTimeStamp() + "] " + msg +
                         "\n");
     } catch (const std::exception& e) {
       std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
@@ -74,7 +74,7 @@ void Log::writeError(std::string msg, std::string color) {
             << msg << RESET << std::endl;
   try {
     if (_error_log_file.isOpen())
-      _error_log_file.write("[" + getDate() + "|" + getTimeStamp() + "] " +
+      _error_log_file.write("[" + getDate() + " | " + getTimeStamp() + "] " +
                             msg + "\n");
   } catch (const std::exception& e) {
     std::cerr << "[" << getTimeStamp() << "] " << BRIGHT_RED
