@@ -9,3 +9,4 @@ tests/obj/
 tests/test
 webserv
 cgi/cgi
+tools/transformer

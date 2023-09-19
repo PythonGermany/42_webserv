@@ -88,6 +88,7 @@ clean:
 	$(RM) -r $(OBJ_DIR)
 
 fclean: clean
+	rm -f tools/transformer
 	$(RM) $(NAME)
 
 re: fclean all
@@ -99,5 +100,14 @@ cgi/cgi:
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp
+
+transformer:
+	c++ tools/transformer.cpp -o tools/transformer
+
+tr:
+	./tools/transformer r include/* src/* src/*/* include/*/*
+
+tj:
+	./tools/transformer j include/* src/* src/*/* include/*/*
 
 .PHONY: all clean fclean re
