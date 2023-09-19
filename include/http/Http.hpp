@@ -2,8 +2,10 @@
 #define HTTP_HPP
 
 #include <iostream>
+#include <sstream>
 
 #include "AConnection.hpp"
+#include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "VirtualHost.hpp"

@@ -7,14 +7,18 @@ Http::Http(Address const &client, Address const &host) {
   this->msgsizelimit = 10000;
   this->msgsize = 10000;
   this->_virtualHost = NULL;
-  std::cout << "create: " << client << std::endl;
+  std::stringstream ss;
+  ss << "new: " << client << " for host " << host;
+  Log::write(ss.str(), DEBUG);
 }
 
-Http::~Http() { std::cout << "delete: " << client << std::endl; }
+Http::~Http() {
+  std::stringstream ss;
+  ss << "delete: " << client << " of host " << host;
+  Log::write(ss.str(), DEBUG);
+}
 
 void Http::OnHeadRecv(std::string msg) {
-  (void)_virtualHost;
-
   _request.parseHead(msg);
   if (!_request.isValid())
     processError();

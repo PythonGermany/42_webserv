@@ -13,197 +13,165 @@
 #include "Poll.hpp"
 
 #include <unistd.h>
-#include <stdexcept>
-#include <cstring>
+
 #include <cerrno>
+#include <cstring>
 #include <iostream>
+#include <stdexcept>
 
-void Poll::add(IFileDescriptor *src)
-{
-	getInstance().callbackObjects.push_back(src);
+void Poll::add(IFileDescriptor *src) {
+  getInstance().callbackObjects.push_back(src);
 }
 
-void Poll::add(struct pollfd &src)
-{
-	getInstance().pollfds.push_back(src);
+void Poll::add(struct pollfd &src) { getInstance().pollfds.push_back(src); }
+
+void Poll::remove(size_type pos) {
+  Poll &poll = getInstance();
+
+  delete poll.callbackObjects[pos];
+  close(poll.pollfds[pos].fd);
+  poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
+  poll.pollfds.erase(poll.pollfds.begin() + pos);
 }
 
-void Poll::remove(size_type pos)
-{
-	Poll &poll = getInstance();
+void Poll::poll() {
+  Poll &poll = getInstance();
+  size_t numListenSockets = poll.callbackObjects.size();
 
-	delete poll.callbackObjects[pos];
-	close(poll.pollfds[pos].fd);
-	poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
-	poll.pollfds.erase(poll.pollfds.begin() + pos);
-}
-
-void Poll::poll()
-{
-	Poll &poll = getInstance();
-	size_t numListenSockets = poll.callbackObjects.size();
-
-	while (true)
-	{
-		std::cout << "poll.timeout: " << poll.timeout << std::endl;
-		int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
-		if (poll.stop)
-			return;
-		if (ready == -1)
-			throw std::runtime_error(std::string("Poll::poll(): ") + std::strerror(errno));
-		poll.timeout = -1;
-		poll.iterate();
-		if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
-			poll.timeout = TIMEOUT;
-	}
+  while (true) {
+    // std::cout << "poll.timeout: " << poll.timeout << std::endl;
+    int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
+    if (poll.stop) return;
+    if (ready == -1)
+      throw std::runtime_error(std::string("Poll::poll(): ") +
+                               std::strerror(errno));
+    poll.timeout = -1;
+    poll.iterate();
+    if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
+      poll.timeout = TIMEOUT;
+  }
 }
 
 /**
  * print newline because ^C is printed without
-*/
-void Poll::signalHandler(int)
-{
-	getInstance().stop = true;
-	std::cout << std::endl;
+ */
+void Poll::signalHandler(int) {
+  getInstance().stop = true;
+  std::cout << std::endl;
 }
 
-Poll::Poll()
-{
-	timeout = -1;
-	stop = false;
+Poll::Poll() {
+  timeout = -1;
+  stop = false;
 }
 
-Poll::Poll(Poll const &)
-{
+Poll::Poll(Poll const &) {}
+
+void Poll::cleanUp() {
+  Poll &poll = getInstance();
+
+  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+      poll.callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = poll.pollfds.begin();
+  while (callbackObjectsIt != poll.callbackObjects.end()) {
+    delete *callbackObjectsIt;
+    close(pollfdIt->fd);
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
 }
 
-void Poll::cleanUp()
-{
-	Poll &poll = getInstance();
+Poll::~Poll() { cleanUp(); }
 
-	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = poll.callbackObjects.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = poll.pollfds.begin();
-	while (callbackObjectsIt != poll.callbackObjects.end())
-	{
-		delete *callbackObjectsIt;
-		close(pollfdIt->fd);
-		++callbackObjectsIt;
-		++pollfdIt;
-	}
+Poll &Poll::operator=(Poll const &) { return *this; }
+
+void Poll::iterate() {
+  size_type size = callbackObjects.size();
+
+  for (size_type i = 0; i < size;) {
+    callbackObjects[i]->onPollEvent(pollfds[i]);
+    if (pollfds[i].events == 0) {
+      remove(i);
+      --size;
+    } else
+      ++i;
+  }
 }
 
-Poll::~Poll()
-{
-	cleanUp();
+void Poll::setTimeout(int src) {
+  Poll &poll = getInstance();
+
+  if (poll.timeout == -1 || src < poll.timeout) poll.timeout = src;
 }
 
-Poll &Poll::operator=(Poll const &)
-{
-	return *this;
+void Poll::addPollEvent(short event, IFileDescriptor *src) {
+  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+      getInstance().callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+    if (*callbackObjectsIt == src) {
+      pollfdIt->events |= event;
+      return;
+    }
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::addPollEvent");
 }
 
-void Poll::iterate()
-{
-	size_type size = callbackObjects.size();
-
-	for (size_type i = 0; i < size;)
-	{
-		callbackObjects[i]->onPollEvent(pollfds[i]);
-		if (pollfds[i].events == 0)
-		{
-			remove(i);
-			--size;
-		}
-		else
-			++i;
-	}
+void Poll::clearPollEvent(short event, IFileDescriptor *src) {
+  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+      getInstance().callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+    if (*callbackObjectsIt == src) {
+      pollfdIt->events &= ~event;
+      return;
+    }
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::addPollEvent");
 }
 
-void Poll::setTimeout(int src)
-{
-	Poll &poll = getInstance();
-
-	if (poll.timeout == -1 || src < poll.timeout)
-		poll.timeout = src;
+void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
+  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+      getInstance().callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+    if (*callbackObjectsIt == src) {
+      pollfdIt->events &= ~POLLINACTIVE;
+      pollfdIt->events |= oldEvents;
+      return;
+    }
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::addPollEvent");
 }
 
-void Poll::addPollEvent(short event, IFileDescriptor *src)
-{
-	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = getInstance().callbackObjects.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-	while (callbackObjectsIt != getInstance().callbackObjects.end())
-	{
-		if (*callbackObjectsIt == src)
-		{
-			pollfdIt->events |= event;
-			return;
-		}
-		++callbackObjectsIt;
-		++pollfdIt;
-	}
-	throw std::invalid_argument("Poll::addPollEvent");
-}
-
-void Poll::clearPollEvent(short event, IFileDescriptor *src)
-{
-	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = getInstance().callbackObjects.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-	while (callbackObjectsIt != getInstance().callbackObjects.end())
-	{
-		if (*callbackObjectsIt == src)
-		{
-			pollfdIt->events &= ~event;
-			return;
-		}
-		++callbackObjectsIt;
-		++pollfdIt;
-	}
-	throw std::invalid_argument("Poll::addPollEvent");
-}
-
-void Poll::setPollActive(short oldEvents, IFileDescriptor *src)
-{
-	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = getInstance().callbackObjects.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-	while (callbackObjectsIt != getInstance().callbackObjects.end())
-	{
-		if (*callbackObjectsIt == src)
-		{
-			pollfdIt->events &= ~POLLINACTIVE;
-			pollfdIt->events |= oldEvents;
-			return;
-		}
-		++callbackObjectsIt;
-		++pollfdIt;
-	}
-	throw std::invalid_argument("Poll::addPollEvent");
-}
-
-short Poll::setPollInactive(IFileDescriptor *src)
-{
-	std::vector<IFileDescriptor *>::iterator callbackObjectsIt = getInstance().callbackObjects.begin();
-	std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-	while (callbackObjectsIt != getInstance().callbackObjects.end())
-	{
-		if (*callbackObjectsIt == src)
-		{
-			short tmp = pollfdIt->events;
-			pollfdIt->events &= ~POLLIN;
-			pollfdIt->events |= POLLINACTIVE;
-			return tmp;
-		}
-		++callbackObjectsIt;
-		++pollfdIt;
-	}
-	throw std::invalid_argument("Poll::getPollEvent");
+short Poll::setPollInactive(IFileDescriptor *src) {
+  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+      getInstance().callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+    if (*callbackObjectsIt == src) {
+      short tmp = pollfdIt->events;
+      pollfdIt->events &= ~POLLIN;
+      pollfdIt->events |= POLLINACTIVE;
+      return tmp;
+    }
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::getPollEvent");
 }
 
 /**
  * only if an object exists does the destructor get called
-*/
-Poll &Poll::getInstance()
-{
-	static Poll poll;
+ */
+Poll &Poll::getInstance() {
+  static Poll poll;
 
-	return poll;
+  return poll;
 }
