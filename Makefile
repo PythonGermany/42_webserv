@@ -6,7 +6,7 @@
 #    By: jharrach <jharrach@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/16 20:23:47 by jharrach          #+#    #+#              #
-#    Updated: 2023/09/19 03:38:24 by jharrach         ###   ########.fr        #
+#    Updated: 2023/09/19 03:44:05 by jharrach         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -96,5 +96,8 @@ cgi: cgi/cgi
 
 cgi/cgi:
 	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
+
+lines:
+	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp
 
 .PHONY: all clean fclean re
