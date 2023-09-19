@@ -13,6 +13,7 @@ class Http : public AConnection {
   void OnHeadRecv(std::string msg);
   void OnBodyRecv(std::string msg);
   void OnCgiRecv(std::string msg);
+  void OnCgiTimeout();
 };
 
 #endif  // HTTP_HPP

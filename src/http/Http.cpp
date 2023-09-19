@@ -34,3 +34,8 @@ void Http::OnCgiRecv(std::string msg) {
   std::cout << msg;
   std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
 }
+
+void Http::OnCgiTimeout()
+{
+  std::cout << "cgi timeout" << std::endl;
+}
