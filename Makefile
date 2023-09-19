@@ -6,7 +6,7 @@ SRC_DIR = src/
 INC_DIR = include/
 OBJ_DIR = .obj/
 
-SRC = main.cpp Config.cpp Context.cpp VirtualHost.cpp Init.cpp File.cpp Log.cpp structure.cpp utils.cpp
+SRC = main.cpp Config.cpp Context.cpp VirtualHost.cpp Init.cpp File.cpp Log.cpp Request.cpp Response.cpp structure.cpp utils.cpp
 SRC += Poll.cpp Address.cpp ListenSocket.cpp AConnection.cpp Http.cpp
 OBJ = $(addprefix $(OBJ_DIR), $(SRC:%.cpp=%.o))
 
