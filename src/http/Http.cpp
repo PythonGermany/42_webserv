@@ -16,7 +16,6 @@ void Http::OnHeadRecv(std::string msg) {
   (void)_virtualHost;
 
   _request.parseHead(msg);
-  _response.setHeader("Server", "webserv");
   if (!_request.isValid())
     processError();
   else if (_request.getVersion() != "HTTP/1.1") {
@@ -30,10 +29,18 @@ void Http::OnHeadRecv(std::string msg) {
     std::string uri = _request.getUri().getPath();  // TEST: remove
     if (uri == "/") uri = "/index.html";            // TEST: remove
     File file("website" + uri);                     // TEST: remove
-    file.open();                                    // TEST: remove
-    _response.setBody(file.read());                 // TEST: remove
-    file.close();                                   // TEST: remove
+    if (file.exists()) {
+      file.open();                     // TEST: remove
+      _response.setBody(file.read());  // TEST: remove
+      file.close();                    // TEST: remove
+    } else {
+      _response = Response("HTTP/1.1", "404", "Not Found");
+      _response.setBody(
+          "<html><title>404 Not Found</title><body>404 Not Found</body></html>"
+          "\r\n");
+    }
   }
+  _response.setHeader("Server", "webserv");
   _response.setHeader("Content-Length", toString(_response.getBody().size()));
   send(_response.generate());
   if (_request.getHeader("Connection") == "close" ||

@@ -20,11 +20,15 @@ class Uri {
   Uri &operator=(const Uri &rhs);
   ~Uri();
 
+  void load(std::string uri);
+
   std::string getScheme() const;
   std::string getHost() const;
   std::string getPort() const;
   std::string getPath() const;
   std::string getQuery() const;
+
+  bool compare(const Uri &rhs) const;
 
   bool pathOutOfBound() const;
 };
