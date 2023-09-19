@@ -4,8 +4,13 @@
 #include <iostream>
 
 #include "AConnection.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 class Http : public AConnection {
+  Request _request;
+  Response _response;
+
  public:
   Http(Address const &client, Address const &host);
   ~Http();

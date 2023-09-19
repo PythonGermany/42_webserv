@@ -8,11 +8,10 @@
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
+#include <cstdio>
 #include <cstring>
 #include <sstream>
 #include <vector>
-
-#include <stdio.h>
 
 #include "colors.hpp"
 

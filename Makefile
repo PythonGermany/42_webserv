@@ -6,7 +6,7 @@
 #    By: jharrach <jharrach@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/16 20:23:47 by jharrach          #+#    #+#              #
-#    Updated: 2023/09/18 23:54:54 by jharrach         ###   ########.fr        #
+#    Updated: 2023/09/19 03:38:24 by jharrach         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ SRC			+= poll/ListenSocket.cpp
 SRC			+= poll/Poll.cpp
 SRC			+= poll/ResponsePipe.cpp
 SRC			+= poll/RequestPipe.cpp
-SRC			+= poll/Utils.cpp
+SRC			+= poll/timeval.cpp
 
 SRC			+= config/Config.cpp
 SRC			+= config/Context.cpp
@@ -36,6 +36,8 @@ SRC			+= config/utils.cpp
 SRC			+= config/VirtualHost.cpp
 
 SRC			+= http/Http.cpp
+SRC			+= http/Request.cpp
+SRC			+= http/Response.cpp
 
 HEADERS		+= webserv.hpp
 
@@ -56,9 +58,12 @@ HEADERS		+= poll/Poll.hpp
 HEADERS		+= poll/IFileDescriptor.hpp
 HEADERS		+= poll/ResponsePipe.hpp
 HEADERS		+= poll/RequestPipe.hpp
-HEADERS		+= poll/Utils.hpp
+HEADERS		+= poll/timeval.hpp
 
 HEADERS		+= http/testconn.hpp
+HEADERS		+= http/Http.hpp
+HEADERS		+= http/Request.hpp
+HEADERS		+= http/Response.hpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
