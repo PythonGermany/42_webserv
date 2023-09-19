@@ -14,7 +14,6 @@ Http::~Http() { std::cout << "delete: " << client << std::endl; }
 
 void Http::OnHeadRecv(std::string msg) {
   (void)_virtualHost;
-  std::cout << "$$$$$$$$$ BEGIN HEAD $$$$$$$$$$ >" << std::endl;
 
   _request.parseHead(msg);
   _response.setHeader("Server", "webserv");
@@ -28,12 +27,12 @@ void Http::OnHeadRecv(std::string msg) {
     _response.setHeader("Connection", "close");
   } else {
     _response = Response("HTTP/1.1", "200", "OK");
-    std::string uri = _request.getUri();  // TEST: remove
-    if (uri == "/") uri = "/index.html";  // TEST: remove
-    File file("website" + uri);           // TEST: remove
-    file.open();                          // TEST: remove
-    _response.setBody(file.read());       // TEST: remove
-    file.close();                         // TEST: remove
+    std::string uri = _request.getUri().getPath();  // TEST: remove
+    if (uri == "/") uri = "/index.html";            // TEST: remove
+    File file("website" + uri);                     // TEST: remove
+    file.open();                                    // TEST: remove
+    _response.setBody(file.read());                 // TEST: remove
+    file.close();                                   // TEST: remove
   }
   _response.setHeader("Content-Length", toString(_response.getBody().size()));
   send(_response.generate());

@@ -38,6 +38,7 @@ SRC			+= config/VirtualHost.cpp
 SRC			+= http/Http.cpp
 SRC			+= http/Request.cpp
 SRC			+= http/Response.cpp
+SRC			+= http/Uri.cpp
 
 HEADERS		+= webserv.hpp
 
@@ -97,6 +98,9 @@ cgi: cgi/cgi
 
 cgi/cgi:
 	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
+
+debug:
+	make CXXFLAGS="$(CXXFLAGS) -g"
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp

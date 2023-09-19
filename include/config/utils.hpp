@@ -91,16 +91,16 @@ std::string highlight(std::string str, std::string color,
 // @exception std::runtime_error if a function call fails
 std::vector<std::string> processWildcard(std::string str);
 
-// Decodes uri percent encoding
+// Decodes percent encoding
 // @param str The string to decode
 // @return The decoded string
 // @exception std::runtime_error If the input uri is invalid
-std::string uriDecode(std::string str);
+std::string percentDecode(std::string str);
 
-// Encodes uri percent encoding
+// Encodes percent encoding
 // @param str The string to encode
 // @return The encoded string
 // @exception No custom exceptions
-std::string uriEncode(std::string str);
+std::string precentEncode(std::string str);
 
 #endif

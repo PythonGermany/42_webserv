@@ -6,12 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "Uri.hpp"
 #include "utils.hpp"
 
 class Request {
  private:
   std::string _method;
-  std::string _uri;
+  Uri _uri;
   std::string _version;
   std::map<std::string, std::string> _headers;
   std::string _body;
@@ -23,7 +24,7 @@ class Request {
   ~Request();
 
   std::string getMethod() const;
-  std::string getUri() const;
+  Uri getUri() const;
   std::string getVersion() const;
   std::map<std::string, std::string> getHeaders() const;
   std::string getHeader(std::string key) const;

@@ -18,7 +18,7 @@ Request::~Request() {}
 
 std::string Request::getMethod() const { return _method; }
 
-std::string Request::getUri() const { return _uri; }
+Uri Request::getUri() const { return _uri; }
 
 std::string Request::getVersion() const { return _version; }
 
@@ -47,7 +47,7 @@ void Request::parseHead(std::string msg) {
   std::vector<std::string> requestLineTokens = split(requestLine, " ");
   if (requestLineTokens.size() != 3) return;
   _method = requestLineTokens[0];
-  _uri = requestLineTokens[1];
+  _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
   while (pos != std::string::npos) {
     pos += 2;
@@ -64,7 +64,8 @@ void Request::parseHead(std::string msg) {
 }
 
 bool Request::isValid() const {
-  if (_method.empty() || _uri.empty() || _version.empty()) return false;
+  if (_method.empty() || _uri.pathOutOfBound() || _version.empty())
+    return false;
   if (!startsWith(_version, "HTTP/")) return false;
   if (_headers.find("host") == _headers.end()) return false;
   return true;

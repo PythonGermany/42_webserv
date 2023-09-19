@@ -1,6 +1,5 @@
 obj/
 logs/
-.vscode/
 
 tests/googletest/build
 tests/obj/

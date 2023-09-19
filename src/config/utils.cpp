@@ -108,7 +108,7 @@ std::vector<std::string> processWildcard(std::string str) {
   return files;
 }
 
-std::string uriDecode(std::string str) {
+std::string percentDecode(std::string str) {
   std::string decoded = "";
   for (size_t i = 0; i < str.length(); i++) {
     if (str[i] == '%') {
@@ -124,7 +124,7 @@ std::string uriDecode(std::string str) {
   return decoded;
 }
 
-std::string uriEncode(std::string str) {
+std::string precentEncode(std::string str) {
   std::string encoded = "";
   for (size_t i = 0; i < str.length(); i++) {
     if (isalnum(str[i]) || str[i] == '-' || str[i] == '_' || str[i] == '.' ||
