@@ -19,8 +19,8 @@
 const t_token tokens[28] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
-    {"access_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
-    {"error_log", "http", false, 0, 1, 1, 1, isAbsolutePath},
+    {"access_log", "http", false, 0, 1, 1, 1, NULL},
+    {"error_log", "http", false, 0, 1, 1, 1, NULL},
     {"timeout", "http", false, 0, 1, 1, 1, isNumeric},
 
     // Mime type context
@@ -37,19 +37,19 @@ const t_token tokens[28] = {
     // Error page context
     {"error_page", "server", true, 0, -1, 0, 0, NULL},
     {"code", "error_page", false, 1, 1, 1, -1, isNumeric},
-    {"path", "error_page", false, 1, 1, 1, 1, isAbsolutePath},
+    {"path", "error_page", false, 1, 1, 1, 1, NULL},
     // Location context
     {"location", "server", true, 0, -1, 0, 0, NULL},
     {"url", "location", false, 1, 1, 1, 1, isAbsolutePath},
     {"method", "location", false, 0, -1, 1, -1, isMethod},
-    {"root", "location", false, 1, 1, 1, 1, isAbsolutePath},
+    {"root", "location", false, 1, 1, 1, 1, NULL},
     {"index", "location", false, 1, -1, 1, -1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
-    {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},
+    {"upload", "location", false, 0, 1, 1, 1, NULL},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     // CGI context
     {"cgi", "location", true, 0, 1, 0, 0, NULL},
     {"extension", "cgi", false, 1, 1, 1, 1, isExtension},
-    {"path", "cgi", false, 1, 1, 1, 1, isAbsolutePath}};
+    {"path", "cgi", false, 1, 1, 1, 1, NULL}};
 
 #endif

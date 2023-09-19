@@ -27,6 +27,12 @@ std::string File::getExtension() {
   return _path.substr(pos + 1);
 }
 
+std::string File::getDir() {
+  std::string::size_type pos = _path.find_last_of('/');
+  if (pos == std::string::npos) return "";
+  return _path.substr(0, pos);
+}
+
 void File::setPath(std::string path) { _path = path; }
 
 bool File::exists() {

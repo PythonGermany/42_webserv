@@ -97,7 +97,12 @@ void Config::processContext(Context &context, std::string &data,
 std::string Config::processInclude(Context &context, std::string path) {
   std::vector<std::string> files;
   try {
-    files = processWildcard(path);
+    std::string includePath;
+    if (path[0] == '/')
+      includePath = path;
+    else
+      includePath = _file.getDir() + "/" + path;
+    files = processWildcard(includePath);
   } catch (const std::exception &e) {
     return e.what();
   }

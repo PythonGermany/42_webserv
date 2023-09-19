@@ -30,6 +30,8 @@ class File {
   std::string getPath();
   std::string getExtension();
 
+  std::string getDir();
+
   // Setters
   void setPath(std::string path);
 
