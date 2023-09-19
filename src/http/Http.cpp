@@ -12,9 +12,6 @@ Http::Http(Address const &client, Address const &host) {
 Http::~Http() { std::cout << "delete: " << client << std::endl; }
 
 void Http::OnHeadRecv(std::string msg) {
-  std::cout << "$$$$$$$$$ BEGIN HEAD $$$$$$$$$$ >";
-  std::cout << msg;
-  std::cout << "< $$$$$$$$$$ END HEAD $$$$$$$$$$$" << std::endl;
   _request.parseHead(msg);
   if (_request.isValid()) {
     std::cout << "request is valid" << std::endl;
@@ -33,12 +30,7 @@ void Http::OnHeadRecv(std::string msg) {
   }
 }
 
-void Http::OnBodyRecv(std::string msg) {
-  std::cout << "$$$$$$$$$ BEGIN BODY $$$$$$$$$$ >";
-  std::cout << msg;
-  std::cout << "< $$$$$$$$$$ END BODY $$$$$$$$$$$" << std::endl;
-  // send("Welcome! you send a BODY\n");
-}
+void Http::OnBodyRecv(std::string msg) {}
 
 void Http::OnCgiRecv(std::string msg) {
   std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$ >";
@@ -46,7 +38,4 @@ void Http::OnCgiRecv(std::string msg) {
   std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
 }
 
-void Http::OnCgiTimeout()
-{
-  std::cout << "CGI TIMEOUT" << std::endl;
-}
+void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
