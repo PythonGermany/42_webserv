@@ -37,7 +37,15 @@ void Response::setHeaders(std::map<std::string, std::string> &headers) {
 void Response::setBody(std::string body) { _body = body; }
 
 void Response::setHeader(std::string key, std::string value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
   _headers[key] = value;
+}
+
+std::string Response::getHeader(std::string key) const {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  std::map<std::string, std::string>::const_iterator it = _headers.find(key);
+  if (it == _headers.end()) return "";
+  return it->second;
 }
 
 std::string Response::getBody() const { return _body; }

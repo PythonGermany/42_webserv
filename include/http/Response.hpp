@@ -1,6 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -27,6 +28,7 @@ class Response {
   void setBody(std::string body);
 
   void setHeader(std::string key, std::string value);
+  std::string getHeader(std::string key) const;
 
   std::string getBody() const;
 

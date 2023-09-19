@@ -29,8 +29,8 @@ class VirtualHost {
   static std::vector<VirtualHost> &getVirtualHosts();
   Context &getContext();
 
-  static VirtualHost &matchVirtualHost(const std::string &host,
-                                       const std::string &port);
+  static VirtualHost &matchVirtualHost(std::string address, std::string port,
+                                       std::string serverName);
   Context &matchLocation(const std::string &uri);
   bool isCgi(const std::string &uri);
 

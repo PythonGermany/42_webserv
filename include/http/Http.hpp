@@ -6,10 +6,12 @@
 #include "AConnection.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "VirtualHost.hpp"
 
 class Http : public AConnection {
   Request _request;
   Response _response;
+  VirtualHost *_virtualHost;
 
  public:
   Http(Address const &client, Address const &host);
@@ -19,6 +21,9 @@ class Http : public AConnection {
   void OnBodyRecv(std::string msg);
   void OnCgiRecv(std::string msg);
   void OnCgiTimeout();
+
+ private:
+  void processError();
 };
 
-#endif  // HTTP_HPP
+#endif
