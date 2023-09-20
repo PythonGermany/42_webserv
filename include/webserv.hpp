@@ -11,6 +11,8 @@
 #define LOG_LEVEL DEBUG
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
+#define LOG_TIME_FORMAT "%H:%M:%S GMT"
+#define LOG_DATE_FORMAT "%d-%m-%Y"
 #define TIMEOUT 10000
 #define CLIENT_MAX_BODY_SIZE 1048576
 
@@ -43,7 +45,7 @@ const t_token tokens[28] = {
     {"url", "location", false, 1, 1, 1, 1, isAbsolutePath},
     {"method", "location", false, 0, -1, 1, -1, isMethod},
     {"root", "location", false, 1, 1, 1, 1, NULL},
-    {"index", "location", false, 1, -1, 1, -1, NULL},
+    {"index", "location", false, 1, 1, 1, 1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"upload", "location", false, 0, 1, 1, 1, NULL},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},

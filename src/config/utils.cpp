@@ -138,3 +138,20 @@ std::string precentEncode(std::string str) {
   }
   return encoded;
 }
+
+std::string getDate(std::string format) {
+  time_t rawtime;
+  struct tm* timeinfo;
+  size_t size = 64;
+  while (true) {
+    char buffer[size];
+    std::time(&rawtime);
+    timeinfo = std::gmtime(&rawtime);
+    if (std::strftime(buffer, size, format.c_str(), timeinfo) == 0 &&
+        size < 256) {
+      size *= 2;
+      continue;
+    }
+    return std::string(buffer);
+  }
+}

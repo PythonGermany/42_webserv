@@ -32,6 +32,12 @@ std::vector<VirtualHost> &VirtualHost::getVirtualHosts() {
   return _virtualHosts;
 }
 
+std::string VirtualHost::getMimeType(std::string extension) {
+  std::map<std::string, std::string>::iterator it = _mimeTypes.find(extension);
+  if (it != _mimeTypes.end()) return it->second;
+  return "";
+}
+
 Context &VirtualHost::getContext() { return _context; }
 
 Context *VirtualHost::matchLocation(const std::string &uri) {

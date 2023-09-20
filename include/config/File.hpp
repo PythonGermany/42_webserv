@@ -1,6 +1,7 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -10,6 +11,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 // Class to check file properties and read/write files
 class File {
@@ -34,6 +36,10 @@ class File {
 
   // Setters
   void setPath(std::string path);
+
+  // Lists the files in the directory
+  // @exception std::runtime_error if the directory cannot be opened
+  static std::vector<std::string> list(std::string path);
 
   // Checks if the file exists
   // @exception No custom exceptions
@@ -80,7 +86,7 @@ class File {
  private:
   // Throws an exception indicating the function and message
   // @exception std::runtime_error
-  void throwException(std::string func, std::string msg);
+  static void throwException(std::string func, std::string msg);
 };
 
 #endif

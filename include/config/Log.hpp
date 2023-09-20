@@ -1,20 +1,22 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include <ctime>
 #include <iostream>
 #include <string>
 
+#include "../webserv.hpp"
 #include "File.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
-#include "../webserv.hpp"
 
 class Log {
  private:
   static t_log_level _log_level;
   static File _log_file;
   static File _error_log_file;
+
+  static std::string _timeFormat;
+  static std::string _dateFormat;
 
  public:
   Log();
@@ -47,12 +49,6 @@ class Log {
   // Writes a message to the error log file and to the standard error output
   // @exception No custom exceptions
   static void writeError(std::string msg, std::string color = RESET);
-  // Returns the current time stamp in the format [HH:MM:SS]
-  // @exception No custom exceptions
-  static std::string getTimeStamp();
-  // Returns the current date in the format [DD/MM/YYYY]
-  // @exception No custom exceptions
-  static std::string getDate();
 };
 
 #endif

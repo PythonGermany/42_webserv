@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <sstream>
 #include <vector>
 
@@ -102,5 +103,9 @@ std::string percentDecode(std::string str);
 // @return The encoded string
 // @exception No custom exceptions
 std::string precentEncode(std::string str);
+
+// Returns the current date as a string
+// @exception No custom exceptions
+std::string getDate(std::string format);
 
 #endif

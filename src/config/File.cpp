@@ -35,6 +35,22 @@ std::string File::getDir() {
 
 void File::setPath(std::string path) { _path = path; }
 
+std::vector<std::string> File::list(std::string path) {
+  std::vector<std::string> files;
+  DIR *dir;
+  struct dirent *ent;
+  if ((dir = opendir(path.c_str())) != NULL) {
+    while ((ent = readdir(dir)) != NULL) {
+      files.push_back(ent->d_name);
+    }
+    closedir(dir);
+  } else {
+    throwException("list", "Could not open directory: " +
+                               std::string(strerror(errno)) + " " + path);
+  }
+  return files;
+}
+
 bool File::exists() {
   struct stat buf;
   return stat(_path.c_str(), &buf) == 0;

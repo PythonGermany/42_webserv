@@ -27,6 +27,7 @@ class VirtualHost {
 
   // Getters
   static std::vector<VirtualHost> &getVirtualHosts();
+  static std::string getMimeType(std::string extension);
   Context &getContext();
 
   static VirtualHost &matchVirtualHost(std::string address, std::string port,
