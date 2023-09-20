@@ -27,9 +27,10 @@ void Http::OnHeadRecv(std::string msg) {
                  _request.getMethod() + " " + _request.getUri().getPath() +
                  " " + _request.getVersion(),
              INFO);
-  if (parseHead != 0 || _request.isValid() == false)
+  if (parseHead != 0 || _request.isValid() == false) {
+    _virtualHost = NULL;  // TODO: Find the correct default virtual host
     _response = processError("400", "Bad Request");
-  else {
+  } else {
     _virtualHost = NULL;  // TODO: Find the correct virtual host
     _virtualHost = &VirtualHost::getVirtualHosts()[0];
     _response = processRequest();
@@ -75,7 +76,7 @@ Response &Http::processRequest() {
   // Find correct location context
   _context = _virtualHost->matchLocation(_request.getUri().getPath());
   if (_context == NULL) return processError("404", "Not Found");
-  std::cout << "CONTEXT: " << _context->getDirective("url")[0] << std::endl;
+  Log::write("location: " + _context->getDirective("url")[0], DEBUG);
 
   // Check if method is allowed
   bool methodAllowed = false;

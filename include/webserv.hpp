@@ -8,12 +8,18 @@
 #include "config/utils.hpp"
 
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
+
 #define LOG_LEVEL DEBUG
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
-#define TIMEOUT 10000
+
+/**
+ * close connections if they are TIMEOUT milliseconds inactive
+ */
+#define TIMEOUT 100000
+
 #define CLIENT_MAX_BODY_SIZE 1048576
 
 // Token structure in the format: {name, parent, isContext, minOccurence,

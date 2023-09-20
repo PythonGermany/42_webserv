@@ -100,7 +100,7 @@ cgi/cgi:
 	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
 
 debug:
-	make CXXFLAGS="$(CXXFLAGS) -g"
+	make CXXFLAGS="-g $(CXXFLAGS)"
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp
