@@ -2,17 +2,16 @@
 
 Response::Response() {}
 
-Response::Response(std::string version, std::string statusCode,
-                   std::string reasonPhrase)
-    : _version(version), _statusCode(statusCode), _reasonPhrase(reasonPhrase) {}
+Response::Response(std::string version, std::string status, std::string reason)
+    : _version(version), _status(status), _reason(reason) {}
 
 Response::Response(const Response &rhs) { *this = rhs; }
 
 Response &Response::operator=(const Response &rhs) {
   if (this == &rhs) return *this;
   _version = rhs._version;
-  _statusCode = rhs._statusCode;
-  _reasonPhrase = rhs._reasonPhrase;
+  _status = rhs._status;
+  _reason = rhs._reason;
   _headers = rhs._headers;
   _body = rhs._body;
   return *this;
@@ -22,13 +21,9 @@ Response::~Response() {}
 
 void Response::setVersion(std::string version) { _version = version; }
 
-void Response::setStatusCode(std::string statusCode) {
-  _statusCode = statusCode;
-}
+void Response::setStatus(std::string status) { _status = status; }
 
-void Response::setReasonPhrase(std::string reasonPhrase) {
-  _reasonPhrase = reasonPhrase;
-}
+void Response::setReason(std::string reason) { _reason = reason; }
 
 void Response::setHeaders(std::map<std::string, std::string> &headers) {
   _headers = headers;
@@ -41,6 +36,12 @@ void Response::setHeader(std::string key, std::string value) {
   _headers[key] = value;
 }
 
+std::string Response::getVersion() const { return _version; }
+
+std::string Response::getStatus() const { return _status; }
+
+std::string Response::getReason() const { return _reason; }
+
 std::string Response::getHeader(std::string key) const {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
   std::map<std::string, std::string>::const_iterator it = _headers.find(key);
@@ -51,8 +52,7 @@ std::string Response::getHeader(std::string key) const {
 std::string Response::getBody() const { return _body; }
 
 std::string Response::generate() {
-  std::string response =
-      _version + " " + _statusCode + " " + _reasonPhrase + "\r\n";
+  std::string response = _version + " " + _status + " " + _reason + "\r\n";
   for (std::map<std::string, std::string>::iterator it = _headers.begin();
        it != _headers.end(); ++it) {
     response += it->first + ": " + it->second + "\r\n";

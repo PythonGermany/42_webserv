@@ -46,6 +46,8 @@ Context *VirtualHost::matchLocation(const std::string &uri) {
   size_t matchSize = 0;
   for (size_t i = 0; i < locations.size(); i++) {
     std::string locUri = locations[i].getDirective("url")[0];
+    if (!endsWith(locUri, "/")) locUri += "/";
+    if (locUri == uri) return &locations[i];
     if (startsWith(uri, locUri) && locUri.size() > matchSize) {
       match = &locations[i];
       matchSize = locUri.size();

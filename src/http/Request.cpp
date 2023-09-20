@@ -22,10 +22,6 @@ Uri Request::getUri() const { return _uri; }
 
 std::string Request::getVersion() const { return _version; }
 
-std::map<std::string, std::string> Request::getHeaders() const {
-  return _headers;
-}
-
 std::string Request::getHeader(std::string key) const {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
   std::map<std::string, std::string>::const_iterator it = _headers.find(key);
@@ -35,38 +31,37 @@ std::string Request::getHeader(std::string key) const {
 
 std::string Request::getBody() const { return _body; }
 
-#include <iostream>
-
-void Request::parseHead(std::string msg) {
+int Request::parseHead(std::string msg) {
   size_t pos = msg.find("\r\n");
-  if (pos == std::string::npos) {
-    std::cout << "line: no \\r\\n found" << std::endl;
-    return;
-  }
+  if (pos == std::string::npos) return 1;
   std::string requestLine = msg.substr(0, pos);
   std::vector<std::string> requestLineTokens = split(requestLine, " ");
-  if (requestLineTokens.size() != 3) return;
+  if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
   while (pos != std::string::npos) {
     pos += 2;
-    size_t pos2 = msg.find(":", pos);
-    if (pos2 == std::string::npos) return;
-    std::string key = msg.substr(pos, pos2 - pos);
+    size_t end = msg.find("\r\n", pos);
+    std::string line = msg.substr(pos, end - pos);
+    pos = end;
+    if (line.empty()) break;
+    size_t colon = line.find(":");
+    if (colon == std::string::npos) return 1;
+    std::string key = line.substr(0, colon);
+    std::string value = line.substr(colon + 1);
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-    pos2 += 2;
-    pos = msg.find("\r\n", pos2);
-    if (pos == std::string::npos) return;
-    std::string value = msg.substr(pos2, pos - pos2);
-    _headers[key] += value;
+    trimStart(value, " \t");
+    if (_headers.find(key) != _headers.end())
+      _headers[key] += ", " + value;
+    else
+      _headers[key] = value;
   }
+  return 0;
 }
 
 bool Request::isValid() const {
-  if (_method.empty() || _uri.pathOutOfBound() || _version.empty())
-    return false;
-  if (!startsWith(_version, "HTTP/")) return false;
+  if (_uri.pathOutOfBound() || !startsWith(_version, "HTTP/")) return false;
   if (_headers.find("host") == _headers.end()) return false;
   return true;
 }

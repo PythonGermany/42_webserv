@@ -26,11 +26,10 @@ class Request {
   std::string getMethod() const;
   Uri getUri() const;
   std::string getVersion() const;
-  std::map<std::string, std::string> getHeaders() const;
   std::string getHeader(std::string key) const;
   std::string getBody() const;
 
-  void parseHead(std::string msg);
+  int parseHead(std::string msg);
   bool isValid() const;
 };
 

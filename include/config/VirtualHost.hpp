@@ -30,7 +30,7 @@ class VirtualHost {
   static std::string getMimeType(std::string extension);
   Context &getContext();
 
-  static VirtualHost &matchVirtualHost(std::string address, std::string port,
+  static VirtualHost *matchVirtualHost(std::string address, std::string port,
                                        std::string serverName);
   Context *matchLocation(const std::string &uri);
   bool isCgi(const std::string &uri);

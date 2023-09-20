@@ -8,26 +8,29 @@
 class Response {
  private:
   std::string _version;
-  std::string _statusCode;
-  std::string _reasonPhrase;
+  std::string _status;
+  std::string _reason;
   std::map<std::string, std::string> _headers;
   std::string _body;
 
  public:
   Response();
-  Response(std::string version, std::string statusCode,
-           std::string reasonPhrase);
+  Response(std::string version, std::string status, std::string reason);
   Response(const Response &rhs);
   Response &operator=(const Response &rhs);
   ~Response();
 
   void setVersion(std::string version);
-  void setStatusCode(std::string statusCode);
-  void setReasonPhrase(std::string reasonPhrase);
+  void setStatus(std::string status);
+  void setReason(std::string reason);
   void setHeaders(std::map<std::string, std::string> &headers);
   void setBody(std::string body);
 
   void setHeader(std::string key, std::string value);
+
+  std::string getVersion() const;
+  std::string getStatus() const;
+  std::string getReason() const;
   std::string getHeader(std::string key) const;
 
   std::string getBody() const;

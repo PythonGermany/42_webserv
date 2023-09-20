@@ -10,33 +10,42 @@ Http::Http(Address const &client, Address const &host) {
   this->_context = NULL;
   this->_waitForBody = false;
   std::stringstream ss;
-  ss << "new: " << client << " for host " << host;
+  ss << "connect: " << client << " -> " << host;
   Log::write(ss.str(), DEBUG);
 }
 
 Http::~Http() {
   std::stringstream ss;
-  ss << "delete: " << client << " of host " << host;
+  ss << "timeout: " << client << " <- " << host;
   Log::write(ss.str(), DEBUG);
 }
 
 void Http::OnHeadRecv(std::string msg) {
-  _request.parseHead(msg);
-  if (_request.isValid() == false) {
-    _virtualHost = NULL;
+  _request = Request();
+  int parseHead = _request.parseHead(msg);
+  Log::write(inet_ntoa(*(uint32_t *)client.addr()) + " -> " +
+                 _request.getMethod() + " " + _request.getUri().getPath() +
+                 " " + _request.getVersion(),
+             INFO);
+  if (parseHead != 0 || _request.isValid() == false)
     _response = processError("400", "Bad Request");
-  } else {
+  else {
     _virtualHost = NULL;  // TODO: Find the correct virtual host
     _virtualHost = &VirtualHost::getVirtualHosts()[0];
     _response = processRequest();
   }
+  size_t content_length = _response.getBody().size();
   if (_request.getMethod() == "HEAD") _response.setBody("");
   if (_waitForBody == false) {
     _response.setHeader("Server", "webserv");
     _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
-    _response.setHeader("Content-Length", toString(_response.getBody().size()));
+    _response.setHeader("Content-Length", toString(content_length));
     if (_request.getHeader("Connection") == "keep-alive")
       _response.setHeader("Connection", "keep-alive");
+    Log::write(inet_ntoa(*(uint32_t *)client.addr()) + " <- " +
+                   _response.getVersion() + " " + _response.getStatus() + " " +
+                   _response.getReason(),
+               INFO);
     send(_response.generate());
     if (_response.getHeader("Connection") == "close" ||
         _request.getHeader("Connection") == "close")
@@ -66,6 +75,7 @@ Response &Http::processRequest() {
   // Find correct location context
   _context = _virtualHost->matchLocation(_request.getUri().getPath());
   if (_context == NULL) return processError("404", "Not Found");
+  std::cout << "CONTEXT: " << _context->getDirective("url")[0] << std::endl;
 
   // Check if method is allowed
   bool methodAllowed = false;
@@ -104,8 +114,10 @@ Response &Http::processRequest() {
   // Process the request as a file
   std::string root = _context->getDirective("root")[0];
   std::string index = _context->getDirective("index")[0];
-  std::string path = root + _request.getUri().getPath();
-  if (endsWith(path, "/")) path += index;
+  std::string uri = _request.getUri().getPath();
+  std::string path = root + uri;
+  if (uri == _context->getDirective("url")[0] && endsWith(uri, "/"))
+    path += index;
   return processFile(path);
 }
 
@@ -116,7 +128,8 @@ Response &Http::processFile(std::string path) {
   else if (file.dir()) {
     if (!endsWith(path, "/"))
       return processRedirect(_request.getUri().getPath() + "/");
-    if (_context->getDirective("autoindex")[0] == "on")
+    if (_context->exists("autoindex") &&
+        _context->getDirective("autoindex")[0] == "on")
       return processAutoindex(path);
     return processError("403", "Forbidden");
   } else if (!file.readable())
@@ -148,8 +161,12 @@ Response &Http::processAutoindex(std::string path) {
   }
   for (size_t i = 0; i < files.size(); i++) {
     std::string file = files[i];
+    if (file == "." || file == "..") continue;
     std::string href = _request.getUri().getPath() + file;
-    body += "<a href=\"" + href + "\">" + file + "</a><br>";
+    body += "<a href=\"" + href + "\">" + file + "</a>";
+    for (size_t j = 0; j < 50 - file.size(); j++) body += " ";
+    body += "|" + toString(File(path + files[i]).size());
+    body += "<br>";
   }
   body += "</pre><hr></body></html>\r\n";
   _response.setBody(body);
