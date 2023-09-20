@@ -31,7 +31,7 @@ class VirtualHost {
 
   static VirtualHost &matchVirtualHost(std::string address, std::string port,
                                        std::string serverName);
-  Context &matchLocation(const std::string &uri);
+  Context *matchLocation(const std::string &uri);
   bool isCgi(const std::string &uri);
 
   void print();

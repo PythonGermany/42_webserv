@@ -25,7 +25,7 @@ class Http : public AConnection {
   void OnCgiTimeout();
 
  private:
-  void processError();
+  Response processError();
 };
 
 #endif

@@ -5,14 +5,20 @@ Implement directory listing
 
 Needed from rfc 2616: -----------------------------------------------------------
 - URL Decode/Encode (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)
-- URL Parsing (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.2)
-- URL Comparison (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.3)
+- URL Parsing (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.2) -> Uri.cpp:24
+- URL Comparison (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.3) -> Uri.cpp:73
 
-- Transfer-Encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6) ?
+- Transfer-Encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6)
 
 Request processing flow: --------------------------------------------------------
-
 1. Parse request line - if not valid, return 400
 2. Parse headers - if not valid, return 400
 3. Check version - if not valid, return 505
 4. Check for Host header - if not present, return 400
+
+5. Find correct VirtualHost
+6. Find correct location context
+7. Check if method is allowed
+8. Check if path exists, if not return 404
+9. Check if path is readable, if not return 403
+10. Check if path is a directory, if yes and autoindex is off return 403

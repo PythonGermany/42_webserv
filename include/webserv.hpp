@@ -37,7 +37,7 @@ const t_token tokens[28] = {
     // Error page context
     {"error_page", "server", true, 0, -1, 0, 0, NULL},
     {"code", "error_page", false, 1, 1, 1, -1, isNumeric},
-    {"path", "error_page", false, 1, 1, 1, 1, NULL},
+    {"path", "error_page", false, 1, 1, 1, 1, isAbsolutePath},
     // Location context
     {"location", "server", true, 0, -1, 0, 0, NULL},
     {"url", "location", false, 1, 1, 1, 1, isAbsolutePath},

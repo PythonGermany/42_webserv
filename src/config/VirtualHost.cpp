@@ -34,4 +34,18 @@ std::vector<VirtualHost> &VirtualHost::getVirtualHosts() {
 
 Context &VirtualHost::getContext() { return _context; }
 
+Context *VirtualHost::matchLocation(const std::string &uri) {
+  std::vector<Context> &locations = _context.getContext("location");
+  Context *match = NULL;
+  size_t matchSize = 0;
+  for (size_t i = 0; i < locations.size(); i++) {
+    std::string locUri = locations[i].getDirective("url")[0];
+    if (startsWith(uri, locUri) && locUri.size() > matchSize) {
+      match = &locations[i];
+      matchSize = locUri.size();
+    }
+  }
+  return match;
+}
+
 void VirtualHost::print() { _context.print(); }
