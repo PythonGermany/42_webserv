@@ -22,7 +22,7 @@ void Config::setFile(std::string path) {
     throw std::runtime_error("Config: File '" + path + "' not found");
   if (!_file.readable())
     throw std::runtime_error("Config: File '" + path + "' not readable");
-  _file.open();
+  _file.open(O_RDONLY);
   _config = _file.read();
   _file.close();
 }

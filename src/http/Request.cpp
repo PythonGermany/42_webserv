@@ -16,6 +16,8 @@ Request &Request::operator=(const Request &rhs) {
 
 Request::~Request() {}
 
+void Request::setBody(std::string body) { _body = body; }
+
 std::string Request::getMethod() const { return _method; }
 
 Uri Request::getUri() const { return _uri; }

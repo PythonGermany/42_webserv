@@ -69,6 +69,18 @@ std::string toString(T val) {
   return ss.str();
 }
 
+// Converts a string to a value
+// @param str The string to convert
+// @return The value
+// @exception No custom exceptions
+template <typename T>
+T fromString(std::string str) {
+  std::stringstream ss(str);
+  T val;
+  ss >> val;
+  return val;
+}
+
 std::string toHexString(unsigned char c);
 
 // Converts an integer value to a string in the IPv4 format

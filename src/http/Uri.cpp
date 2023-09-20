@@ -60,6 +60,16 @@ void Uri::load(std::string uri) {
   std::transform(_host.begin(), _host.end(), _host.begin(), ::tolower);
 }
 
+void Uri::setScheme(std::string scheme) { _scheme = scheme; }
+
+void Uri::setHost(std::string host) { _host = host; }
+
+void Uri::setPort(std::string port) { _port = port; }
+
+void Uri::setPath(std::string path) { _path = path; }
+
+void Uri::setQuery(std::string query) { _query = query; }
+
 std::string Uri::getScheme() const { return _scheme; }
 
 std::string Uri::getHost() const { return _host; }
@@ -69,6 +79,14 @@ std::string Uri::getPort() const { return _port; }
 std::string Uri::getPath() const { return _path; }
 
 std::string Uri::getQuery() const { return _query; }
+
+std::string Uri::generate() const {
+  std::string uri = _scheme + "://" + _host;
+  if (_port != "80") uri += ":" + _port;
+  uri += _path;
+  if (_query != "") uri += "?" + _query;
+  return uri;
+}
 
 bool Uri::compare(const Uri &rhs) const {
   return _scheme == rhs._scheme && _host == rhs._host && _port == rhs._port &&

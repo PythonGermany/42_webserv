@@ -23,6 +23,8 @@ class Request {
   Request &operator=(const Request &rhs);
   ~Request();
 
+  void setBody(std::string body);
+
   std::string getMethod() const;
   Uri getUri() const;
   std::string getVersion() const;

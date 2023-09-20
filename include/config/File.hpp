@@ -71,7 +71,7 @@ class File {
   void create();
   // Opens the file
   // @exception std::runtime_error if opening the file fails
-  void open(int flags = O_RDONLY, mode_t mode = 0644);
+  void open(int flags, mode_t mode = 0644);
   // Closes the file
   // @exception std::runtime_error if closing the file fails
   void close();

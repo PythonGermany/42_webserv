@@ -30,11 +30,14 @@ class Http : public AConnection {
  private:
   Response& processRequest();
   Response& processFile(std::string path);
+  Response& processUpload(std::string uri);
   Response& processAutoindex(std::string path);
   Response& processRedirect(std::string path);
   Response& processError(std::string code, std::string reason);
 
   std::string getDefaultBody(std::string code, std::string reason);
+  std::string getFieldValue(std::vector<std::string> const& values);
+  std::string getAbsoluteUri(std::string uri);
 };
 
 #endif

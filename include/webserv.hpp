@@ -53,7 +53,7 @@ const t_token tokens[28] = {
     {"root", "location", false, 1, 1, 1, 1, NULL},
     {"index", "location", false, 1, 1, 1, 1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
-    {"upload", "location", false, 0, 1, 1, 1, NULL},
+    {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     // CGI context
     {"cgi", "location", true, 0, 1, 0, 0, NULL},
