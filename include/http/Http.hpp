@@ -43,7 +43,7 @@ class Http : public AConnection {
   std::string getFieldValue(std::vector<std::string> const& values);
   std::string getAbsoluteUri(std::string uri);
 
-  bool isMethodValid();
+  bool isMethodValid(Context* context, Request& request);
 };
 
 #endif

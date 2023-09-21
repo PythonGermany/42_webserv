@@ -66,12 +66,15 @@ Context &VirtualHost::getContext() { return _context; }
 VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   VirtualHost *match = NULL;
   for (size_t i = 0; i < _virtualHosts.size(); i++) {
-    if (_virtualHosts[i].getAddress() == address)
+    if (_virtualHosts[i].getAddress() == address) {
       if (match == NULL) match = &_virtualHosts[i];
-    std::vector<std::string> &names =
-        _virtualHosts[i].getContext().getDirective("server_name");
-    for (size_t j = 0; j < names.size(); j++)
-      if (names[j] == host) return &_virtualHosts[i];
+      if (_virtualHosts[i].getContext().exists("server_name")) {
+        std::vector<std::string> &names =
+            _virtualHosts[i].getContext().getDirective("server_name");
+        for (size_t j = 0; j < names.size(); j++)
+          if (names[j] == host) return &_virtualHosts[i];
+      }
+    }
   }
   return match;
 }

@@ -99,8 +99,8 @@ void Http::OnBodyRecv(std::string msg) {
       _request.getHeader("Connection") == "close")
     closeConnection();
 
-  msgsize = 10000;       // TEST: bad implementation
-  _waitForBody = false;  // TEST: bad implementation
+  msgsize = 10000;       // TODO: bad implementation ?
+  _waitForBody = false;  // TODO: bad implementation ?
 }
 
 void Http::OnCgiRecv(std::string msg) {
@@ -125,7 +125,7 @@ Response &Http::processRequest() {
   if (_context == NULL) return processError("500", "Internal Server Error");
 
   // Check if method is allowed
-  if (isMethodValid() == false) return _response;
+  if (isMethodValid(_context, _request) == false) return _response;
 
   // Handle POST request
   if (_request.getMethod() == "POST") return processUploadHead();
@@ -281,10 +281,12 @@ Response &Http::processError(std::string code, std::string reason) {
   if (_virtualHost != NULL) {
     std::vector<Context> &errors =
         _virtualHost->getContext().getContext("error_page");
+
+    // Search for matching custom error page
     for (size_t i = 0; i < errors.size(); i++) {
-      std::string error = errors[i].getDirective("code")[0];
+      std::string error = errors[i].getArgs()[0];
       if (error == code) {
-        std::string path = _context->getDirective("root")[0] +
+        std::string path = _context->getDirective("root", true)[0] +
                            errors[i].getDirective("path")[0];
         File file(path);
         if (file.exists()) {
@@ -304,13 +306,17 @@ Response &Http::processError(std::string code, std::string reason) {
           reason = "Not Found";
           _response = Response("HTTP/1.1", code, reason);
         }
+        break;
       }
     }
   }
+
+  // If no custom error page was found, use default
   if (body.empty()) {
     body = getDefaultBody(code, reason);
     _response.setHeader("Content-Type", "text/html");
   }
+
   _response.setBody(body);
   _error = true;
   return _response;
@@ -346,19 +352,13 @@ std::string Http::getAbsoluteUri(std::string uri) {
   return ret.generate();
 }
 
-bool Http::isMethodValid() {
-  bool methodAllowed = false;
-  std::vector<std::string> *methods = NULL;
-  if (_context->exists("allow", true)) {
-    methods = &_context->getDirective("allow", true);
-    if (std::find(methods->begin(), methods->end(), _request.getMethod()) !=
-        methods->end())
-      methodAllowed = true;
-  } else
-    methodAllowed = true;
-  if (methodAllowed == false) {
-    processError("405", "Method Not Allowed");
-    if (methods != NULL) _response.setHeader("Allow", getFieldValue(*methods));
+bool Http::isMethodValid(Context *context, Request &request) {
+  if (context->exists("allow", true)) {
+    std::vector<std::string> methods = context->getDirective("allow", true);
+    if (std::find(methods.begin(), methods.end(), request.getMethod()) !=
+        methods.end())
+      return true;
+    return false;
   }
-  return methodAllowed;
+  return true;
 }
