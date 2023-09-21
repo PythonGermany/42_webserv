@@ -33,7 +33,8 @@ class Http : public AConnection {
  private:
   Response& processRequest();
   Response& processFile(std::string path);
-  Response& processUpload(std::string uri);
+  Response& processUploadHead();
+  Response& processUploadBody(std::string uri);
   Response& processAutoindex(std::string path);
   Response& processRedirect(std::string path);
   Response& processError(std::string code, std::string reason);
@@ -42,7 +43,7 @@ class Http : public AConnection {
   std::string getFieldValue(std::vector<std::string> const& values);
   std::string getAbsoluteUri(std::string uri);
 
-  bool isMehodValid();
+  bool isMethodValid();
 };
 
 #endif

@@ -17,6 +17,8 @@ class Request {
   std::map<std::string, std::string> _headers;
   std::string _body;
 
+  bool _error;
+
  public:
   Request();
   Request(const Request &rhs);
@@ -31,7 +33,7 @@ class Request {
   std::string getHeader(std::string key) const;
   std::string getBody() const;
 
-  int parseHead(std::string msg);
+  void parseHead(std::string msg);
   bool isValid() const;
 };
 

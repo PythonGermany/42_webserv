@@ -11,19 +11,21 @@ Http::Http(Address const &client, Address const &host) {
   this->_waitForBody = false;
   this->_error = false;
   std::stringstream ss;
-  ss << host << " -> delete: " << client;
+  ss << host << " -> add:    " << client;
   Log::write(ss.str(), DEBUG);
 }
 
 Http::~Http() {
   std::stringstream ss;
-  ss << host << " -> add:    " << client;
+  ss << host << " -> delete: " << client;
   Log::write(ss.str(), DEBUG);
 }
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
-  int parseHead = _request.parseHead(msg);
+
+  // Parse request
+  _request.parseHead(msg);
   {
     Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
                    toString(host.port()) + " " +
@@ -32,18 +34,21 @@ void Http::OnHeadRecv(std::string msg) {
                    " " + _request.getVersion(),
                INFO);
   }
+  // Find virtual host
   _virtualHost =
       VirtualHost::matchVirtualHost(host, _request.getHeader("Host"));
-  if (parseHead != 0 || _request.isValid() == false)
-    _response = processError("400", "Bad Request");
-  else
-    _response = processRequest();
+
+  // Process request
+  _response = processRequest();
   if (_waitForBody == false) {
+    // Set default header values
     size_t content_length = _response.getBody().size();
     if (_request.getMethod() == "HEAD") _response.setBody("");
     _response.setHeader("Server", "webserv");
     _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
     _response.setHeader("Content-Length", toString(content_length));
+
+    // Check if connection should be kept alive
     if (_request.getHeader("Connection") == "keep-alive")
       _response.setHeader("Connection", "keep-alive");
     {
@@ -54,7 +59,11 @@ void Http::OnHeadRecv(std::string msg) {
                      " " + _response.getReason(),
                  INFO);
     }
+
+    // Send response
     send(_response.generate());
+
+    // Close connection if needed or asked for
     if (_response.getHeader("Connection") == "close" ||
         _request.getHeader("Connection") == "close")
       closeConnection();
@@ -64,11 +73,15 @@ void Http::OnHeadRecv(std::string msg) {
 void Http::OnBodyRecv(std::string msg) {
   if (_waitForBody == false) return;
   _request.setBody(msg);
-  _response = processUpload(_request.getUri().getPath());
+  _response = processUploadBody(_request.getUri().getPath());
+
+  // Set default header values
   size_t content_length = _response.getBody().size();
   _response.setHeader("Server", "webserv");
   _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
   _response.setHeader("Content-Length", toString(content_length));
+
+  // Check if connection should be kept alive
   if (_request.getHeader("Connection") == "keep-alive")
     _response.setHeader("Connection", "keep-alive");
   {
@@ -77,12 +90,17 @@ void Http::OnBodyRecv(std::string msg) {
                    _response.getReason(),
                INFO);
   }
-  msgsize = 10000;       // TEST: bad implementation
-  _waitForBody = false;  // TEST: bad implementation
+
+  // Send response
   send(_response.generate());
+
+  // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
       _request.getHeader("Connection") == "close")
     closeConnection();
+
+  msgsize = 10000;       // TEST: bad implementation
+  _waitForBody = false;  // TEST: bad implementation
 }
 
 void Http::OnCgiRecv(std::string msg) {
@@ -96,6 +114,9 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
 
+  // Check if the request is valid
+  if (_request.isValid() == false) return processError("400", "Bad Request");
+
   if (_request.getVersion() != "HTTP/1.1")
     return processError("505", "HTTP Version Not Supported");
 
@@ -104,25 +125,10 @@ Response &Http::processRequest() {
   if (_context == NULL) return processError("500", "Internal Server Error");
 
   // Check if method is allowed
-  if (isMehodValid() == false) return _response;
+  if (isMethodValid() == false) return _response;
 
-  // Check if the server should wait for the body
-  if (_request.getMethod() == "POST") {
-    if (_context->exists("upload", true) == false)
-      return processError("503", "Service Unavailable");
-    std::string bodySize = _request.getHeader("Content-Length");
-    if (bodySize.empty()) return processError("411", "Length Required");
-    msgsize = fromString<size_t>(bodySize);
-    size_t maxBodySize = CLIENT_MAX_BODY_SIZE;
-    if (_context->exists("client_max_body_size", true)) {
-      maxBodySize = fromString<size_t>(
-          _context->getDirective("client_max_body_size", true)[0]);
-    }
-    if (msgsize > maxBodySize)
-      return processError("413", "Request Entity Too Large");
-    _waitForBody = true;
-    return _response;
-  }
+  // Handle POST request
+  if (_request.getMethod() == "POST") return processUploadHead();
 
   // Check if the request should be redirected
   if (_context->exists("redirect", true))
@@ -135,7 +141,7 @@ Response &Http::processRequest() {
   std::string locPath = "/";
   if (_context->getName() == "location") locPath = _context->getArgs()[0];
   std::string path = root + uri;
-  if (uri == locPath && endsWith(uri, "/")) path += index;
+  if (endsWith(path, "/")) path += index;
   return processFile(path);
 }
 
@@ -162,20 +168,58 @@ Response &Http::processFile(std::string path) {
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
+
+  // Set mime type
   std::string mimeType = VirtualHost::getMimeType(file.getExtension());
   if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
+
   return _response;
 }
 
-Response &Http::processUpload(std::string uri) {
+Response &Http::processUploadHead() {
+  // Check if server is configured for upload
+  if (_context->exists("upload", true) == false)
+    return processError("503", "Service Unavailable");
+
+  // Check if body size is specified
+  std::string bodySize = _request.getHeader("Content-Length");
+  if (bodySize.empty()) return processError("411", "Length Required");
+  msgsize = fromString<size_t>(bodySize);
+
+  // Find max body size
+  size_t maxBodySize = CLIENT_MAX_BODY_SIZE;
+  if (_context->exists("client_max_body_size", true))
+    maxBodySize = fromString<size_t>(
+        _context->getDirective("client_max_body_size", true)[0]);
+
+  // Check if body size is too large
+  if (msgsize > maxBodySize)
+    return processError("413", "Request Entity Too Large");
+
+  _waitForBody = true;
+  return _response;
+}
+
+Response &Http::processUploadBody(std::string uri) {
   if (_context->exists("upload", true) == false)
     return processError("500", "Internal Server Error");
-  uri = "/";
-  if (_context->exists("url"))
-    uri = uri.substr(_context->getDirective("url", true)[0].size());
-  std::string path = _context->getDirective("root")[0] +
-                     _context->getDirective("upload")[0] + uri;
-  File file(path);
+
+  size_t pos = uri.find_last_of("/");
+  if (pos == std::string::npos || pos == uri.size() - 1)
+    return processError("500", "Internal Server Error");
+
+  // Initialize relative path to root
+  std::string relativeLoc = "/";
+
+  // Check if context is a location, if so use the location path
+  if (_context->getName() == "location") relativeLoc = _context->getArgs()[0];
+  relativeLoc += _context->getDirective("upload", true)[0];
+
+  // Add filename to relative path
+  relativeLoc += "/" + uri.substr(pos + 1);
+
+  // Create and write file
+  File file(_context->getDirective("root", true)[0] + relativeLoc);
   try {
     file.create();
     file.open(O_WRONLY);
@@ -185,9 +229,7 @@ Response &Http::processUpload(std::string uri) {
     return processError("500", "Internal Server Error");
   }
   _response = Response("HTTP/1.1", "201", "Created");
-  std::string resource = _context->getDirective("url")[0] +
-                         _context->getDirective("upload")[0] + uri;
-  _response.setHeader("Location", getAbsoluteUri(resource));
+  _response.setHeader("Location", getAbsoluteUri(relativeLoc));
   _response.setBody(_request.getBody());
   return _response;
 }
@@ -304,7 +346,7 @@ std::string Http::getAbsoluteUri(std::string uri) {
   return ret.generate();
 }
 
-bool Http::isMehodValid() {
+bool Http::isMethodValid() {
   bool methodAllowed = false;
   std::vector<std::string> *methods = NULL;
   if (_context->exists("allow", true)) {
