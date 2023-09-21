@@ -17,10 +17,13 @@ SRC_DIR		:= ../src
 INC_DIR		:= ../include
 TEST_DIR	:= src
 
-SRC			+= Address.cpp
+SRC			+= poll/Address.cpp
+SRC			+= poll/timeval.cpp
 TEST_SRC	+= AddressTest.cpp
+TEST_SRC	+= timevalTest.cpp
 
-HEADERS		+= Address.hpp
+HEADERS		+= poll/Address.hpp
+HEADERS		+= poll/timeval.hpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 TEST_OBJ	:= $(addprefix $(OBJ_DIR)/, $(TEST_SRC:%.cpp=%.o))
@@ -32,7 +35,7 @@ LIB_SRC		+= libgtest.a
 LIBS		:= $(addprefix $(LIB_DIR)/lib/, $(LIB_SRC))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++14 -Igoogletest/googletest/include
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++14 -Igoogletest/googletest/include -I../include -I../include/poll -I../include/http -I../include/config
 LDFLAGS		:= -Lgoogletest/build/lib -pthread $(LIBS)
 
 
