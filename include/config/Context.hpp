@@ -6,22 +6,24 @@
 #include <string>
 #include <vector>
 
+#include "../webserv.hpp"
 #include "Log.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
-#include "../webserv.hpp"
 
 class Context {
  private:
   std::string _name;
   std::string _parent;
+  Context *_parentContext;
+  std::vector<std::string> _args;
   std::map<std::string, size_t> _tokenOccurences;
   std::map<std::string, std::vector<std::string> > _directives;
   std::map<std::string, std::vector<Context> > _contexts;
 
  public:
   Context();
-  Context(std::string name, std::string parent);
+  Context(std::string name, Context *parent = NULL);
   Context(const Context &rhs);
   Context &operator=(const Context &rhs);
   ~Context();
@@ -29,12 +31,16 @@ class Context {
   // Getters
   std::string getName();
   std::string getParent();
+  std::vector<std::string> &getArgs();
   size_t getTokenOccurence(std::string token);
   std::map<std::string, size_t> getTokenOccurences();
-  std::vector<std::string> &getDirective(std::string token);
+  std::vector<std::string> &getDirective(std::string token,
+                                         bool searchTree = false);
   std::vector<Context> &getContext(std::string token);
 
   // Setters/Adders
+  void setParent(Context *parent);
+  void setArgs(std::vector<std::string> args);
   void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
   std::string addDirective(std::string token, std::vector<std::string> values);
   std::string addContext(Context context);
@@ -43,13 +49,18 @@ class Context {
   void removeDirective(std::string token);
   void removeContext(std::string token);
 
+  size_t argCount();
+
   // Checks if the token exists in the context
+  // @param searchTree If true, the function will search its parent tree
   // @exception No custom exceptions
-  bool exists(std::string token);
+  bool exists(std::string token, bool searchTree = false);
 
   // Checks if the token is a valid context token
   // @exception No custom exceptions
   bool isValidContext(std::string token);
+  // Checks if the arguments are valid this context
+  std::string isValidContextArgs(std::vector<std::string> args);
   // Checks if the token is a valid directive token
   // @exception No custom exceptions
   bool isValidDirective(std::string token);

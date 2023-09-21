@@ -80,14 +80,29 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
 
 void Config::processContext(Context &context, std::string &data,
                             std::string token, size_t &line) {
-  line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
+  Context child(token, &context);
+  // Find context start bracket
+  size_t argsEnd = data.find_first_of("{\n");
+  if (argsEnd == std::string::npos || data[argsEnd] != '{')
+    throwExeption(line, "Expected token '{' not found");
+
+  // Parse, validate and add
+  std::vector<std::string> args =
+      split(trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
+  _error = child.isValidContextArgs(args);
+  if (_error != "") throwExeption(line, _error);
+  child.setArgs(args);
+
   trimStart(data, " \f\t\v");
-  if (data[0] != '{') throwExeption(line, "Expected token '{' not found");
+  line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
+
+  // Find context end bracket
   size_t nextEnd = findContextEnd(data);
   if (nextEnd == std::string::npos)
     throwExeption(line, "No context end found for '" + token + "'");
   std::string contextData = cut(data, 1, nextEnd);
-  Context child(token, context.getName());
+
+  // Parse context
   parseContext(child, contextData, line);
   _error = context.addContext(child);
   line += linesUntilPos(contextData, contextData.length() + 2);

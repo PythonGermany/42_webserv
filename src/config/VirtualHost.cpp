@@ -63,8 +63,7 @@ Address &VirtualHost::getAddress() { return _address; }
 
 Context &VirtualHost::getContext() { return _context; }
 
-VirtualHost *VirtualHost::matchVirtualHost(Address &address,
-                                           std::string serverName) {
+VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   VirtualHost *match = NULL;
   for (size_t i = 0; i < _virtualHosts.size(); i++) {
     if (_virtualHosts[i].getAddress() == address)
@@ -72,7 +71,7 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address,
     std::vector<std::string> &names =
         _virtualHosts[i].getContext().getDirective("server_name");
     for (size_t j = 0; j < names.size(); j++)
-      if (names[j] == serverName) return &_virtualHosts[i];
+      if (names[j] == host) return &_virtualHosts[i];
   }
   return match;
 }
@@ -82,7 +81,7 @@ Context *VirtualHost::matchLocation(const std::string &uri) {
   Context *match = &_context;
   size_t matchSize = 0;
   for (size_t i = 0; i < locations.size(); i++) {
-    std::string locUri = locations[i].getDirective("url")[0];
+    std::string locUri = locations[i].getArgs()[0];
     if (!endsWith(locUri, "/")) locUri += "/";
     if (locUri == uri) return &locations[i];
     if (startsWith(uri, locUri) && locUri.size() > matchSize) {

@@ -2,9 +2,13 @@
 
 Context::Context() {}
 
-Context::Context(std::string name, std::string parent) {
+Context::Context(std::string name, Context *parent) {
   _name = name;
-  _parent = parent;
+  _parentContext = parent;
+  if (_parentContext == NULL)
+    _parent = "";
+  else
+    _parent = _parentContext->getName();
 }
 
 Context::Context(const Context &rhs) { *this = rhs; }
@@ -13,6 +17,8 @@ Context &Context::operator=(const Context &rhs) {
   if (this == &rhs) return *this;
   _name = rhs._name;
   _parent = rhs._parent;
+  _parentContext = rhs._parentContext;
+  _args = rhs._args;
   _tokenOccurences = rhs._tokenOccurences;
   _directives = rhs._directives;
   _contexts = rhs._contexts;
@@ -25,6 +31,8 @@ std::string Context::getName() { return _name; }
 
 std::string Context::getParent() { return _parent; }
 
+std::vector<std::string> &Context::getArgs() { return _args; }
+
 size_t Context::getTokenOccurence(std::string token) {
   if (_tokenOccurences.find(token) == _tokenOccurences.end()) return 0;
   return _tokenOccurences[token];
@@ -34,13 +42,27 @@ std::map<std::string, size_t> Context::getTokenOccurences() {
   return _tokenOccurences;
 }
 
-std::vector<std::string> &Context::getDirective(std::string token) {
+std::vector<std::string> &Context::getDirective(std::string token,
+                                                bool searchTree) {
+  if (exists(token, false)) return _directives[token];
+  if (searchTree && _parentContext != NULL)
+    return _parentContext->getDirective(token, searchTree);
   return _directives[token];
 }
 
 std::vector<Context> &Context::getContext(std::string token) {
   return _contexts[token];
 }
+
+void Context::setParent(Context *parent) {
+  _parentContext = parent;
+  if (_parentContext == NULL)
+    _parent = "";
+  else
+    _parent = _parentContext->getName();
+}
+
+void Context::setArgs(std::vector<std::string> args) { _args = args; }
 
 void Context::setTokenOccurences(
     std::map<std::string, size_t> tokenOccurences) {
@@ -77,8 +99,13 @@ void Context::removeContext(std::string token) {
   _tokenOccurences.erase(token);
 }
 
-bool Context::exists(std::string token) {
-  return _tokenOccurences.find(token) != _tokenOccurences.end();
+size_t Context::argCount() { return _args.size(); }
+
+bool Context::exists(std::string token, bool searchTree) {
+  if (_tokenOccurences.find(token) != _tokenOccurences.end()) return true;
+  if (searchTree && _parentContext != NULL)
+    return _parentContext->exists(token, searchTree);
+  return false;
 }
 
 bool Context::isValidContext(std::string token) {
@@ -87,6 +114,24 @@ bool Context::isValidContext(std::string token) {
         tokens[i].isContext)
       return true;
   return false;
+}
+
+std::string Context::isValidContextArgs(std::vector<std::string> args) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
+    if (tokens[i].name == _name && tokens[i].isContext) {
+      if (tokens[i].func != NULL) {
+        for (size_t j = 0; j < args.size(); j++) {
+          std::string error = tokens[i].func(args[j]);
+          if (error != "") return "Argument '" + args[j] + "': " + error;
+        }
+      }
+      if (tokens[i].minArgs <= args.size() && tokens[i].maxArgs >= args.size())
+        return "";
+      return "'" + _name + "' requires between " + toString(tokens[i].minArgs) +
+             " and " + toString(tokens[i].maxArgs) + " arguments";
+    }
+  }
+  return "Context '" + _name + "' not found";
 }
 
 bool Context::isValidDirective(std::string token) {

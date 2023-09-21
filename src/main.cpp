@@ -6,7 +6,7 @@
 
 Context loadConfig(std::string path) {
   Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
-  Context context("_", "");
+  Context context("_", NULL);
   Config config(path);
   config.removeComments();
   context = config.parseContext(context, config.getConfig());

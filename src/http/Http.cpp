@@ -11,13 +11,13 @@ Http::Http(Address const &client, Address const &host) {
   this->_waitForBody = false;
   this->_error = false;
   std::stringstream ss;
-  ss << "add:    " << client << " -> " << host;
+  ss << host << " -> delete: " << client;
   Log::write(ss.str(), DEBUG);
 }
 
 Http::~Http() {
   std::stringstream ss;
-  ss << "delete: " << client << " <- " << host;
+  ss << host << " -> add:    " << client;
   Log::write(ss.str(), DEBUG);
 }
 
@@ -34,9 +34,9 @@ void Http::OnHeadRecv(std::string msg) {
   }
   _virtualHost =
       VirtualHost::matchVirtualHost(host, _request.getHeader("Host"));
-  if (parseHead != 0 || _request.isValid() == false) {
+  if (parseHead != 0 || _request.isValid() == false)
     _response = processError("400", "Bad Request");
-  } else
+  else
     _response = processRequest();
   if (_waitForBody == false) {
     size_t content_length = _response.getBody().size();
@@ -108,15 +108,15 @@ Response &Http::processRequest() {
 
   // Check if the server should wait for the body
   if (_request.getMethod() == "POST") {
-    if (_context->exists("upload") == false)
+    if (_context->exists("upload", true) == false)
       return processError("503", "Service Unavailable");
     std::string bodySize = _request.getHeader("Content-Length");
     if (bodySize.empty()) return processError("411", "Length Required");
     msgsize = fromString<size_t>(bodySize);
     size_t maxBodySize = CLIENT_MAX_BODY_SIZE;
-    if (_context->exists("client_max_body_size")) {
-      maxBodySize =
-          fromString<size_t>(_context->getDirective("client_max_body_size")[0]);
+    if (_context->exists("client_max_body_size", true)) {
+      maxBodySize = fromString<size_t>(
+          _context->getDirective("client_max_body_size", true)[0]);
     }
     if (msgsize > maxBodySize)
       return processError("413", "Request Entity Too Large");
@@ -125,15 +125,15 @@ Response &Http::processRequest() {
   }
 
   // Check if the request should be redirected
-  if (_context->exists("redirect"))
-    return processRedirect(_context->getDirective("redirect")[0]);
+  if (_context->exists("redirect", true))
+    return processRedirect(_context->getDirective("redirect", true)[0]);
 
   // Process the request as a file
-  std::string root = _context->getDirective("root")[0];
-  std::string index = _context->getDirective("index")[0];
+  std::string root = _context->getDirective("root", true)[0];
+  std::string index = _context->getDirective("index", true)[0];
   std::string uri = _request.getUri().getPath();
   std::string locPath = "/";
-  if (_context->exists("url")) locPath = _context->getDirective("url")[0];
+  if (_context->getName() == "location") locPath = _context->getArgs()[0];
   std::string path = root + uri;
   if (uri == locPath && endsWith(uri, "/")) path += index;
   return processFile(path);
@@ -146,8 +146,8 @@ Response &Http::processFile(std::string path) {
   else if (file.dir()) {
     if (!endsWith(path, "/"))
       return processRedirect(_request.getUri().getPath() + "/");
-    if (_context->exists("autoindex") &&
-        _context->getDirective("autoindex")[0] == "on")
+    if (_context->exists("autoindex", true) &&
+        _context->getDirective("autoindex", true)[0] == "on")
       return processAutoindex(path);
     return processError("403", "Forbidden");
   } else if (!file.readable())
@@ -168,9 +168,11 @@ Response &Http::processFile(std::string path) {
 }
 
 Response &Http::processUpload(std::string uri) {
-  if (_context->exists("upload") == false)
+  if (_context->exists("upload", true) == false)
     return processError("500", "Internal Server Error");
-  uri = uri.substr(_context->getDirective("url")[0].size());
+  uri = "/";
+  if (_context->exists("url"))
+    uri = uri.substr(_context->getDirective("url", true)[0].size());
   std::string path = _context->getDirective("root")[0] +
                      _context->getDirective("upload")[0] + uri;
   File file(path);
@@ -305,8 +307,8 @@ std::string Http::getAbsoluteUri(std::string uri) {
 bool Http::isMehodValid() {
   bool methodAllowed = false;
   std::vector<std::string> *methods = NULL;
-  if (_context->exists("allow")) {
-    methods = &_context->getDirective("allow");
+  if (_context->exists("allow", true)) {
+    methods = &_context->getDirective("allow", true);
     for (size_t i = 0; i < methods->size(); i++) {
       if (methods[0][i] == _request.getMethod()) {
         methodAllowed = true;

@@ -33,8 +33,7 @@ class VirtualHost {
   Address &getAddress();
   Context &getContext();
 
-  static VirtualHost *matchVirtualHost(Address &address,
-                                       std::string serverName);
+  static VirtualHost *matchVirtualHost(Address &address, std::string host);
   Context *matchLocation(const std::string &uri);
 
   void print();

@@ -15,8 +15,10 @@ void Init::initVirtualHosts(Context& context) {
   Log::write("------- Loading Virtual Hosts -------", INFO, BRIGHT_GREEN);
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
-  for (size_t i = 0; i < serverContexts.size(); i++)
+  for (size_t i = 0; i < serverContexts.size(); i++) {
+    serverContexts[i].setParent(NULL);
     VirtualHost::add(VirtualHost(serverContexts[i]));
+  }
   size_t size = VirtualHost::getVirtualHosts().size();
   Log::write("Number of Virtual Hosts: " + toString(size), INFO);
   Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
@@ -28,7 +30,7 @@ void Init::initMimeTypes(Context& context) {
   std::vector<Context>& mimes =
       context.getContext("http")[0].getContext("types")[0].getContext("type");
   for (size_t i = 0; i < mimes.size(); i++) {
-    std::string mime = mimes[i].getDirective("mime")[0];
+    std::string mime = mimes[i].getArgs()[0];
     std::vector<std::string> exts = mimes[i].getDirective("extension");
     for (size_t j = 0; j < exts.size(); j++) {
       if (types.find(exts[j]) != types.end())
