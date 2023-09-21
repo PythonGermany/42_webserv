@@ -4,7 +4,8 @@ Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
   this->msgdelimiter = "\r\n\r\n";
-  this->msgsizelimit = 10000;
+  this->msgsizelimit =
+      10000 + MAX_CLIENT_BODY_SIZE;  // TODO: Check how to handle this properly
   this->msgsize = 10000;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -244,7 +245,7 @@ Response &Http::processUploadBody(std::string uri) {
     _response.setBody(_request.getBody());
   } else
     _response = Response("HTTP/1.1", "204", "No Content");
-  _response.setHeader("Location", getAbsoluteUri(locPath + uri));
+  _response.setHeader("Location", getAbsoluteUri(uri));
   return _response;
 }
 
@@ -380,6 +381,7 @@ bool Http::isMethodValid(Context *context, Request &request) {
         methods.end())
       return true;
     _response = processError("405", "Method Not Allowed");
+    _response.setHeader("Allow", getFieldValue(methods));
     return false;
   }
   return true;
