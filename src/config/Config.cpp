@@ -10,7 +10,7 @@ Config &Config::operator=(const Config &rhs) {
   if (this == &rhs) return *this;
   _file = rhs._file;
   _config = rhs._config;
-
+  _error = rhs._error;
   return *this;
 }
 

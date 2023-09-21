@@ -15,6 +15,7 @@ void Init::initVirtualHosts(Context& context) {
   Log::write("------- Loading Virtual Hosts -------", INFO, BRIGHT_GREEN);
   std::vector<Context>& serverContexts =
       context.getContext("http")[0].getContext("server");
+
   for (size_t i = 0; i < serverContexts.size(); i++) {
     serverContexts[i].setParent(NULL);
     VirtualHost::add(VirtualHost(serverContexts[i]));

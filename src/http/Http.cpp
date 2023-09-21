@@ -309,12 +309,9 @@ bool Http::isMehodValid() {
   std::vector<std::string> *methods = NULL;
   if (_context->exists("allow", true)) {
     methods = &_context->getDirective("allow", true);
-    for (size_t i = 0; i < methods->size(); i++) {
-      if (methods[0][i] == _request.getMethod()) {
-        methodAllowed = true;
-        break;
-      }
-    }
+    if (std::find(methods->begin(), methods->end(), _request.getMethod()) !=
+        methods->end())
+      methodAllowed = true;
   } else
     methodAllowed = true;
   if (methodAllowed == false) {

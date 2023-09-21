@@ -22,6 +22,13 @@ Context &Context::operator=(const Context &rhs) {
   _tokenOccurences = rhs._tokenOccurences;
   _directives = rhs._directives;
   _contexts = rhs._contexts;
+
+  // Update parent pointers of child contexts
+  for (std::map<std::string, std::vector<Context> >::iterator it =
+           _contexts.begin();
+       it != _contexts.end(); it++)
+    for (size_t i = 0; i < it->second.size(); i++)
+      it->second[i].setParent(this);
   return *this;
 }
 
@@ -81,7 +88,7 @@ std::string Context::addDirective(std::string token,
   return "";
 }
 
-std::string Context::addContext(Context context) {
+std::string Context::addContext(Context &context) {
   std::string error = validToAdd(context.getName());
   if (error.size() > 0) return error;
   _contexts[context.getName()].push_back(context);

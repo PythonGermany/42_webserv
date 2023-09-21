@@ -43,7 +43,7 @@ class Context {
   void setArgs(std::vector<std::string> args);
   void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
   std::string addDirective(std::string token, std::vector<std::string> values);
-  std::string addContext(Context context);
+  std::string addContext(Context &context);
 
   // Remove
   void removeDirective(std::string token);

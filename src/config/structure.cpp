@@ -56,4 +56,7 @@ std::string isListen(std::string const &value) {
     port = value.substr(pos + 1);
   }
   if (isNumeric(port) != "") return "Invalid listen port";
+  if (ipv6 && address.empty()) return "Invalid listen ipv6 address";
+  if (!ipv6 && address.empty()) return "Invalid listen ipv4 address";
+  return "";
 }
