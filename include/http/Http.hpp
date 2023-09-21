@@ -32,11 +32,12 @@ class Http : public AConnection {
 
  private:
   Response& processRequest();
-  Response& processFile(std::string path);
+  Response& processFile(std::string uri);
   Response& processUploadHead();
   Response& processUploadBody(std::string uri);
-  Response& processAutoindex(std::string path);
-  Response& processRedirect(std::string path);
+  Response& processDelete(std::string uri);
+  Response& processAutoindex(std::string uri);
+  Response& processRedirect(std::string uri);
   Response& processError(std::string code, std::string reason);
 
   std::string getDefaultBody(std::string code, std::string reason);

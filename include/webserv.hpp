@@ -20,11 +20,11 @@
  */
 #define TIMEOUT 100000
 
-#define CLIENT_MAX_BODY_SIZE 1048576
+#define MAX_CLIENT_BODY_SIZE 1048576
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[32] = {
+const t_token tokens[33] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -41,7 +41,7 @@ const t_token tokens[32] = {
     {"server", "http", true, 1, -1, 0, 0, NULL},
     {"listen", "server", false, 1, -1, 1, 1, isListen},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},
-    {"client_max_body_size", "server", false, 0, 1, 1, 1, isNumeric},
+    {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
     {"allow", "server", false, 0, -1, 1, -1, isMethod},
     {"root", "server", false, 1, 1, 1, 1, NULL},
     {"index", "server", false, 1, 1, 1, 1, NULL},
@@ -59,6 +59,7 @@ const t_token tokens[32] = {
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
+    {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
     // CGI context
     {"cgi", "location", true, 0, 1, 1, 1, isExtension},
     {"path", "cgi", false, 1, 1, 1, 1, NULL}};

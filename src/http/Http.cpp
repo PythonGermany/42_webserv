@@ -137,32 +137,37 @@ Response &Http::processRequest() {
   // Check if method is allowed
   if (isMethodValid(_context, _request) == false) return _response;
 
-  // Handle POST request
-  if (_request.getMethod() == "POST") return processUploadHead();
+  std::string locUri = "";
+  if (_context->getName() == "location") locUri = _context->getArgs()[0];
+  std::string uri = _request.getUri().getPath();
+  uri = uri.substr(locUri.size());
+
+  // Handle PUT request
+  if (_request.getMethod() == "PUT") return processUploadHead();
+
+  // Handle DELETE request
+  if (_request.getMethod() == "DELETE") return processDelete(uri);
 
   // Check if the request should be redirected
   if (_context->exists("redirect", true))
     return processRedirect(_context->getDirective("redirect", true)[0]);
 
   // Process the request as a file
-  std::string root = _context->getDirective("root", true)[0];
   std::string index = _context->getDirective("index", true)[0];
-  std::string uri = _request.getUri().getPath();
-  std::string locPath = "/";
-  if (_context->getName() == "location") locPath = _context->getArgs()[0] + "/";
-  std::string path = root + uri;
-  if (locPath == uri && endsWith(path, "/")) path += index;
-  return processFile(path);
+  if (uri == "/") uri += index;
+  return processFile(uri);
 }
 
-Response &Http::processFile(std::string path) {
+Response &Http::processFile(std::string uri) {
+  std::string path = _context->getDirective("root", true)[0] + uri;
   File file(path);
+
   if (!file.exists()) return processError("404", "Not Found");
   if (file.dir()) {
-    if (!endsWith(path, "/")) return processRedirect(path + "/");
+    if (!endsWith(path, "/")) return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
         _context->getDirective("autoindex", true)[0] == "on")
-      return processAutoindex(path);
+      return processAutoindex(uri);
     return processError("403", "Forbidden");
   } else if (!file.readable())
     return processError("403", "Forbidden");
@@ -195,10 +200,10 @@ Response &Http::processUploadHead() {
   msgsize = fromString<size_t>(bodySize);
 
   // Find max body size
-  size_t maxBodySize = CLIENT_MAX_BODY_SIZE;
-  if (_context->exists("client_max_body_size", true))
+  size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
+  if (_context->exists("max_client_body_size", true))
     maxBodySize = fromString<size_t>(
-        _context->getDirective("client_max_body_size", true)[0]);
+        _context->getDirective("max_client_body_size", true)[0]);
 
   // Check if body size is too large
   if (msgsize > maxBodySize)
@@ -209,43 +214,61 @@ Response &Http::processUploadHead() {
 }
 
 Response &Http::processUploadBody(std::string uri) {
-  if (_context->exists("upload", true) == false)
+  if (_context->exists("upload") == false)
     return processError("500", "Internal Server Error");
 
-  size_t pos = uri.find_last_of("/");
-  if (pos == std::string::npos || pos == uri.size() - 1)
-    return processError("500", "Internal Server Error");
-
-  // Initialize relative path to root
-  std::string relativeLoc = "/";
-
-  // Check if context is a location, if so use the location path
-  if (_context->getName() == "location") relativeLoc = _context->getArgs()[0];
-  relativeLoc += _context->getDirective("upload", true)[0];
-
-  // Add filename to relative path
-  relativeLoc += "/" + uri.substr(pos + 1);
+  std::string root = _context->getDirective("root", true)[0];
+  std::string upload = _context->getDirective(
+      "upload", true)[0];  // TODO: Decide if upload path should be relative to
+                           // root or to location path
+  std::string locPath = "";
+  if (_context->getName() == "location") locPath = _context->getArgs()[0];
+  uri = upload + uri.substr(locPath.size());
 
   // Create and write file
-  File file(_context->getDirective("root", true)[0] + relativeLoc);
+  bool newFile = true;
+  File file(root + uri);
   try {
-    file.create();
-    file.open(O_WRONLY);
+    if (!file.exists())
+      file.create();
+    else
+      newFile = false;
+    file.open(O_WRONLY | O_TRUNC);
     file.write(_request.getBody());
     file.close();
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
-  _response = Response("HTTP/1.1", "201", "Created");
-  _response.setHeader("Location", getAbsoluteUri(relativeLoc));
-  _response.setBody(_request.getBody());
+  if (newFile) {
+    _response = Response("HTTP/1.1", "201", "Created");
+    _response.setBody(_request.getBody());
+  } else
+    _response = Response("HTTP/1.1", "204", "No Content");
+  _response.setHeader("Location", getAbsoluteUri(locPath + uri));
   return _response;
 }
 
-Response &Http::processAutoindex(std::string path) {
+Response &Http::processDelete(std::string uri) {
+  std::string path = _context->getDirective("root", true)[0] + uri;
+  File file(path);
+
+  if (!file.exists()) return processError("404", "Not Found");
+  if (file.dir()) return processError("403", "Forbidden");
+  if (!file.readable()) return processError("403", "Forbidden");
+  try {
+    file.remove();
+  } catch (const std::exception &e) {
+    return processError("500", "Internal Server Error");
+  }
+  _response = Response("HTTP/1.1", "204", "No Content");
+  return _response;
+}
+
+Response &Http::processAutoindex(std::string uri) {
+  std::string path = _context->getDirective("root", true)[0] + uri;
   _response = Response("HTTP/1.1", "200", "OK");
-  std::string body = "<html><title>Index of " + path + "</title><body>";
-  body += "<h1>Index of " + path + "</h1><hr><pre>";
+  std::string body = "<html><title>Index of " + uri + "</title><body>";
+  body += "<h1>Index of " + uri + "</h1><hr><pre>";
   std::vector<std::string> files;
   try {
     files = File::list(path);
@@ -267,19 +290,9 @@ Response &Http::processAutoindex(std::string path) {
   return _response;
 }
 
-Response &Http::processRedirect(std::string path) {
+Response &Http::processRedirect(std::string uri) {
   _response = Response("HTTP/1.1", "301", "Moved Permanently");
-  std::string body =
-      "<html><title>301 Moved Permanently</title><body>301 "
-      "Moved Permanently</body></html>\r\n";
-  _response.setBody(body);
-  Uri uri(path);
-  if (uri.getHost().empty()) {
-    std::string host = _request.getHeader("Host");
-    if (host.empty()) return processError("500", "Internal Server Error");
-    uri.setHost(host);
-  }
-  _response.setHeader("Location", getAbsoluteUri(path));
+  _response.setHeader("Location", getAbsoluteUri(uri));
   return _response;
 }
 
@@ -366,6 +379,7 @@ bool Http::isMethodValid(Context *context, Request &request) {
     if (std::find(methods.begin(), methods.end(), request.getMethod()) !=
         methods.end())
       return true;
+    _response = processError("405", "Method Not Allowed");
     return false;
   }
   return true;

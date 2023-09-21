@@ -105,6 +105,13 @@ void File::create() {
   close();
 }
 
+void File::remove() {
+  if (!exists()) return;
+  if (std::remove(_path.c_str()) == -1)
+    throwException("remove", "Could not remove file: " +
+                                 std::string(strerror(errno)) + " " + _path);
+}
+
 void File::open(int flags, mode_t mode) {
   if (_fd != -1) return;
   _fd = ::open(_path.c_str(), flags, mode);

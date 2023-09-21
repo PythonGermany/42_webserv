@@ -9,6 +9,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -69,6 +70,9 @@ class File {
   // @exception std::runtime_error if the creation of the file or the
   // directories fails
   void create();
+  // Deletes the file
+  // @exception std::runtime_error if the deletion of the file fails
+  void remove();
   // Opens the file
   // @exception std::runtime_error if opening the file fails
   void open(int flags, mode_t mode = 0644);
