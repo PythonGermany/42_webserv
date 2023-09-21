@@ -66,8 +66,12 @@ Context &VirtualHost::getContext() { return _context; }
 VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   VirtualHost *match = NULL;
   for (size_t i = 0; i < _virtualHosts.size(); i++) {
+    // Check if address matches
     if (_virtualHosts[i].getAddress() == address) {
+      // Set default match if none was found already
       if (match == NULL) match = &_virtualHosts[i];
+
+      // Check if server name matches
       if (_virtualHosts[i].getContext().exists("server_name")) {
         std::vector<std::string> &names =
             _virtualHosts[i].getContext().getDirective("server_name");
@@ -80,16 +84,24 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
 }
 
 Context *VirtualHost::matchLocation(const std::string &uri) {
-  std::vector<Context> &locations = _context.getContext("location");
   Context *match = &_context;
-  size_t matchSize = 0;
-  for (size_t i = 0; i < locations.size(); i++) {
-    std::string locUri = locations[i].getArgs()[0];
-    if (!endsWith(locUri, "/")) locUri += "/";
-    if (locUri == uri) return &locations[i];
-    if (startsWith(uri, locUri) && locUri.size() > matchSize) {
-      match = &locations[i];
-      matchSize = locUri.size();
+
+  // Check if context exists
+  if (_context.exists("location")) {
+    std::vector<Context> &locations = _context.getContext("location");
+    size_t matchSize = 0;
+    for (size_t i = 0; i < locations.size(); i++) {
+      std::string locUri = locations[i].getArgs()[0];
+
+      // Add trailing slash if missing to avoid matching /test with /test2
+      if (!endsWith(locUri, "/")) locUri += "/";
+
+      // Check if location matches
+      if (locUri == uri) return &locations[i];
+      if (startsWith(uri, locUri) && locUri.size() > matchSize) {
+        match = &locations[i];
+        matchSize = locUri.size();
+      }
     }
   }
   return match;

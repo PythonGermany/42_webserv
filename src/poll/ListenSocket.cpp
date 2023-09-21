@@ -56,7 +56,7 @@ void ListenSocket::init(int backlog) {
   pollfd.events = POLLIN;
   pollfd.revents = 0;
   Poll::add(pollfd);
-  std::cout << "listen: " << _addr << std::endl;
+  Log::write("Listen: " + toString<Address &>(_addr), DEBUG);
 }
 
 ListenSocket &ListenSocket::operator=(ListenSocket const &other) {

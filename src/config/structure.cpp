@@ -8,7 +8,7 @@ std::string isNumeric(std::string const &value) {
 }
 
 std::string isMethod(std::string const &value) {
-  if (value == "GET" || value == "HEAD" || value == "POST" || value == "DELETE")
+  if (value == "GET" || value == "HEAD" || value == "PUT" || value == "POST")
     return "";
   return "Invalid method";
 }

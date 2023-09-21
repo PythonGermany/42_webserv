@@ -10,15 +10,15 @@ Http::Http(Address const &client, Address const &host) {
   this->_context = NULL;
   this->_waitForBody = false;
   this->_error = false;
-  std::stringstream ss;
-  ss << host << " -> add:    " << client;
-  Log::write(ss.str(), DEBUG);
+  Log::write("Http: " + toString<Address &>(this->host) +
+                 " -> add: " + toString<Address &>(this->client),
+             DEBUG);
 }
 
 Http::~Http() {
-  std::stringstream ss;
-  ss << host << " -> delete: " << client;
-  Log::write(ss.str(), DEBUG);
+  Log::write(
+      toString<Address &>(host) + " -> delete: " + toString<Address &>(client),
+      DEBUG);
 }
 
 void Http::OnHeadRecv(std::string msg) {
@@ -28,10 +28,10 @@ void Http::OnHeadRecv(std::string msg) {
   _request.parseHead(msg);
   {
     Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
-                   toString(host.port()) + " " +
-                   inet_ntoa(*(uint32_t *)client.addr()) + " -> " +
+                   toString(host.port()) + " <- " +
+                   inet_ntoa(*(uint32_t *)client.addr()) + ": '" +
                    _request.getMethod() + " " + _request.getUri().getPath() +
-                   " " + _request.getVersion(),
+                   " " + _request.getVersion() + "'",
                INFO);
   }
   // Find virtual host
@@ -53,10 +53,10 @@ void Http::OnHeadRecv(std::string msg) {
       _response.setHeader("Connection", "keep-alive");
     {
       Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
-                     toString(host.port()) + " " +
-                     inet_ntoa(*(uint32_t *)client.addr()) + " <- " +
+                     toString(host.port()) + " -> " +
+                     inet_ntoa(*(uint32_t *)client.addr()) + ": '" +
                      _response.getVersion() + " " + _response.getStatus() +
-                     " " + _response.getReason(),
+                     " " + _response.getReason() + "'",
                  INFO);
     }
 
@@ -113,6 +113,11 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
+  {
+    Log::write(
+        "VirtualHost: " + toString<Address &>(_virtualHost->getAddress()),
+        DEBUG);
+  }
 
   // Check if the request is valid
   if (_request.isValid() == false) return processError("400", "Bad Request");
@@ -123,6 +128,11 @@ Response &Http::processRequest() {
   // Find correct location context
   _context = _virtualHost->matchLocation(_request.getUri().getPath());
   if (_context == NULL) return processError("500", "Internal Server Error");
+  {
+    std::string path = "/";
+    if (_context->argCount() > 0) path = _context->getArgs()[0];
+    Log::write("Location: " + path, DEBUG);
+  }
 
   // Check if method is allowed
   if (isMethodValid(_context, _request) == false) return _response;
@@ -139,19 +149,17 @@ Response &Http::processRequest() {
   std::string index = _context->getDirective("index", true)[0];
   std::string uri = _request.getUri().getPath();
   std::string locPath = "/";
-  if (_context->getName() == "location") locPath = _context->getArgs()[0];
+  if (_context->getName() == "location") locPath = _context->getArgs()[0] + "/";
   std::string path = root + uri;
-  if (endsWith(path, "/")) path += index;
+  if (locPath == uri && endsWith(path, "/")) path += index;
   return processFile(path);
 }
 
 Response &Http::processFile(std::string path) {
   File file(path);
-  if (!file.exists())
-    return processError("404", "Not Found");
-  else if (file.dir()) {
-    if (!endsWith(path, "/"))
-      return processRedirect(_request.getUri().getPath() + "/");
+  if (!file.exists()) return processError("404", "Not Found");
+  if (file.dir()) {
+    if (!endsWith(path, "/")) return processRedirect(path + "/");
     if (_context->exists("autoindex", true) &&
         _context->getDirective("autoindex", true)[0] == "on")
       return processAutoindex(path);
