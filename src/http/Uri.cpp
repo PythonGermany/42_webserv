@@ -23,15 +23,21 @@ Uri::~Uri() {}
 
 void Uri::load(std::string uri) {
   size_t pos;
+
+  // Find scheme end
   pos = uri.find("://");
   if (pos != std::string::npos) {
     _scheme = uri.substr(0, pos);
     uri = uri.substr(pos + 3);
   }
+
+  // Find host end
   pos = uri.find(":");
   if (pos != std::string::npos) {
     _host = uri.substr(0, pos);
     uri = uri.substr(pos + 1);
+
+    // Find port end
     pos = uri.find("/");
     if (pos != std::string::npos) {
       _port = uri.substr(0, pos);
@@ -41,6 +47,7 @@ void Uri::load(std::string uri) {
       uri = "";
     }
   } else {
+    // Find host end
     pos = uri.find("/");
     if (pos != std::string::npos) {
       _host = uri.substr(0, pos);
@@ -50,12 +57,15 @@ void Uri::load(std::string uri) {
       uri = "";
     }
   }
+  // Find query start
   pos = uri.find("?");
   if (pos != std::string::npos) {
     _path = uri.substr(0, pos);
     _query = uri.substr(pos + 1);
   } else
     _path = uri;
+
+  // Transform required fields to lowercase
   std::transform(_scheme.begin(), _scheme.end(), _scheme.begin(), ::tolower);
   std::transform(_host.begin(), _host.end(), _host.begin(), ::tolower);
 }

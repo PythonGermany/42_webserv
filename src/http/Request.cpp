@@ -34,14 +34,19 @@ std::string Request::getHeader(std::string key) const {
 std::string Request::getBody() const { return _body; }
 
 int Request::parseHead(std::string msg) {
+  // Find head delimiter
   size_t pos = msg.find("\r\n");
   if (pos == std::string::npos) return 1;
+
+  // Parse request line
   std::string requestLine = msg.substr(0, pos);
   std::vector<std::string> requestLineTokens = split(requestLine, " ");
   if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
+
+  // Parse headers
   while (pos != std::string::npos) {
     pos += 2;
     size_t end = msg.find("\r\n", pos);

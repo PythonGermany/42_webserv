@@ -188,9 +188,18 @@ std::string Context::validate(bool recursive) {
 void Context::print(int indent) {
   std::string spaces = GRAY;
   for (int i = 0; i < indent; i++) spaces += "| ";
-  std::cout << spaces << RED << _name << RESET << std::endl;
+  std::cout << spaces << RED << _name;
   spaces += "| ";
   spaces += RESET;
+
+  // Print arguments
+  if (_args.size() > 0) {
+    std::cout << " " << GREEN;
+    for (size_t i = 0; i < _args.size(); i++) std::cout << _args[i] << " ";
+  }
+  std::cout << RESET << std::endl;
+
+  // Print directives
   for (std::map<std::string, std::vector<std::string> >::iterator it =
            _directives.begin();
        it != _directives.end(); it++) {
@@ -199,6 +208,8 @@ void Context::print(int indent) {
       std::cout << "'" << it->second[i] << "' ";
     std::cout << RESET << std::endl;
   }
+
+  // Recursively print contexts
   for (std::map<std::string, std::vector<Context> >::iterator it =
            _contexts.begin();
        it != _contexts.end(); it++) {

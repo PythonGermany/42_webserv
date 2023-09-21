@@ -46,19 +46,27 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
   Log::write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
   size_t startLine = line;
   while (true) {
-    line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
+    // Trim leading whitespace
     trimStart(data);
+    line += linesUntilPos(data, data.find_first_not_of(" \f\n\r\t\v"));
     if (data.length() == 0) break;
+
+    // Find end of token
     size_t nextEnd = data.find_first_of(" \n");
     if (nextEnd == std::string::npos || data[nextEnd] != ' ')
       throwExeption(line, "Expected token ' ' not found");
     line += linesUntilPos(data, nextEnd);
+
+    // Process token
     std::string token = trim(cut(data, 0, nextEnd));
     if (token == "include" || context.isValidDirective(token)) {
+      // Find end of token value
       nextEnd = data.find_first_of(";\n");
       if (nextEnd == std::string::npos || data[nextEnd] != ';')
         throwExeption(line, "Expected token ';' not found");
       line += linesUntilPos(data, nextEnd + 1);
+
+      // Process token value
       if (token == "include")
         _error = processInclude(context, trim(cut(data, 0, nextEnd)));
       else
@@ -69,10 +77,15 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       processContext(context, data, token, line);
     } else
       _error = "Invalid token '" + token + "'";
+
+    // Handle errors
     if (_error != "") throwExeption(line, _error);
   }
-  Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
-             DEBUG);
+  {
+    Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
+               DEBUG);
+  }
+  // Validate parsed context
   if (validate) _error = context.validate(false);
   if (_error != "") throwExeption(startLine, _error);
   return context;
@@ -112,19 +125,25 @@ void Config::processContext(Context &context, std::string &data,
 std::string Config::processInclude(Context &context, std::string path) {
   std::vector<std::string> files;
   try {
+    // Prepare wildcard path
     std::string includePath;
     if (path[0] == '/')
       includePath = path;
     else
       includePath = _file.getDir() + "/" + path;
+
+    // Get file list
     files = processWildcard(includePath);
   } catch (const std::exception &e) {
     return e.what();
   }
   for (size_t i = 0; i < files.size(); i++) {
-    Log::write(
-        "Context: '" + context.getName() + "' -> Include '" + files[i] + "'",
-        DEBUG);
+    {
+      Log::write(
+          "Context: '" + context.getName() + "' -> Include '" + files[i] + "'",
+          DEBUG);
+    }
+    // Recursively parse included config files
     Config config(files[i]);
     config.removeComments();
     config.parseContext(context, config.getConfig(), 1, false);

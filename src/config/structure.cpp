@@ -38,17 +38,22 @@ std::string isBoolean(std::string const &value) {
 }
 
 std::string isListen(std::string const &value) {
-  size_t portStart = 0;
-  if (value[0] == '[') {
-    portStart = value.find(']', portStart + 1);
-    if (portStart == std::string::npos)
-      return "Invalid listen format (']' missing)";
+  if (value.empty()) return "Invalid listen format (empty)";
+
+  bool ipv6 = value[0] == '[';
+  std::string address, port;
+  if (ipv6) {
+    size_t pos = value.find("]:");
+    if (pos == std::string::npos)
+      return "Invalid listen ipv6 format (missing port)";
+    address = value.substr(1, pos - 1);
+    port = value.substr(pos + 2);
+  } else {
+    size_t pos = value.find(":");
+    if (pos == std::string::npos)
+      return "Invalid listen ipv4 format (missing port)";
+    address = value.substr(0, pos);
+    port = value.substr(pos + 1);
   }
-  size_t pos = value.find(':', portStart);
-  if (pos == 0) return "Invalid listen format (address missing)";
-  if (pos == std::string::npos) return "Invalid listen format (port missing)";
-  std::string port = value.substr(pos + 1);
-  if (port.length() == 0) return "Invalid listen format (port missing)";
-  if (isNumeric(port) != "") return "Invalid listen format (invalid port)";
-  return "";
+  if (isNumeric(port) != "") return "Invalid listen port";
 }

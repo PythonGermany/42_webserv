@@ -20,8 +20,10 @@ void Init::initVirtualHosts(Context& context) {
     VirtualHost::add(VirtualHost(serverContexts[i]));
   }
   size_t size = VirtualHost::getVirtualHosts().size();
-  Log::write("Number of Virtual Hosts: " + toString(size), INFO);
-  Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
+  {
+    Log::write("Number of Virtual Hosts: " + toString(size), INFO);
+    Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
+  }
 }
 
 void Init::initMimeTypes(Context& context) {
@@ -40,13 +42,16 @@ void Init::initMimeTypes(Context& context) {
     }
   }
   context.getContext("http")[0].removeContext("types");
-  Log::write("Number of mime extensions: " + toString(types.size()), INFO);
   VirtualHost::setMimeTypes(types);
-  Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
+  {
+    Log::write("Number of mime extensions: " + toString(types.size()), INFO);
+    Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
+  }
 }
 
 void Init::initLogDefaults(Context& context) {
   Context& http = context.getContext("http")[0];
+  // Init log level
   if (http.exists("log_level")) {
     std::string level = http.getDirective("log_level")[0];
     if (level == "DEBUG")
@@ -56,15 +61,19 @@ void Init::initLogDefaults(Context& context) {
     else if (level == "WARNING")
       Log::setLevel(WARNING);
   }
+
+  // Init log files
   if (http.exists("access_log"))
     Log::setLogFile(http.getDirective("access_log")[0]);
   if (http.exists("error_log"))
     Log::setErrorLogFile(http.getDirective("error_log")[0]);
   Log::init();
-  Log::write("--------- Log configuration ---------", INFO, BRIGHT_GREEN);
-  Log::write("Log level: " + toString(Log::getLevel()), INFO);
-  Log::write("Access log file: " + Log::getLogFile().getPath(), INFO);
-  Log::write("Error log file: " + Log::getErrorLogFile().getPath(), INFO);
+  {
+    Log::write("--------- Log configuration ---------", INFO, BRIGHT_GREEN);
+    Log::write("Log level: " + toString(Log::getLevel()), INFO);
+    Log::write("Access log file: " + Log::getLogFile().getPath(), INFO);
+    Log::write("Error log file: " + Log::getErrorLogFile().getPath(), INFO);
+  }
 }
 
 void Init::initPoll() {  // TODO: Implement correct socket creation
@@ -75,6 +84,8 @@ void Init::initPoll() {  // TODO: Implement correct socket creation
     Poll::add(new ListenSocket(virtualHosts[i].getAddress()));
     sockets++;
   }
-  Log::write("Number of sockets: " + toString(sockets), INFO);
-  Log::write("---------- Sockets created ----------", INFO, BRIGHT_GREEN);
+  {
+    Log::write("Number of sockets: " + toString(sockets), INFO);
+    Log::write("---------- Sockets created ----------", INFO, BRIGHT_GREEN);
+  }
 }
