@@ -20,7 +20,7 @@ public:
 	static void add(IFileDescriptor *src);
 	static void add(struct pollfd &src);
 	static void remove(size_type pos);
-	static void poll();
+	static bool poll();
 	static void signalHandler(int);
 	static void setTimeout(int src);
 	static void setPollActive(short oldEvents, IFileDescriptor *src);

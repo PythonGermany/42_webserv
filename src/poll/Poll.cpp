@@ -38,24 +38,22 @@ void Poll::remove(size_type pos)
 	poll.pollfds.erase(poll.pollfds.begin() + pos);
 }
 
-void Poll::poll()
+bool Poll::poll()
 {
 	Poll &poll = getInstance();
-	size_t numListenSockets = poll.callbackObjects.size();
+	static size_t numListenSockets = poll.callbackObjects.size();
 
-	while (true)
-	{
-		std::cout << "poll.timeout: " << poll.timeout << std::endl;
-		int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
-		if (poll.stop)
-			return;
-		if (ready == -1)
-			throw std::runtime_error(std::string("Poll::poll(): ") + std::strerror(errno));
-		poll.timeout = -1;
-		poll.iterate();
-		if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
-			poll.timeout = TIMEOUT;
-	}
+	std::cout << "poll.timeout: " << poll.timeout << std::endl;
+	int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
+	if (poll.stop)
+		return false;
+	if (ready == -1)
+		throw std::runtime_error(std::string("Poll::poll(): ") + std::strerror(errno));
+	poll.timeout = -1;
+	poll.iterate();
+	if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
+		poll.timeout = TIMEOUT;
+	return true;
 }
 
 /**
