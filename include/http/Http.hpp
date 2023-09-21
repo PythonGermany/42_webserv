@@ -14,9 +14,12 @@
 class Http : public AConnection {
   Request _request;
   Response _response;
+
   VirtualHost* _virtualHost;
   Context* _context;
+
   bool _waitForBody;
+  bool _error;
 
  public:
   Http(Address const& client, Address const& host);
@@ -38,6 +41,8 @@ class Http : public AConnection {
   std::string getDefaultBody(std::string code, std::string reason);
   std::string getFieldValue(std::vector<std::string> const& values);
   std::string getAbsoluteUri(std::string uri);
+
+  bool isMehodValid();
 };
 
 #endif

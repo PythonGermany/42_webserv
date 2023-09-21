@@ -65,24 +65,13 @@ void Init::initLogDefaults(Context& context) {
   Log::write("Error log file: " + Log::getErrorLogFile().getPath(), INFO);
 }
 
-void Init::initPoll() {
+void Init::initPoll() {  // TODO: Implement correct socket creation
   Log::write("--------- Creating sockets ----------", INFO, BRIGHT_GREEN);
   size_t sockets = 0;
   std::vector<VirtualHost>& virtualHosts = VirtualHost::getVirtualHosts();
-  std::set<std::string> connections;
   for (size_t i = 0; i < virtualHosts.size(); i++) {
-    std::vector<std::string>& listen =
-        virtualHosts[i].getContext().getDirective("listen");
-    for (size_t j = 0; j < listen.size(); j++) {
-      if (connections.find(listen[j]) == connections.end()) {
-        connections.insert(listen[j]);
-        size_t pos = listen[j].find(":");
-        std::string host = listen[j].substr(0, pos);
-        std::string port = listen[j].substr(pos + 1);
-        Poll::add(new ListenSocket(host, port));
-        sockets++;
-      }
-    }
+    Poll::add(new ListenSocket(virtualHosts[i].getAddress()));
+    sockets++;
   }
   Log::write("Number of sockets: " + toString(sockets), INFO);
   Log::write("---------- Sockets created ----------", INFO, BRIGHT_GREEN);

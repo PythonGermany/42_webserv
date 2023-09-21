@@ -10,6 +10,20 @@ ListenSocket::ListenSocket() {}
 ListenSocket::ListenSocket(std::string const &addr, std::string const &port,
                            int backlog)
     : _addr(addr, port) {
+  init(backlog);
+}
+
+ListenSocket::ListenSocket(Address const &addr, int backlog) : _addr(addr) {
+  init(backlog);
+}
+
+ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr) {}
+
+ListenSocket::~ListenSocket() {
+  std::cout << "stop listening: " << _addr << std::endl;
+}
+
+void ListenSocket::init(int backlog) {
   struct pollfd pollfd;
 
   pollfd.fd = socket(_addr.family(), SOCK_STREAM, 0);
@@ -45,12 +59,6 @@ ListenSocket::ListenSocket(std::string const &addr, std::string const &port,
   std::cout << "listen: " << _addr << std::endl;
 }
 
-ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr) {}
-
-ListenSocket::~ListenSocket() {
-  std::cout << "stop listening: " << _addr << std::endl;
-}
-
 ListenSocket &ListenSocket::operator=(ListenSocket const &other) {
   if (this != &other) {
     _addr = other._addr;
@@ -63,6 +71,7 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd) {
   socklen_t len = sizeof(sockaddr_in6);
   Address client;
 
+  client.family(_addr.family());  // TODO: remove this/check if this makes sense
   if ((pollfd.revents & POLLIN) == false) return;
   pollfd.revents &= ~POLLIN;
   newPollfd.fd = ::accept(pollfd.fd, client.data(), &len);
@@ -74,7 +83,7 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd) {
     throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
                              std::strerror(errno));
   // std::cout << (flags & O_RDWR) << std::endl;
-  client.size(len);
+  // client.size(len);
   newPollfd.events = POLLIN;
   newPollfd.revents = 0;
   Poll::add(new Http(client, _addr));

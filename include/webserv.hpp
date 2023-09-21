@@ -24,7 +24,7 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[28] = {
+const t_token tokens[33] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -42,6 +42,12 @@ const t_token tokens[28] = {
     {"listen", "server", false, 1, -1, 1, 1, isListen},
     {"server_name", "server", false, 0, -1, 1, -1, NULL},
     {"client_max_body_size", "server", false, 1, 1, 1, 1, isNumeric},
+    {"allow", "server", false, 0, -1, 1, -1, isMethod},
+    {"root", "server", false, 1, 1, 1, 1, NULL},
+    {"index", "server", false, 1, 1, 1, 1, NULL},
+    {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
+    {"upload", "server", false, 0, 1, 1, 1, isAbsolutePath},
+    {"redirect", "server", false, 0, 1, 1, 1, NULL},
     // Error page context
     {"error_page", "server", true, 0, -1, 0, 0, NULL},
     {"code", "error_page", false, 1, 1, 1, -1, isNumeric},
@@ -49,7 +55,7 @@ const t_token tokens[28] = {
     // Location context
     {"location", "server", true, 0, -1, 0, 0, NULL},
     {"url", "location", false, 1, 1, 1, 1, isAbsolutePath},
-    {"method", "location", false, 0, -1, 1, -1, isMethod},
+    {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"root", "location", false, 1, 1, 1, 1, NULL},
     {"index", "location", false, 1, 1, 1, 1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},

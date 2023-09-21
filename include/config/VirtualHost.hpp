@@ -5,12 +5,14 @@
 #include <string>
 #include <vector>
 
+#include "Address.hpp"
 #include "Context.hpp"
 
 class VirtualHost {
  private:
   static std::vector<VirtualHost> _virtualHosts;
   static std::map<std::string, std::string> _mimeTypes;
+  Address _address;
   Context _context;
 
  public:
@@ -28,12 +30,12 @@ class VirtualHost {
   // Getters
   static std::vector<VirtualHost> &getVirtualHosts();
   static std::string getMimeType(std::string extension);
+  Address &getAddress();
   Context &getContext();
 
-  static VirtualHost *matchVirtualHost(std::string address, std::string port,
+  static VirtualHost *matchVirtualHost(Address &address,
                                        std::string serverName);
   Context *matchLocation(const std::string &uri);
-  bool isCgi(const std::string &uri);
 
   void print();
 };

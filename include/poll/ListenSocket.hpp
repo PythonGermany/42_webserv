@@ -1,24 +1,27 @@
 
 #ifndef LISTENSOCKET_HPP
-# define LISTENSOCKET_HPP
+#define LISTENSOCKET_HPP
 
-# include "IFileDescriptor.hpp"
-# include "Address.hpp"
+#include <string>
 
-# include <string>
+#include "Address.hpp"
+#include "IFileDescriptor.hpp"
 
-class ListenSocket : public IFileDescriptor
-{
-public:
-    ListenSocket(std::string const &addr, std::string const &port, int backlog = SOMAXCONN);
-    ListenSocket(ListenSocket const &other);
-    ~ListenSocket();
-    ListenSocket &operator=(ListenSocket const &other);
-    void onPollEvent(struct pollfd &pollfd);
-private:
-    Address _addr;
+class ListenSocket : public IFileDescriptor {
+ public:
+  ListenSocket(std::string const &addr, std::string const &port,
+               int backlog = SOMAXCONN);
+  ListenSocket(Address const &addr, int backlog = SOMAXCONN);
+  ListenSocket(ListenSocket const &other);
+  ~ListenSocket();
+  ListenSocket &operator=(ListenSocket const &other);
+  void onPollEvent(struct pollfd &pollfd);
 
-    ListenSocket();
+ private:
+  Address _addr;
+
+  ListenSocket();
+  void init(int backlog);
 };
 
-#endif //LISTENSOCKET_HPP
+#endif  // LISTENSOCKET_HPP
