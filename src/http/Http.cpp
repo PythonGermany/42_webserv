@@ -4,8 +4,7 @@ Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
   this->msgdelimiter = "\r\n\r\n";
-  this->msgsizelimit =
-      10000 + MAX_CLIENT_BODY_SIZE;  // TODO: Check how to handle this properly
+  this->msgsizelimit = 10000;  // TODO: Check how to handle this properly
   this->msgsize = std::string::npos;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -24,7 +23,7 @@ Http::~Http() {
       DEBUG);
 }
 
-void Http::OnHeadRecv(std::string msg) {
+void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
   _request = Request();
 
   // Parse request
@@ -139,7 +138,7 @@ Response &Http::processRequest() {
   Log::write("Context URI: " + (contextUri != "" ? contextUri : "/"), DEBUG);
 
   // Check if method is allowed
-  if (isMethodValid(_context, _request) == false) return _response;
+  if (isMethodValid() == false) return _response;
 
   // Handle PUT request
   if (_request.getMethod() == "PUT") return processUploadHead();
@@ -199,6 +198,7 @@ Response &Http::processUploadHead() {
   std::string bodySize = _request.getHeader("Content-Length");
   if (bodySize.empty()) return processError("411", "Length Required");
   msgsize = fromString<size_t>(bodySize);
+  msgsizelimit = 10000 + msgsize;  // TODO: Check how to handle this properly
 
   // Find max body size
   size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
@@ -226,7 +226,7 @@ Response &Http::processUploadBody(std::string uri) {
 
   // Create and write file
   File file(path);
-  bool newFile = file.exists();
+  bool newFile = !file.exists();
   try {
     if (!file.exists()) file.create();
     file.open(O_WRONLY | O_TRUNC);
@@ -235,10 +235,9 @@ Response &Http::processUploadBody(std::string uri) {
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
-  if (newFile) {
+  if (newFile)
     _response = Response("HTTP/1.1", "201", "Created");
-    _response.setBody(_request.getBody());
-  } else
+  else
     _response = Response("HTTP/1.1", "204", "No Content");
   _response.setHeader("Location", getAbsoluteUri(uri));
   return _response;
@@ -362,10 +361,10 @@ std::string Http::getAbsoluteUri(std::string uri) {
   return ret.encode();
 }
 
-bool Http::isMethodValid(Context *context, Request &request) {
-  if (context->exists("allow", true)) {
-    std::vector<std::string> methods = context->getDirective("allow", true);
-    if (std::find(methods.begin(), methods.end(), request.getMethod()) !=
+bool Http::isMethodValid() {
+  if (_context->exists("allow", true)) {
+    std::vector<std::string> methods = _context->getDirective("allow", true);
+    if (std::find(methods.begin(), methods.end(), _request.getMethod()) !=
         methods.end())
       return true;
     _response = processError("405", "Method Not Allowed");

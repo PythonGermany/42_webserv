@@ -120,6 +120,10 @@ void File::open(int flags, mode_t mode) {
   if (_fd == -1)
     throwException("open", "Could not open file: " +
                                std::string(strerror(errno)) + " " + _path);
+  // if (fcntl(_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC))
+  //   throwException("open", "Could not set file flags: " +
+  //                              std::string(strerror(errno)) + " " + _path);
+  //                              // TODO: check if this is needed
   _filesOpen++;
 }
 

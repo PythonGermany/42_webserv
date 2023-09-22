@@ -45,7 +45,7 @@ class Http : public AConnection {
 
   std::string getAbsoluteUri(std::string uri);
 
-  bool isMethodValid(Context* context, Request& request);
+  bool isMethodValid();
   std::string getContextPath(std::string token, bool searchTree = false);
   std::string getContextArgs();
 };
