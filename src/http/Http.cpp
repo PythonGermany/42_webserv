@@ -6,14 +6,16 @@ Http::Http(Address const &client, Address const &host) {
   this->msgdelimiter = "\r\n\r\n";
   this->msgsizelimit =
       10000 + MAX_CLIENT_BODY_SIZE;  // TODO: Check how to handle this properly
-  this->msgsize = 10000;
+  this->msgsize = std::string::npos;
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_waitForBody = false;
   this->_error = false;
-  Log::write("Http: " + toString<Address &>(this->host) +
-                 " -> add: " + toString<Address &>(this->client),
-             DEBUG);
+  {
+    Log::write("Http: " + toString<Address &>(this->host) +
+                   " -> add: " + toString<Address &>(this->client),
+               DEBUG);
+  }
 }
 
 Http::~Http() {
@@ -100,8 +102,8 @@ void Http::OnBodyRecv(std::string msg) {
       _request.getHeader("Connection") == "close")
     closeConnection();
 
-  msgsize = 10000;       // TODO: bad implementation ?
-  _waitForBody = false;  // TODO: bad implementation ?
+  msgsize = std::string::npos;  // TODO: bad implementation ?
+  _waitForBody = false;         // TODO: bad implementation ?
 }
 
 void Http::OnCgiRecv(std::string msg) {

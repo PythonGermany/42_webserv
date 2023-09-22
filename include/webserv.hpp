@@ -24,7 +24,7 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[33] = {
+const t_token tokens[34] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -55,6 +55,7 @@ const t_token tokens[33] = {
     {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"root", "location", false, 0, 1, 1, 1, NULL},
+    {"alias", "location", false, 0, 1, 1, 1, NULL},
     {"index", "location", false, 0, 1, 1, 1, NULL},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},

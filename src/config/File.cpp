@@ -35,6 +35,8 @@ std::string File::getDir() {
 
 void File::setPath(std::string path) { _path = path; }
 
+#include <iostream>
+
 std::vector<std::string> File::list(std::string path) {
   std::vector<std::string> files;
   DIR *dir;

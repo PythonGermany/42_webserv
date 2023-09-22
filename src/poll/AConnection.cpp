@@ -108,7 +108,7 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
       _readBuffer.erase(0, pos);
       continue;
     }
-    if (_readBuffer.size() >= msgsize) {
+    if (msgsize != std::string::npos && _readBuffer.size() >= msgsize) {
       OnBodyRecv(_readBuffer.substr(0, msgsize));
       _readBuffer.erase(0, msgsize);
       continue;

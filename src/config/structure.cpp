@@ -15,7 +15,8 @@ std::string isMethod(std::string const &value) {
 }
 
 std::string isLogLevel(std::string const &value) {
-  if (value == "DEBUG" || value == "INFO" || value == "WARNING") return "";
+  if (value == "DEBUG" || value == "INFO" || value == "WARNING")
+    return "";  // TODO: Why is this not working?
   return "Invalid log level";
 }
 

@@ -27,15 +27,15 @@ void Log::init() {
     if (!_log_file.exists()) _log_file.create();
     _log_file.open(O_WRONLY | O_APPEND);
   } catch (const std::exception& e) {
-    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_RED
-              << "ERROR:" << RESET << " Log: " << e.what() << std::endl;
+    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_YELLOW
+              << "WARNING:" << RESET << " Log: " << e.what() << std::endl;
   }
   try {
     if (!_error_log_file.exists()) _error_log_file.create();
     _error_log_file.open(O_WRONLY | O_APPEND);
   } catch (const std::exception& e) {
-    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_RED
-              << "ERROR:" << RESET << " Log: " << e.what() << std::endl;
+    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_YELLOW
+              << "WARNING:" << RESET << " Log: " << e.what() << std::endl;
   }
 }
 
@@ -43,14 +43,14 @@ void Log::close() {
   try {
     _log_file.close();
   } catch (const std::exception& e) {
-    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_RED
-              << "ERROR:" << RESET << " Log: " << e.what() << std::endl;
+    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_YELLOW
+              << "WARNING:" << RESET << " Log: " << e.what() << std::endl;
   }
   try {
     _error_log_file.close();
   } catch (const std::exception& e) {
-    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_RED
-              << "ERROR:" << RESET << " Log: " << e.what() << std::endl;
+    std::cerr << "[" << getDate(_timeFormat) << "] " << BRIGHT_YELLOW
+              << "WARNING:" << RESET << " Log: " << e.what() << std::endl;
   }
 }
 

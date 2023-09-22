@@ -179,10 +179,14 @@ std::string Context::validArguments(std::string token,
 
 std::string Context::validate(bool recursive) {
   Log::write("Context: '" + _name + "' -> Validating", DEBUG);
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
     if (tokens[i].parent == _name &&
-        getTokenOccurence(tokens[i].name) < tokens[i].minOccurence)
+        getTokenOccurence(tokens[i].name) < tokens[i].minOccurence) {
+      if (tokens[i].isContext)
+        return "Context missing required context '" + tokens[i].name + "'";
       return "Context missing required directive '" + tokens[i].name + "'";
+    }
+  }
   if (recursive) {
     std::map<std::string, std::vector<Context> >::iterator it;
     for (it = _contexts.begin(); it != _contexts.end(); it++)
