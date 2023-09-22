@@ -33,6 +33,16 @@ std::vector<std::string> split(const std::string& str, std::string delim) {
   return tokens;
 }
 
+std::string concatenate(const std::vector<std::string>& values,
+                        std::string separator) {
+  std::string value;
+  for (size_t i = 0; i < values.size(); i++) {
+    if (i != 0) value += separator;
+    value += values[i];
+  }
+  return value;
+}
+
 bool startsWith(std::string str, std::string prefix) {
   if (str.size() < prefix.size()) return false;
   return !str.compare(0, prefix.size(), prefix);
@@ -45,7 +55,7 @@ bool endsWith(std::string str, std::string suffix) {
 
 std::string toHexString(unsigned char c) {
   std::stringstream ss;
-  ss << std::hex << (int)c;
+  ss << std::hex << (unsigned char)c;
   std::string hex = ss.str();
   if (hex.length() == 1) hex = "0" + hex;
   return hex.substr(hex.length() - 2);
@@ -115,7 +125,7 @@ std::string percentDecode(std::string str) {
       if (i + 2 >= str.length())
         throw std::runtime_error("uriDecode: invalid string");
       int value;
-      sscanf(str.substr(i + 1, 2).c_str(), "%x", &value);
+      std::sscanf(str.substr(i + 1, 2).c_str(), "%x", &value);
       decoded += (char)value;
       i += 2;
     } else
@@ -124,17 +134,16 @@ std::string percentDecode(std::string str) {
   return decoded;
 }
 
-std::string precentEncode(std::string str) {
+std::string percentEncode(std::string str, std::string reserved) {
   std::string encoded = "";
   for (size_t i = 0; i < str.length(); i++) {
-    if (isalnum(str[i]) || str[i] == '-' || str[i] == '_' || str[i] == '.' ||
-        str[i] == '~' || str[i] == '/' || str[i] == ':')
-      encoded += str[i];
-    else {
+    if (std::isspace(str[i]) || std::ispunct(str[i]) ||
+        reserved.find(str[i]) != std::string::npos) {
       std::string hex = toHexString(str[i]);
-      std::transform(hex.begin(), hex.end(), hex.begin(), ::toupper);
+      std::transform(hex.begin(), hex.end(), hex.begin(), ::tolower);
       encoded += "%" + hex;
-    }
+    } else
+      encoded += str[i];
   }
   return encoded;
 }

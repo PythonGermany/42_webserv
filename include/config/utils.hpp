@@ -44,6 +44,14 @@ std::string cut(std::string& str, int start, int end);
 // @return The vector of strings
 std::vector<std::string> split(const std::string& str, std::string delim);
 
+// Concatenates a vector of strings into a single string
+// @param values The vector of strings
+// @param separator The separator to use
+// @return The concatenated string
+// @exception No custom exceptions
+std::string concatenate(const std::vector<std::string>& values,
+                        std::string separator);
+
 // Checks if a string starts with a prefix
 // @param str The string to check
 // @param prefix The prefix to check for
@@ -112,9 +120,10 @@ std::string percentDecode(std::string str);
 
 // Encodes percent encoding
 // @param str The string to encode
+// @param reserved The reserved characters to encode
 // @return The encoded string
 // @exception No custom exceptions
-std::string precentEncode(std::string str);
+std::string percentEncode(std::string str, std::string reserved);
 
 // Returns the current date as a string
 // @exception No custom exceptions

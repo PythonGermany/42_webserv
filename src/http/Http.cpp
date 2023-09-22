@@ -33,10 +33,14 @@ void Http::OnHeadRecv(std::string msg) {
     Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
                    toString(host.port()) + " <- " +
                    inet_ntoa(*(uint32_t *)client.addr()) + ": '" +
-                   _request.getMethod() + " " + _request.getUri().getPath() +
-                   " " + _request.getVersion() + "'",
+                   _request.getMethod() + "' '" + _request.getUri().generate() +
+                   "' '" + _request.getVersion() + "'",
                INFO);
   }
+
+  // Decode uri
+  _request.getUri().decode();
+
   // Find virtual host
   _virtualHost =
       VirtualHost::matchVirtualHost(host, _request.getHeader("Host"));
@@ -132,7 +136,9 @@ Response &Http::processRequest() {
   // Find correct location context
   _context = _virtualHost->matchLocation(_request.getUri().getPath());
   if (_context == NULL) return processError("500", "Internal Server Error");
-  Log::write("Context URI: " + getContextArgs(), DEBUG);
+
+  std::string contextUri = getContextArgs();
+  Log::write("Context URI: " + (contextUri != "" ? contextUri : "/"), DEBUG);
 
   // Check if method is allowed
   if (isMethodValid(_context, _request) == false) return _response;
@@ -143,7 +149,7 @@ Response &Http::processRequest() {
   // Process alias
   std::string uri = _request.getUri().getPath();
   if (_context->exists("alias"))
-    uri = getContextPath("alias") + uri.substr(getContextArgs().size());
+    uri = getContextPath("alias") + uri.substr(contextUri.size());
   Log::write("Resource URI: " + uri, DEBUG);
 
   // Handle DELETE request
@@ -154,7 +160,7 @@ Response &Http::processRequest() {
     return processRedirect(_context->getDirective("redirect", true)[0]);
 
   // Add index if needed
-  if (_context->exists("index") && uri == getContextArgs() + "/")
+  if (_context->exists("index") && uri == contextUri + "/")
     uri += _context->getDirective("index", true)[0];
   Log::write("Resource URI: " + uri, DEBUG);
   return processFile(uri);
@@ -347,17 +353,9 @@ std::string Http::getDefaultBody(std::string code, std::string reason) {
          "html>\r\n";
 }
 
-std::string Http::getFieldValue(std::vector<std::string> const &values) {
-  std::string value;
-  for (size_t i = 0; i < values.size(); i++) {
-    if (i != 0) value += ", ";
-    value += values[i];
-  }
-  return value;
-}
-
 std::string Http::getAbsoluteUri(std::string uri) {
   Uri ret(uri);
+  if (ret.getScheme().empty()) ret.setScheme("http");
   if (ret.getHost().empty()) {
     std::string host = _request.getHeader("Host");
     size_t pos = host.find(":");
@@ -367,7 +365,7 @@ std::string Http::getAbsoluteUri(std::string uri) {
     } else
       ret.setHost(host);
   }
-  return ret.generate();
+  return ret.encode();
 }
 
 bool Http::isMethodValid(Context *context, Request &request) {
@@ -377,7 +375,7 @@ bool Http::isMethodValid(Context *context, Request &request) {
         methods.end())
       return true;
     _response = processError("405", "Method Not Allowed");
-    _response.setHeader("Allow", getFieldValue(methods));
+    _response.setHeader("Allow", concatenate(methods, ","));
     return false;
   }
   return true;

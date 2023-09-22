@@ -21,7 +21,7 @@ void Request::setBody(std::string body) { _body = body; }
 
 std::string Request::getMethod() const { return _method; }
 
-Uri Request::getUri() const { return _uri; }
+Uri &Request::getUri() { return _uri; }
 
 std::string Request::getVersion() const { return _version; }
 

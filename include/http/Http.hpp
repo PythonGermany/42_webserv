@@ -42,7 +42,7 @@ class Http : public AConnection {
   Response& processRedirect(std::string uri);
 
   std::string getDefaultBody(std::string code, std::string reason);
-  std::string getFieldValue(std::vector<std::string> const& values);
+
   std::string getAbsoluteUri(std::string uri);
 
   bool isMethodValid(Context* context, Request& request);

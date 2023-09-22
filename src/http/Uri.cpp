@@ -1,11 +1,8 @@
 #include "Uri.hpp"
 
-Uri::Uri() : _scheme("http"), _host(""), _port("80"), _path("/"), _query("") {}
+Uri::Uri() : _path("/") {}
 
-Uri::Uri(std::string uri)
-    : _scheme("http"), _host(""), _port("80"), _path("/"), _query("") {
-  load(uri);
-}
+Uri::Uri(std::string uri) : _path("/") { load(uri); }
 
 Uri::Uri(const Uri &rhs) { *this = rhs; }
 
@@ -90,9 +87,31 @@ std::string Uri::getPath() const { return _path; }
 
 std::string Uri::getQuery() const { return _query; }
 
+void Uri::decode() {
+  _scheme = percentDecode(_scheme);
+  _host = percentDecode(_host);
+  _port = percentDecode(_port);
+  _path = percentDecode(_path);
+  _query = percentDecode(_query);
+}
+
+std::string Uri::encode() {
+  std::string uri;
+  if (_scheme != "" && _host != "")
+    uri += percentEncode(_scheme, ";/?:@&=+$,") + "://";
+  uri += percentEncode(_host, ";/?:@&=+$,");
+  if (_port != "" && _port != "80")
+    uri += ":" + percentEncode(_port, ";/?:@&=+$,");
+  uri += _path;
+  if (_query != "") uri += "?" + percentEncode(_query, ";/?:@&=+$,");
+  return uri;
+}
+
 std::string Uri::generate() const {
-  std::string uri = _scheme + "://" + _host;
-  if (_port != "80") uri += ":" + _port;
+  std::string uri;
+  if (_scheme != "" && _host != "") uri += _scheme + "://";
+  uri += _host;
+  if (_port != "" && _port != "80") uri += ":" + _port;
   uri += _path;
   if (_query != "") uri += "?" + _query;
   return uri;

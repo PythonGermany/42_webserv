@@ -28,7 +28,7 @@ class Request {
   void setBody(std::string body);
 
   std::string getMethod() const;
-  Uri getUri() const;
+  Uri &getUri();
   std::string getVersion() const;
   std::string getHeader(std::string key) const;
   std::string getBody() const;
