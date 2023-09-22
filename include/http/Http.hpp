@@ -36,15 +36,18 @@ class Http : public AConnection {
   Response& processUploadHead();
   Response& processUploadBody(std::string uri);
   Response& processDelete(std::string uri);
+  Response& processError(std::string code, std::string reason);
+
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
-  Response& processError(std::string code, std::string reason);
 
   std::string getDefaultBody(std::string code, std::string reason);
   std::string getFieldValue(std::vector<std::string> const& values);
   std::string getAbsoluteUri(std::string uri);
 
   bool isMethodValid(Context* context, Request& request);
+  std::string getContextPath(std::string token, bool searchTree = false);
+  std::string getContextArgs();
 };
 
 #endif

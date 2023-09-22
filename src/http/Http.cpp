@@ -43,6 +43,7 @@ void Http::OnHeadRecv(std::string msg) {
 
   // Process request
   _response = processRequest();
+
   if (_waitForBody == false) {
     // Set default header values
     size_t content_length = _response.getBody().size();
@@ -131,22 +132,19 @@ Response &Http::processRequest() {
   // Find correct location context
   _context = _virtualHost->matchLocation(_request.getUri().getPath());
   if (_context == NULL) return processError("500", "Internal Server Error");
-  {
-    std::string path = "/";
-    if (_context->argCount() > 0) path = _context->getArgs()[0];
-    Log::write("Location: " + path, DEBUG);
-  }
+  Log::write("Context URI: " + getContextArgs(), DEBUG);
 
   // Check if method is allowed
   if (isMethodValid(_context, _request) == false) return _response;
 
-  std::string locUri = "";
-  if (_context->getName() == "location") locUri = _context->getArgs()[0];
-  std::string uri = _request.getUri().getPath();
-  uri = uri.substr(locUri.size());
-
   // Handle PUT request
   if (_request.getMethod() == "PUT") return processUploadHead();
+
+  // Process alias
+  std::string uri = _request.getUri().getPath();
+  if (_context->exists("alias"))
+    uri = getContextPath("alias") + uri.substr(getContextArgs().size());
+  Log::write("Resource URI: " + uri, DEBUG);
 
   // Handle DELETE request
   if (_request.getMethod() == "DELETE") return processDelete(uri);
@@ -155,9 +153,10 @@ Response &Http::processRequest() {
   if (_context->exists("redirect", true))
     return processRedirect(_context->getDirective("redirect", true)[0]);
 
-  // Process the request as a file
-  std::string index = _context->getDirective("index", true)[0];
-  if (uri == "/") uri += index;
+  // Add index if needed
+  if (_context->exists("index") && uri == getContextArgs() + "/")
+    uri += _context->getDirective("index", true)[0];
+  Log::write("Resource URI: " + uri, DEBUG);
   return processFile(uri);
 }
 
@@ -193,10 +192,6 @@ Response &Http::processFile(std::string uri) {
 }
 
 Response &Http::processUploadHead() {
-  // Check if server is configured for upload
-  if (_context->exists("upload", true) == false)
-    return processError("503", "Service Unavailable");
-
   // Check if body size is specified
   std::string bodySize = _request.getHeader("Content-Length");
   if (bodySize.empty()) return processError("411", "Length Required");
@@ -217,20 +212,18 @@ Response &Http::processUploadHead() {
 }
 
 Response &Http::processUploadBody(std::string uri) {
-  if (_context->exists("upload") == false)
-    return processError("500", "Internal Server Error");
+  // Process alias
+  if (_context->exists("alias"))
+    uri = getContextPath("alias") + uri.substr(getContextArgs().size());
 
-  std::string root = _context->getDirective("root", true)[0];
-  std::string upload = _context->getDirective(
-      "upload", true)[0];  // TODO: Decide if upload path should be relative to
-                           // root or to location path
-  std::string locPath = "";
-  if (_context->getName() == "location") locPath = _context->getArgs()[0];
-  uri = upload + uri.substr(locPath.size());
+  if (_context->exists("upload")) uri = getContextPath("upload") + uri;
+  Log::write("Resource URI: " + uri, DEBUG);
+
+  std::string path = _context->getDirective("root", true)[0] + uri;
+  bool newFile = true;
 
   // Create and write file
-  bool newFile = true;
-  File file(root + uri);
+  File file(path);
   try {
     if (!file.exists())
       file.create();
@@ -264,38 +257,6 @@ Response &Http::processDelete(std::string uri) {
     return processError("500", "Internal Server Error");
   }
   _response = Response("HTTP/1.1", "204", "No Content");
-  return _response;
-}
-
-Response &Http::processAutoindex(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0] + uri;
-  _response = Response("HTTP/1.1", "200", "OK");
-  std::string body = "<html><title>Index of " + uri + "</title><body>";
-  body += "<h1>Index of " + uri + "</h1><hr><pre>";
-  std::vector<std::string> files;
-  try {
-    files = File::list(path);
-  } catch (const std::exception &e) {
-    return processError("500", "Internal Server Error");
-  }
-  for (size_t i = 0; i < files.size(); i++) {
-    std::string file = files[i];
-    if (file == "." || file == "..") continue;
-    std::string href = _request.getUri().getPath() + file;
-    body += "<a href=\"" + href + "\">" + file + "</a>";
-    for (size_t j = 0; j < 50 - file.size(); j++) body += " ";
-    body += "|" + toString(File(path + files[i]).size());
-    body += "<br>";
-  }
-  body += "</pre><hr></body></html>\r\n";
-  _response.setBody(body);
-  _response.setHeader("Connection", "close");
-  return _response;
-}
-
-Response &Http::processRedirect(std::string uri) {
-  _response = Response("HTTP/1.1", "301", "Moved Permanently");
-  _response.setHeader("Location", getAbsoluteUri(uri));
   return _response;
 }
 
@@ -346,6 +307,39 @@ Response &Http::processError(std::string code, std::string reason) {
   return _response;
 }
 
+Response &Http::processAutoindex(std::string uri) {
+  std::string path = _context->getDirective("root", true)[0] + uri;
+  _response = Response("HTTP/1.1", "200", "OK");
+  std::string body = "<html><title>Index of " + uri + "</title><body>";
+  std::vector<std::string> files;
+
+  body += "<h1>Index of " + uri + "</h1><hr><pre>";
+  try {
+    files = File::list(path);
+  } catch (const std::exception &e) {
+    return processError("500", "Internal Server Error");
+  }
+  for (size_t i = 0; i < files.size(); i++) {
+    std::string file = files[i];
+    if (file == "." || file == "..") continue;
+    std::string href = _request.getUri().getPath() + file;
+    body += "<a href=\"" + href + "\">" + file + "</a>";
+    for (size_t j = 0; j < 50 - file.size(); j++) body += " ";
+    body += "|" + toString(File(path + files[i]).size());
+    body += "<br>";
+  }
+  body += "</pre><hr></body></html>\r\n";
+  _response.setBody(body);
+  _response.setHeader("Connection", "close");
+  return _response;
+}
+
+Response &Http::processRedirect(std::string uri) {
+  _response = Response("HTTP/1.1", "301", "Moved Permanently");
+  _response.setHeader("Location", getAbsoluteUri(uri));
+  return _response;
+}
+
 std::string Http::getDefaultBody(std::string code, std::string reason) {
   return "<html>\r\n<head><title>" + code + " " + reason +
          "</title></head>\r\n<body>\r\n<center><h1>" + code + " " + reason +
@@ -387,4 +381,16 @@ bool Http::isMethodValid(Context *context, Request &request) {
     return false;
   }
   return true;
+}
+
+std::string Http::getContextPath(std::string token, bool searchTree) {
+  if (_context->exists(token, searchTree) &&
+      _context->getDirective(token)[0] != "/")
+    return _context->getDirective(token, searchTree)[0];
+  return "";
+}
+
+std::string Http::getContextArgs() {
+  if (_context->getArgs().size() > 0) return _context->getArgs()[0];
+  return "";
 }
