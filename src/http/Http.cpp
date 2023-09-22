@@ -3,12 +3,10 @@
 Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
-  this->msgdelimiter = "\r\n\r\n";
-  this->msgsizelimit = 10000;  // TODO: Check how to handle this properly
-  this->msgsize = std::string::npos;
+  this->headDelimiter = "\r\n\r\n";
+  this->headSizeLimit = 10000;  // TODO: Check how to handle this properly
   this->_virtualHost = NULL;
   this->_context = NULL;
-  this->_waitForBody = false;
   this->_error = false;
   {
     Log::write(toString<Address &>(this->host) +
@@ -43,37 +41,34 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
   // Process request
   _response = processRequest();
 
-  if (_waitForBody == false) {
-    // Set default header values
-    size_t content_length = _response.getBody().size();
-    if (_request.getMethod() == "HEAD") _response.setBody("");
-    _response.setHeader("Server", "webserv");
-    _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
-    _response.setHeader("Content-Length", toString(content_length));
+  // Set default header values
+  size_t content_length = _response.getBody().size();
+  if (_request.getMethod() == "HEAD") _response.setBody("");
+  _response.setHeader("Server", "webserv");
+  _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
+  _response.setHeader("Content-Length", toString(content_length));
 
-    // Check if connection should be kept alive
-    if (_request.getHeader("Connection") == "keep-alive")
-      _response.setHeader("Connection", "keep-alive");
-    {
-      Log::write(toString<Address &>(host) + " -> " +
-                     toString<Address &>(client) + ": '" +
-                     _response.getVersion() + " " + _response.getStatus() +
-                     " " + _response.getReason() + "'",
-                 INFO);
-    }
-
-    // Send response
-    send(_response.generate());
-
-    // Close connection if needed or asked for
-    if (_response.getHeader("Connection") == "close" ||
-        _request.getHeader("Connection") == "close")
-      closeConnection();
+  // Check if connection should be kept alive
+  if (_request.getHeader("Connection") == "keep-alive")
+    _response.setHeader("Connection", "keep-alive");
+  {
+    Log::write(toString<Address &>(host) + " -> " +
+                    toString<Address &>(client) + ": '" +
+                    _response.getVersion() + " " + _response.getStatus() +
+                    " " + _response.getReason() + "'",
+                INFO);
   }
+
+  // Send response
+  send(_response.generate());
+
+  // Close connection if needed or asked for
+  if (_response.getHeader("Connection") == "close" ||
+      _request.getHeader("Connection") == "close")
+    closeConnection();
 }
 
 void Http::OnBodyRecv(std::string msg) {
-  if (_waitForBody == false) return;
   _request.setBody(msg);
   _response = processUploadBody(_request.getUri().getPath());
 
@@ -101,9 +96,6 @@ void Http::OnBodyRecv(std::string msg) {
   if (_response.getHeader("Connection") == "close" ||
       _request.getHeader("Connection") == "close")
     closeConnection();
-
-  msgsize = std::string::npos;  // TODO: bad implementation ?
-  _waitForBody = false;         // TODO: bad implementation ?
 }
 
 void Http::OnCgiRecv(std::string msg) {
@@ -197,10 +189,9 @@ Response &Http::processFile(std::string uri) {
 
 Response &Http::processUploadHead() {
   // Check if body size is specified
-  std::string bodySize = _request.getHeader("Content-Length");
-  if (bodySize.empty()) return processError("411", "Length Required");
-  msgsize = fromString<size_t>(bodySize);
-  msgsizelimit = 10000 + msgsize;  // TODO: Check how to handle this properly
+  std::string bodySizeStr = _request.getHeader("Content-Length");
+  if (bodySizeStr.empty()) return processError("411", "Length Required");
+  bodySize = fromString<size_t>(bodySizeStr);
 
   // Find max body size
   size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
@@ -209,10 +200,8 @@ Response &Http::processUploadHead() {
         _context->getDirective("max_client_body_size", true)[0]);
 
   // Check if body size is too large
-  if (msgsize > maxBodySize)
+  if (bodySize > maxBodySize)
     return processError("413", "Request Entity Too Large");
-
-  _waitForBody = true;
   return _response;
 }
 

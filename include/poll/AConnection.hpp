@@ -10,6 +10,8 @@
 # include <string>
 # include <vector>
 
+# define WAIT_FOR_HEAD std::string::npos
+
 class AConnection : public IFileDescriptor
 {
 public:
@@ -22,11 +24,11 @@ public:
 	virtual void OnCgiTimeout() = 0;
 	void onPipePollOut(struct pollfd &pollfd);
 protected:
-	Address client;
-	Address host;
-	std::string::size_type msgsizelimit;
-	std::string::size_type msgsize;
-	std::string	msgdelimiter;
+	Address                client;
+	Address                host;
+	std::string::size_type headSizeLimit;
+	std::string::size_type bodySize;
+	std::string	           headDelimiter;
 
 	virtual void OnHeadRecv(std::string msg) = 0;
 	virtual void OnBodyRecv(std::string msg) = 0;
@@ -35,10 +37,9 @@ protected:
 	void runCGI(std::string program, std::vector<std::string> &arg, std::vector<std::string> &env);
 	void closeConnection();
 private:
-	std::string _writeBuffer;
-	std::string _readBuffer;
-	std::string _cgiWriteBuffer;
-
+	std::string    _writeBuffer;
+	std::string    _readBuffer;
+	std::string    _cgiWriteBuffer;
 	struct timeval lastTimeActive;
 
 	void onPollEvent(struct pollfd &pollfd);

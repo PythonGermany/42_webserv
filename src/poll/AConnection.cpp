@@ -12,7 +12,7 @@
 AConnection::AConnection()
 {
 	gettimeofday(&lastTimeActive, NULL);
-	msgsize = std::string::npos;
+	bodySize = std::string::npos;
 }
 
 AConnection::AConnection(AConnection const &other)
@@ -30,9 +30,9 @@ AConnection &AConnection::operator=(AConnection const &other)
 	{
 		client = other.client;
 		host = other.host;
-		msgsizelimit = other.msgsizelimit;
-		msgsize = other.msgsize;
-		msgdelimiter = other.msgdelimiter;
+		headSizeLimit = other.headSizeLimit;
+		bodySize = other.bodySize;
+		headDelimiter = other.headDelimiter;
 		_writeBuffer = other._writeBuffer;
 		_readBuffer = other._readBuffer;
 		lastTimeActive = other.lastTimeActive;
@@ -95,7 +95,7 @@ void AConnection::onPollIn(struct pollfd &pollfd)
 	}
 	_readBuffer += std::string(tmpbuffer, tmpbuffer + msglen);
 	passReadBuffer(pollfd);
-	if (msgsize == std::string::npos && _readBuffer.size() > msgsizelimit)
+	if (bodySize == std::string::npos && _readBuffer.size() > headSizeLimit)
 	{
 		pollfd.events = 0;
 		pollfd.revents = 0;
@@ -109,21 +109,22 @@ void AConnection::passReadBuffer(struct pollfd &pollfd)
 
 	while (pollfd.events & POLLIN)
 	{
-		if (msgsize == std::string::npos)
+		if (bodySize == WAIT_FOR_HEAD)
 		{
-			pos = _readBuffer.find(msgdelimiter);
+			pos = _readBuffer.find(headDelimiter);
 			if (pos == std::string::npos)
 				break;
-			pos += msgdelimiter.size();
+			pos += headDelimiter.size();
 			OnHeadRecv(_readBuffer.substr(0, pos));
 			_readBuffer.erase(0, pos);
 		}
 		else
 		{
-			if (_readBuffer.size() < msgsize)
+			if (_readBuffer.size() < bodySize)
 				break;
-			OnBodyRecv(_readBuffer.substr(0, msgsize));
-			_readBuffer.erase(0, msgsize);
+			OnBodyRecv(_readBuffer.substr(0, bodySize));
+			_readBuffer.erase(0, bodySize);
+			bodySize = WAIT_FOR_HEAD;
 		}
 	}
 }

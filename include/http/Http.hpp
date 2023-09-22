@@ -18,7 +18,6 @@ class Http : public AConnection {
   VirtualHost* _virtualHost;
   Context* _context;
 
-  bool _waitForBody;
   bool _error;
 
  public:
