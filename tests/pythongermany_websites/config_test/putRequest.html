@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>PUT Request Example</title>
+</head>
+
+<body>
+  <a href="/">Home</a><br>
+
+  <!-- Input field for user to enter data -->
+  <input type="text" id="resource" placeholder="Enter resource...">
+  <input type="text" id="putData" placeholder="Enter data...">
+  <button onclick="sendPutRequest()">Send PUT Request</button>
+  <button onclick="sendDeleteRequest()">Send DELETE Request</button>
+
+  <!-- Create a div element to display the result -->
+  <br><br>
+  <a id="result"></a>
+
+  <script>
+    function sendPutRequest() {
+      const url = document.getElementById('resource').value;
+      const putData = document.getElementById('putData').value; // Get the data from the input field
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', url, true);
+
+      xhr.onload = function () {
+        if (xhr.status === 200 || xhr.status === 201 || xhr.status === 204) {
+          const response = xhr.responseText;
+
+          // Update the content of the result div with the response
+          document.getElementById('result').textContent = 'PUT request successful with status: ' + xhr.status;
+          document.getElementById('result').setAttribute('href', xhr.getResponseHeader('Location'));
+        } else {
+          // Update the content of the result div with an error message
+          document.getElementById('result').textContent = 'PUT request failed with status: ' + xhr.status;
+        }
+      };
+
+      xhr.onerror = function () {
+        console.error('Network error occurred');
+
+        // Update the content of the result div with a network error message
+        document.getElementById('result').textContent = 'Network error occurred';
+      };
+
+      // Send the PUT request with the data from the input field
+      xhr.send(putData);
+    }
+
+    function sendDeleteRequest() {
+      const url = document.getElementById('resource').value;
+      const putData = document.getElementById('putData').value; // Get the data from the input field
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('DELETE', url, true);
+
+      xhr.onload = function () {
+        if (xhr.status === 204) {
+          const response = xhr.responseText;
+
+          // Update the content of the result div with the response
+          document.getElementById('result').textContent = 'DELETE request successful with status: ' + xhr.status;
+          document.getElementById('result').setAttribute('href', xhr.getResponseHeader('Location'));
+        } else {
+          // Update the content of the result div with an error message
+          document.getElementById('result').textContent = 'DELETE request failed with status: ' + xhr.status;
+        }
+      };
+
+      xhr.onerror = function () {
+        console.error('Network error occurred');
+
+        // Update the content of the result div with a network error message
+        document.getElementById('result').textContent = 'Network error occurred';
+      };
+
+      xhr.send();
+    }
+  </script>
+
+</body>
+
+</html>

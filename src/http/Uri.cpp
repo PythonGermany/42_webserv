@@ -87,23 +87,26 @@ std::string Uri::getPath() const { return _path; }
 
 std::string Uri::getQuery() const { return _query; }
 
-void Uri::decode() {
-  _scheme = percentDecode(_scheme);
-  _host = percentDecode(_host);
-  _port = percentDecode(_port);
-  _path = percentDecode(_path);
-  _query = percentDecode(_query);
+size_t Uri::decode() {
+  try {
+    _scheme = percentDecode(_scheme);
+    _host = percentDecode(_host);
+    _port = percentDecode(_port);
+    _path = percentDecode(_path);
+    _query = percentDecode(_query);
+  } catch (const std::exception &e) {
+    return 1;
+  }
+  return 0;
 }
 
 std::string Uri::encode() {
   std::string uri;
-  if (_scheme != "" && _host != "")
-    uri += percentEncode(_scheme, ";/?:@&=+$,") + "://";
-  uri += percentEncode(_host, ";/?:@&=+$,");
-  if (_port != "" && _port != "80")
-    uri += ":" + percentEncode(_port, ";/?:@&=+$,");
-  uri += _path;
-  if (_query != "") uri += "?" + percentEncode(_query, ";/?:@&=+$,");
+  if (_scheme != "" && _host != "") uri += percentEncode(_scheme, "") + "://";
+  uri += percentEncode(_host, "@");
+  if (_port != "" && _port != "80") uri += ":" + percentEncode(_port, "");
+  uri += percentEncode(_path, "/");
+  if (_query != "") uri += "?" + percentEncode(_query, "?=&");
   return uri;
 }
 

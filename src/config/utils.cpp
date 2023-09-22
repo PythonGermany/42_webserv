@@ -55,7 +55,7 @@ bool endsWith(std::string str, std::string suffix) {
 
 std::string toHexString(unsigned char c) {
   std::stringstream ss;
-  ss << std::hex << (unsigned char)c;
+  ss << std::hex << c;
   std::string hex = ss.str();
   if (hex.length() == 1) hex = "0" + hex;
   return hex.substr(hex.length() - 2);
@@ -137,13 +137,15 @@ std::string percentDecode(std::string str) {
 std::string percentEncode(std::string str, std::string reserved) {
   std::string encoded = "";
   for (size_t i = 0; i < str.length(); i++) {
-    if (std::isspace(str[i]) || std::ispunct(str[i]) ||
+    if (std::isalnum(str[i]) ||
+        std::string("-_.!~*'()").find(str[i]) != std::string::npos ||
         reserved.find(str[i]) != std::string::npos) {
+      encoded += str[i];
+    } else {
       std::string hex = toHexString(str[i]);
       std::transform(hex.begin(), hex.end(), hex.begin(), ::tolower);
       encoded += "%" + hex;
-    } else
-      encoded += str[i];
+    }
   }
   return encoded;
 }

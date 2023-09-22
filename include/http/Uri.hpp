@@ -34,7 +34,7 @@ class Uri {
   std::string getPath() const;
   std::string getQuery() const;
 
-  void decode();
+  size_t decode();
   std::string encode();
   std::string generate() const;
 

@@ -38,9 +38,6 @@ void Http::OnHeadRecv(std::string msg) {
                INFO);
   }
 
-  // Decode uri
-  _request.getUri().decode();
-
   // Find virtual host
   _virtualHost =
       VirtualHost::matchVirtualHost(host, _request.getHeader("Host"));
@@ -128,7 +125,8 @@ Response &Http::processRequest() {
   }
 
   // Check if the request is valid
-  if (_request.isValid() == false) return processError("400", "Bad Request");
+  if (_request.getUri().decode() || !_request.isValid())
+    return processError("400", "Bad Request");
 
   if (_request.getVersion() != "HTTP/1.1")
     return processError("505", "HTTP Version Not Supported");
@@ -156,13 +154,12 @@ Response &Http::processRequest() {
   if (_request.getMethod() == "DELETE") return processDelete(uri);
 
   // Check if the request should be redirected
-  if (_context->exists("redirect", true))
-    return processRedirect(_context->getDirective("redirect", true)[0]);
+  if (_context->exists("redirect"))
+    return processRedirect(_context->getDirective("redirect")[0]);
 
   // Add index if needed
   if (_context->exists("index") && uri == contextUri + "/")
     uri += _context->getDirective("index", true)[0];
-  Log::write("Resource URI: " + uri, DEBUG);
   return processFile(uri);
 }
 
@@ -226,15 +223,12 @@ Response &Http::processUploadBody(std::string uri) {
   Log::write("Resource URI: " + uri, DEBUG);
 
   std::string path = _context->getDirective("root", true)[0] + uri;
-  bool newFile = true;
 
   // Create and write file
   File file(path);
+  bool newFile = file.exists();
   try {
-    if (!file.exists())
-      file.create();
-    else
-      newFile = false;
+    if (!file.exists()) file.create();
     file.open(O_WRONLY | O_TRUNC);
     file.write(_request.getBody());
     file.close();
