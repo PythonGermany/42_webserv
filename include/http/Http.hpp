@@ -41,13 +41,13 @@ class Http : public AConnection {
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
 
-  std::string getDefaultBody(std::string code, std::string reason);
+  std::string getDefaultBody(std::string code, std::string reason) const;
 
-  std::string getAbsoluteUri(std::string uri);
+  std::string getAbsoluteUri(std::string uri) const;
 
   bool isMethodValid();
-  std::string getContextPath(std::string token, bool searchTree = false);
-  std::string getContextArgs();
+  std::string getContextPath(std::string token, bool searchTree = false) const;
+  std::string getContextArgs() const;
 };
 
 #endif

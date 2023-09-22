@@ -49,21 +49,21 @@ class Context {
   void removeDirective(std::string token);
   void removeContext(std::string token);
 
-  size_t argCount();
+  size_t argCount() const;
 
   // Checks if the token exists in the context
   // @param searchTree If true, the function will search its parent tree
   // @exception No custom exceptions
-  bool exists(std::string token, bool searchTree = false);
+  bool exists(std::string token, bool searchTree = false) const;
 
   // Checks if the token is a valid context token
   // @exception No custom exceptions
-  bool isValidContext(std::string token);
+  bool isValidContext(std::string token) const;
   // Checks if the arguments are valid this context
-  std::string isValidContextArgs(std::vector<std::string> args);
+  std::string isValidContextArgs(std::vector<std::string> args) const;
   // Checks if the token is a valid directive token
   // @exception No custom exceptions
-  bool isValidDirective(std::string token);
+  bool isValidDirective(std::string token) const;
   // Checks if the token is a valid token and if it can be added to the context
   // @return Empty string if the token is valid, an error message otherwise
   // @exception No custom exceptions
@@ -80,7 +80,7 @@ class Context {
 
   // Prints the context to the standard output
   // @exception No custom exceptions
-  void print(int indent = 0);
+  void print(int indent = 0) const;
 
  private:
   // Adds a token occurence to the member _tokenOccurences

@@ -36,7 +36,7 @@ class VirtualHost {
   static VirtualHost *matchVirtualHost(Address &address, std::string host);
   Context *matchLocation(const std::string &uri);
 
-  void print();
+  void print() const;
 };
 
 #endif

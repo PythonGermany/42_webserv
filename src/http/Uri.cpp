@@ -100,7 +100,7 @@ size_t Uri::decode() {
   return 0;
 }
 
-std::string Uri::encode() {
+std::string Uri::encode() const {
   std::string uri;
   if (_scheme != "" && _host != "") uri += percentEncode(_scheme, "") + "://";
   uri += percentEncode(_host, "@");

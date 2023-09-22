@@ -34,8 +34,10 @@ class Uri {
   std::string getPath() const;
   std::string getQuery() const;
 
+  // Tries to decode the URI
+  // @return 0 if successful, non-zero otherwise
   size_t decode();
-  std::string encode();
+  std::string encode() const;
   std::string generate() const;
 
   bool compare(const Uri &rhs) const;

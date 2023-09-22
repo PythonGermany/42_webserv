@@ -29,7 +29,7 @@ class Config {
   void setFile(std::string path);
 
   // Getters
-  std::string getConfig();
+  std::string getConfig() const;
 
   // Removes all comments from the config file
   // @exception No custom exceptions
@@ -61,12 +61,12 @@ class Config {
   // @param pos The position to search until
   // @return The number of lines until the given position
   // @exception No custom exceptions
-  int linesUntilPos(const std::string &data, size_t pos);
+  int linesUntilPos(const std::string &data, size_t pos) const;
   // Returns the position of the end of the context
   // @param context The context to search in
   // @return The position of the end of the context
   // @exception No custom exceptions
-  size_t findContextEnd(const std::string &context);
+  size_t findContextEnd(const std::string &context) const;
   // Throws an exeption with the given message and line
   // @param line The line in the config file where the error occured
   // @param msg The message to display

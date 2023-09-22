@@ -349,14 +349,14 @@ Response &Http::processRedirect(std::string uri) {
   return _response;
 }
 
-std::string Http::getDefaultBody(std::string code, std::string reason) {
+std::string Http::getDefaultBody(std::string code, std::string reason) const {
   return "<html>\r\n<head><title>" + code + " " + reason +
          "</title></head>\r\n<body>\r\n<center><h1>" + code + " " + reason +
          "</h1></center>\r\n<hr><center>webserv</center>\r\n</body>\r\n</"
          "html>\r\n";
 }
 
-std::string Http::getAbsoluteUri(std::string uri) {
+std::string Http::getAbsoluteUri(std::string uri) const {
   Uri ret(uri);
   if (ret.getScheme().empty()) ret.setScheme("http");
   if (ret.getHost().empty()) {
@@ -384,14 +384,14 @@ bool Http::isMethodValid() {
   return true;
 }
 
-std::string Http::getContextPath(std::string token, bool searchTree) {
+std::string Http::getContextPath(std::string token, bool searchTree) const {
   if (_context->exists(token, searchTree) &&
       _context->getDirective(token)[0] != "/")
     return _context->getDirective(token, searchTree)[0];
   return "";
 }
 
-std::string Http::getContextArgs() {
+std::string Http::getContextArgs() const {
   if (_context->getArgs().size() > 0) return _context->getArgs()[0];
   return "";
 }

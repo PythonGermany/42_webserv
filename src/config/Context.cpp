@@ -106,16 +106,16 @@ void Context::removeContext(std::string token) {
   _tokenOccurences.erase(token);
 }
 
-size_t Context::argCount() { return _args.size(); }
+size_t Context::argCount() const { return _args.size(); }
 
-bool Context::exists(std::string token, bool searchTree) {
+bool Context::exists(std::string token, bool searchTree) const {
   if (_tokenOccurences.find(token) != _tokenOccurences.end()) return true;
   if (searchTree && _parentContext != NULL)
     return _parentContext->exists(token, searchTree);
   return false;
 }
 
-bool Context::isValidContext(std::string token) {
+bool Context::isValidContext(std::string token) const {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].name == token && tokens[i].parent == _name &&
         tokens[i].isContext)
@@ -123,7 +123,7 @@ bool Context::isValidContext(std::string token) {
   return false;
 }
 
-std::string Context::isValidContextArgs(std::vector<std::string> args) {
+std::string Context::isValidContextArgs(std::vector<std::string> args) const {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
     if (tokens[i].name == _name && tokens[i].isContext) {
       if (tokens[i].func != NULL) {
@@ -141,7 +141,7 @@ std::string Context::isValidContextArgs(std::vector<std::string> args) {
   return "Context '" + _name + "' not found";
 }
 
-bool Context::isValidDirective(std::string token) {
+bool Context::isValidDirective(std::string token) const {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].name == token && tokens[i].parent == _name &&
         !tokens[i].isContext)
@@ -196,7 +196,7 @@ std::string Context::validate(bool recursive) {
   return "";
 }
 
-void Context::print(int indent) {
+void Context::print(int indent) const {
   std::string spaces = GRAY;
   for (int i = 0; i < indent; i++) spaces += "| ";
   std::cout << spaces << RED << _name;
@@ -211,7 +211,7 @@ void Context::print(int indent) {
   std::cout << RESET << std::endl;
 
   // Print directives
-  for (std::map<std::string, std::vector<std::string> >::iterator it =
+  for (std::map<std::string, std::vector<std::string> >::const_iterator it =
            _directives.begin();
        it != _directives.end(); it++) {
     std::cout << spaces << BLUE << it->first << ": " << GREEN;
@@ -221,7 +221,7 @@ void Context::print(int indent) {
   }
 
   // Recursively print contexts
-  for (std::map<std::string, std::vector<Context> >::iterator it =
+  for (std::map<std::string, std::vector<Context> >::const_iterator it =
            _contexts.begin();
        it != _contexts.end(); it++) {
     for (size_t i = 0; i < it->second.size(); i++)

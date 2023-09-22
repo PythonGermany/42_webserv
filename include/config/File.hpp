@@ -30,8 +30,8 @@ class File {
 
   // Getters
   static int getFilesOpen();
-  std::string getPath();
-  std::string getExtension();
+  std::string getPath() const;
+  std::string getExtension() const;
 
   std::string getDir();
 
@@ -44,29 +44,29 @@ class File {
 
   // Checks if the file exists
   // @exception No custom exceptions
-  bool exists();
+  bool exists() const;
   // Checks if the file is a regular file
   // @exception No custom exceptions
-  bool file();
+  bool file() const;
   // Checks if the file is a directory
   // @exception No custom exceptions
-  bool dir();
+  bool dir() const;
   // Checks if the file is readable
   // @exception No custom exceptions
-  bool readable();
+  bool readable() const;
   // Checks if the file is writable
   // @exception No custom exceptions
-  bool writable();
+  bool writable() const;
   // Returns the size of the file
   // @exception No custom exceptions
-  size_t size();
+  size_t size() const;
   // Returns the last time the file was modified
   // @exception No custom exceptions
-  std::string lastModified(std::string format = "%d-%m-%Y %H:%M");
+  std::string lastModified(std::string format = "%d-%m-%Y %H:%M") const;
 
   // Checks if the file has been opened through member function open()
   // @exception No custom exceptions
-  bool isOpen();
+  bool isOpen() const;
 
   // Creates the file if it doesn't exist and the directories leading to it if
   // they don't exist
@@ -85,10 +85,10 @@ class File {
 
   // Reads the file
   // @exception std::runtime_error if reading the file fails
-  std::string read();
+  std::string read() const;
   // Writes to the file
   // @exception std::runtime_error if writing to the file fails
-  void write(std::string data);
+  void write(std::string data) const;
 
  private:
   // Throws an exception indicating the function and message

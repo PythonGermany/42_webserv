@@ -107,4 +107,4 @@ Context *VirtualHost::matchLocation(const std::string &uri) {
   return match;
 }
 
-void VirtualHost::print() { _context.print(); }
+void VirtualHost::print() const { _context.print(); }

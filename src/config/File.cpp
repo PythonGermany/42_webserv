@@ -19,9 +19,9 @@ File::~File() {}
 
 int File::getFilesOpen() { return _filesOpen; }
 
-std::string File::getPath() { return _path; }
+std::string File::getPath() const { return _path; }
 
-std::string File::getExtension() {
+std::string File::getExtension() const {
   std::string::size_type pos = _path.find_last_of('.');
   if (pos == std::string::npos) return "";
   return _path.substr(pos + 1);
@@ -53,42 +53,42 @@ std::vector<std::string> File::list(std::string path) {
   return files;
 }
 
-bool File::exists() {
+bool File::exists() const {
   struct stat buf;
   return stat(_path.c_str(), &buf) == 0;
 }
 
-bool File::file() {
+bool File::file() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return S_ISREG(buf.st_mode);
 }
 
-bool File::dir() {
+bool File::dir() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return S_ISDIR(buf.st_mode);
 }
 
-bool File::readable() {
+bool File::readable() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return buf.st_mode & S_IRUSR;
 }
 
-bool File::writable() {
+bool File::writable() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return buf.st_mode & S_IWUSR;
 }
 
-size_t File::size() {
+size_t File::size() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return buf.st_size;
 }
 
-std::string File::lastModified(std::string format) {
+std::string File::lastModified(std::string format) const {
   struct stat buf;
   stat(_path.c_str(), &buf);
   char buffer[80];
@@ -96,7 +96,7 @@ std::string File::lastModified(std::string format) {
   return std::string(buffer);
 }
 
-bool File::isOpen() { return _fd != -1; }
+bool File::isOpen() const { return _fd != -1; }
 
 void File::create() {
   if (exists()) return;
@@ -144,7 +144,7 @@ void File::close() {
   _filesOpen--;
 }
 
-std::string File::read() {
+std::string File::read() const {
   std::string data;
 
   while (true) {
@@ -157,7 +157,7 @@ std::string File::read() {
   return data;
 }
 
-void File::write(std::string data) {
+void File::write(std::string data) const {
   if (::write(_fd, data.c_str(), data.length()) == -1)
     throwException("write", "Could not write file");
 }

@@ -27,7 +27,7 @@ void Config::setFile(std::string path) {
   _file.close();
 }
 
-std::string Config::getConfig() { return _config; }
+std::string Config::getConfig() const { return _config; }
 
 void Config::removeComments() {
   Log::write(_file.getPath() + " Removing comments", DEBUG);
@@ -151,7 +151,7 @@ std::string Config::processInclude(Context &context, std::string path) {
   return "";
 }
 
-int Config::linesUntilPos(const std::string &data, size_t pos) {
+int Config::linesUntilPos(const std::string &data, size_t pos) const {
   if (pos == std::string::npos) pos = data.length();
   int lines = 0;
   size_t i = data.find_first_of("\n", 0);
@@ -162,7 +162,7 @@ int Config::linesUntilPos(const std::string &data, size_t pos) {
   return lines;
 }
 
-size_t Config::findContextEnd(const std::string &context) {
+size_t Config::findContextEnd(const std::string &context) const {
   int depth = 0;
   int i = -1;
   while (i < (int)context.length()) {
