@@ -82,10 +82,18 @@ bool File::writable() {
   return buf.st_mode & S_IWUSR;
 }
 
-long int File::size() {
+size_t File::size() {
   struct stat buf;
   stat(_path.c_str(), &buf);
   return buf.st_size;
+}
+
+std::string File::lastModified(std::string format) {
+  struct stat buf;
+  stat(_path.c_str(), &buf);
+  char buffer[80];
+  strftime(buffer, 80, format.c_str(), localtime(&buf.st_mtime));
+  return std::string(buffer);
 }
 
 bool File::isOpen() { return _fd != -1; }

@@ -165,7 +165,10 @@ Response &Http::processFile(std::string uri) {
   std::string path = _context->getDirective("root", true)[0] + uri;
   File file(path);
 
-  if (!file.exists()) return processError("404", "Not Found");
+  if (!file.exists()) {
+    if (!endsWith(path, "/")) return processRedirect(uri + "/");
+    return processError("404", "Not Found");
+  }
   if (file.dir()) {
     if (!endsWith(path, "/")) return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
@@ -308,17 +311,18 @@ Response &Http::processError(std::string code, std::string reason) {
 Response &Http::processAutoindex(std::string uri) {
   std::string path = _context->getDirective("root", true)[0] + uri;
   _response = Response("HTTP/1.1", "200", "OK");
-  std::string body = "<html><title>Index of " + uri + "</title><body>";
+  std::string body =
+      "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>";
   std::vector<std::string> files;
 
-  body += "<h1>Index of " + uri + "</h1><hr><pre>";
+  body += "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
   try {
     files = File::list(path);
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
   // Find longest file name
-  size_t maxFileSize = 0;
+  size_t maxFileSize = 3;
   for (size_t i = 0; i < files.size(); i++)
     if (files[i] != "." && files[i] != ".." && files[i].size() > maxFileSize)
       maxFileSize = files[i].size();
@@ -326,12 +330,14 @@ Response &Http::processAutoindex(std::string uri) {
   for (size_t i = 0; i < files.size(); i++) {
     std::string file = files[i];
     if (file == "." || file == "..") continue;
-    body += "<a href=\"" + uri + "\">" + file + "</a>";
-    for (size_t j = 0; j < maxFileSize + 5 - file.size(); j++) body += " ";
-    body += "|" + toString(File(path + files[i]).size());
-    body += "<br>";
+    body += "<a href=\"" + files[i] + "\">" + file + "</a>";
+    size_t spaceCount = maxFileSize - file.size() + 5;
+    if (file.size() <= 45) spaceCount = 50 - file.size();
+    for (size_t j = 0; j < spaceCount; j++) body += " ";
+    File f(path + files[i]);
+    body += f.lastModified() + "          " + toString(f.size()) + "\r\n";
   }
-  body += "</pre><hr></body></html>\r\n";
+  body += "</pre><hr></body>\r\n</html>\r\n";
   _response.setBody(body);
   _response.setHeader("Connection", "close");
   return _response;

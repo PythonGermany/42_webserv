@@ -57,9 +57,12 @@ class File {
   // Checks if the file is writable
   // @exception No custom exceptions
   bool writable();
-  // returns the size of the file
+  // Returns the size of the file
   // @exception No custom exceptions
-  long int size();
+  size_t size();
+  // Returns the last time the file was modified
+  // @exception No custom exceptions
+  std::string lastModified(std::string format = "%d-%m-%Y %H:%M");
 
   // Checks if the file has been opened through member function open()
   // @exception No custom exceptions
