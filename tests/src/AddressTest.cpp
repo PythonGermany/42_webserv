@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../include/Address.hpp"
+#include "Address.hpp"
 
 TEST(AddressConstructor, validInput)
 {

@@ -13,30 +13,17 @@
 NAME		:= test
 
 OBJ_DIR		:= obj
-SRC_DIR		:= ../src
-INC_DIR		:= ../include
-TEST_DIR	:= src
+SRC_DIR		:= src
+INC_DIR		:= include
 
-SRC			+= poll/Address.cpp
-SRC			+= poll/timeval.cpp
-TEST_SRC	+= AddressTest.cpp
-TEST_SRC	+= timevalTest.cpp
-
-HEADERS		+= poll/Address.hpp
-HEADERS		+= poll/timeval.hpp
+SRC			+= unorderedCloseConnectionTest.cpp
 
 OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
-TEST_OBJ	:= $(addprefix $(OBJ_DIR)/, $(TEST_SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 
-LIB_DIR		:= googletest/build
-LIB_SRC		+= libgtest_main.a
-LIB_SRC		+= libgtest.a
-LIBS		:= $(addprefix $(LIB_DIR)/lib/, $(LIB_SRC))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++14 -Igoogletest/googletest/include -I../include -I../include/poll -I../include/http -I../include/config
-LDFLAGS		:= -Lgoogletest/build/lib -pthread $(LIBS)
+CXXFLAGS	:= -Wall -Wextra -Werror
 
 
 all: $(NAME)
@@ -48,25 +35,14 @@ $(NAME): $(OBJ) $(TEST_OBJ) $(LIBS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS) | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp $(DEPS) | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
 $(OBJ_DIR):
 	mkdir -p $@
-
-$(LIB_DIR):
-	mkdir -p $@
-
-$(LIBS): $(LIB_DIR)
-	cmake -S googletest -B $<
-	make -C $<
 
 clean:
 	$(RM) -r $(OBJ_DIR)
 
 fclean: clean
 	$(RM) $(NAME)
-	$(RM) -r $(LIB_DIR)
 
 re: fclean all
 

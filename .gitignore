@@ -5,7 +5,7 @@ tests/googletest/build
 tests/obj/
 
 #executables
-tests/test
+test
 webserv
 cgi/cgi
 tools/transformer
