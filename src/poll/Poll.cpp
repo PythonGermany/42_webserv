@@ -38,7 +38,7 @@ bool Poll::poll() {
   Poll &poll = getInstance();
   static size_t numListenSockets = poll.callbackObjects.size();
 
-  std::cout << "poll.timeout: " << poll.timeout << std::endl;
+  // std::cout << "poll.timeout: " << poll.timeout << std::endl;
   int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
   if (poll.stop) return false;
   if (ready == -1)

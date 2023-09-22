@@ -20,7 +20,7 @@ ListenSocket::ListenSocket(Address const &addr, int backlog) : _addr(addr) {
 ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr) {}
 
 ListenSocket::~ListenSocket() {
-  std::cout << "stop listening: " << _addr << std::endl;
+  Log::write("Stop listening: " + toString<Address &>(_addr), DEBUG);
 }
 
 void ListenSocket::init(int backlog) {
