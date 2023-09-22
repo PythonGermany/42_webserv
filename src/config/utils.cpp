@@ -54,21 +54,10 @@ bool endsWith(std::string str, std::string suffix) {
 }
 
 std::string toHexString(unsigned char c) {
-  std::stringstream ss;
-  ss << std::hex << c;
-  std::string hex = ss.str();
-  if (hex.length() == 1) hex = "0" + hex;
-  return hex.substr(hex.length() - 2);
-}
-
-std::string inet_ntoa(uint32_t addr) {
-  std::string str = "";
-  for (int i = 0; i < 4; i++) {
-    str += toString((int)addr & 0xFF);
-    if (i != 3) str += ".";
-    addr >>= 8;
-  }
-  return str;
+  std::string hex = "";
+  hex += "0123456789ABCDEF"[c / 16];
+  hex += "0123456789ABCDEF"[c % 16];
+  return hex;
 }
 
 std::string highlight(std::string str, std::string color, std::string delim) {

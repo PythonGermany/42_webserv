@@ -11,7 +11,7 @@ Http::Http(Address const &client, Address const &host) {
   this->_waitForBody = false;
   this->_error = false;
   {
-    Log::write("Http: " + toString<Address &>(this->host) +
+    Log::write(toString<Address &>(this->host) +
                    " -> add: " + toString<Address &>(this->client),
                DEBUG);
   }
@@ -29,11 +29,10 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
   // Parse request
   _request.parseHead(msg);
   {
-    Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
-                   toString(host.port()) + " <- " +
-                   inet_ntoa(*(uint32_t *)client.addr()) + ": '" +
-                   _request.getMethod() + "' '" + _request.getUri().generate() +
-                   "' '" + _request.getVersion() + "'",
+    Log::write(toString<Address &>(host) + " <- " +
+                   toString<Address &>(client) + ": '" + _request.getMethod() +
+                   "' '" + _request.getUri().generate() + "' '" +
+                   _request.getVersion() + "'",
                INFO);
   }
 
@@ -56,9 +55,8 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
     if (_request.getHeader("Connection") == "keep-alive")
       _response.setHeader("Connection", "keep-alive");
     {
-      Log::write(inet_ntoa(*(uint32_t *)host.addr()) + ":" +
-                     toString(host.port()) + " -> " +
-                     inet_ntoa(*(uint32_t *)client.addr()) + ": '" +
+      Log::write(toString<Address &>(host) + " -> " +
+                     toString<Address &>(client) + ": '" +
                      _response.getVersion() + " " + _response.getStatus() +
                      " " + _response.getReason() + "'",
                  INFO);
@@ -89,9 +87,10 @@ void Http::OnBodyRecv(std::string msg) {
   if (_request.getHeader("Connection") == "keep-alive")
     _response.setHeader("Connection", "keep-alive");
   {
-    Log::write(inet_ntoa(*(uint32_t *)client.addr()) + " <- " +
+    Log::write(toString<Address &>(host) + " -> " +
+                   toString<Address &>(client) + ": '" +
                    _response.getVersion() + " " + _response.getStatus() + " " +
-                   _response.getReason(),
+                   _response.getReason() + "'",
                INFO);
   }
 
@@ -318,12 +317,17 @@ Response &Http::processAutoindex(std::string uri) {
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
+  // Find longest file name
+  size_t maxFileSize = 0;
+  for (size_t i = 0; i < files.size(); i++)
+    if (files[i] != "." && files[i] != ".." && files[i].size() > maxFileSize)
+      maxFileSize = files[i].size();
+
   for (size_t i = 0; i < files.size(); i++) {
     std::string file = files[i];
     if (file == "." || file == "..") continue;
-    std::string href = _request.getUri().getPath() + file;
-    body += "<a href=\"" + href + "\">" + file + "</a>";
-    for (size_t j = 0; j < 50 - file.size(); j++) body += " ";
+    body += "<a href=\"" + uri + "\">" + file + "</a>";
+    for (size_t j = 0; j < maxFileSize + 5 - file.size(); j++) body += " ";
     body += "|" + toString(File(path + files[i]).size());
     body += "<br>";
   }

@@ -89,13 +89,8 @@ T fromString(std::string str) {
   return val;
 }
 
+// Converts a character to a hex string
 std::string toHexString(unsigned char c);
-
-// Converts an integer value to a string in the IPv4 format
-// @param addr The integer value to convert
-// @return The string
-// @exception No custom exceptions
-std::string inet_ntoa(uint32_t addr);
 
 // Highlights the parts of a string between delimiters with a color
 // @param str The string to highlight
