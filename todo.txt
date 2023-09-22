@@ -43,3 +43,11 @@ Request processing flow: -------------------------------------------------------
 14. Load file
   - for error, return 500
   - for success, return 200
+
+Todo: --------------------------------------------------------
+
+Directive parsing and http implementation
+Implement multivalue for index
+Implement multivalue for location
+Implement multivalue for error_page?
+Implement multivalue for cgi? 
