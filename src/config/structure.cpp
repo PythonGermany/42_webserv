@@ -26,7 +26,7 @@ std::string isNumeric(std::string const &value, size_t index) {
 std::string isMethod(std::string const &value, size_t index) {
   (void)index;
   if (value == "GET" || value == "HEAD" || value == "PUT" || value == "POST" ||
-      "DELETE")
+      value == "DELETE")
     return "";
   return "Invalid method";
 }
@@ -35,7 +35,7 @@ std::string isLogLevel(std::string const &value, size_t index) {
   (void)index;
   if (value == "debug" || value == "info" || value == "warning" ||
       value == "error")
-    return "";  // TODO: Why is this not working?
+    return "";
   return "Invalid log level";
 }
 
