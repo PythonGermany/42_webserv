@@ -344,6 +344,7 @@ void Http::sendResponse() {
 
   // Set default header values
   _response.setHeader("Server", "webserv");
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
   _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
   if (_response.getHeader("Content-Length").empty())
     _response.setHeader("Content-Length", toString(_response.getBody().size()));

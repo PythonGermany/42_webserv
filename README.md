@@ -111,10 +111,12 @@ location PATH {
     alias PATH;
     root PATH;
     index FILE [FILE ...];
+    
     allow METHOD [METHOD ...];
     autoindex [on|off];
     redirect URL;
     max_client_body_size SIZE;
+    error_page CODE PATH;
 
     cgi EXTENSION {
         [directives];

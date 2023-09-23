@@ -35,7 +35,7 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[30] = {
+const t_token tokens[31] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -57,7 +57,6 @@ const t_token tokens[30] = {
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
-    // Error page context
     {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
     // Location context
     {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
@@ -68,6 +67,7 @@ const t_token tokens[30] = {
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
+    {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
     // CGI context
     {"cgi", "location", true, 0, 1, 1, 1, isExtension},
     {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};

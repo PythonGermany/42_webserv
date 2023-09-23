@@ -47,5 +47,4 @@ Request processing flow: -------------------------------------------------------
 Todo: --------------------------------------------------------
 
 Directive parsing and http implementation
-Implement multivalue for location?
 Implement chunked transfer encoding
