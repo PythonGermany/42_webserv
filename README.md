@@ -222,7 +222,7 @@ Default: `1048576`
 allow METHOD [METHOD ...];
 ```
 Set the allowed methods.  
-Default: `GET` / `HEAD` / `OPTIONS`
+Default: `GET` / `HEAD` / `OPTIONS`  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### error_page
@@ -250,7 +250,7 @@ Redirects the request of the location to the given url.
 ```nginx
 cgi_path PATH;
 ```
-Set the path of the cgi executable.
+Set the path of the cgi executable.  
 **Allowed contexts:** [Cgi](#cgi)
 
 ## Example
