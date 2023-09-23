@@ -10,9 +10,10 @@
     - [Requirements](#requirements)
     - [Compilation](#compilation)
   - [Usage](#usage)
-    - [Configuration](#configuration)
-      - [Contexts](#contexts)
-      - [Directives](#directives)
+  - [Configuration](#configuration)
+    - [Contexts](#contexts)
+    - [Directives](#directives)
+    - [Example](#example)
 
 # Introduction
 
@@ -183,14 +184,14 @@ Set the host and port of the server.
 ```nginx
 server_name NAME [NAME ...];
 ```
-Set the server names.
+Set the server names.  
 **Allowed contexts:** [Server](#server)
 
 ### root
 ```nginx
 root PATH;
 ```
-Set the root path of the server.
+Set the root path of the server.  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### index
@@ -235,7 +236,7 @@ Set a custom error page for the given status code.
 ```nginx
 alias PATH;
 ```
-Set the alias path. Example request: `GET /alias/file` -> `root/PATH/file`  
+Set an alias path. Example request: `GET /alias/file` -> `root/PATH/file`  
 **Allowed contexts:** [Location](#location)
 
 ### redirect
@@ -250,3 +251,59 @@ Redirects the request of the location to the given url.
 cgi_path PATH;
 ```
 Set the path of the cgi executable.
+**Allowed contexts:** [Cgi](#cgi)
+
+## Example
+
+```nginx
+
+# File -> /example/mime.types
+types {
+  type text/html html htm;
+  type text/css css;
+  type text/javascript js;
+  type image/jpeg jpeg jpg;
+  type image/png png;
+  type image/svg+xml svg;
+  type image/gif gif;
+}
+
+# File -> /example/webserv.conf
+http {
+  include /example/mime.types;
+
+  log_level info;
+  access_log /var/log/webserv/access.log;
+  error_log /var/log/webserv/error.log;
+
+  include /example/server.conf;
+}
+
+# File -> /example/server.conf
+server {
+  listen localhost:8080;
+  server_name localhost:8080;
+  root /example/www;
+  index index.html index.htm;
+  autoindex on;
+  max_client_body_size 1048576;
+  allow GET HEAD OPTIONS;
+
+  error_page 404 /404.html;
+
+  location /example {
+    alias /example/www; # Request: GET /example/file -> root/www/file
+    index example.html;
+    allow GET HEAD OPTIONS PUT DELETE;
+    autoindex off;
+  }
+  location /redirect {
+    redirect http://www.duckduckgo.com;
+  }
+  location /cgi {
+    cgi php {
+      cgi_path /usr/bin/php-cgi;
+    }
+  }
+}
+```

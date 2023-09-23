@@ -122,7 +122,7 @@ void Config::processInclude(Context &context, std::string path) {
   std::vector<std::string> files;
   // Prepare wildcard path
   std::string includePath;
-  if (path[0] == '/')
+  if (startsWith(path, "/"))
     includePath = path;
   else
     includePath = _file.getDir() + path;
