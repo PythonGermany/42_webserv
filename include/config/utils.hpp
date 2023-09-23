@@ -3,10 +3,8 @@
 
 #include <dirent.h>
 #include <fnmatch.h>
-#include <netdb.h>
 
 #include <algorithm>
-#include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>

@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "../webserv.hpp"
-#include "Log.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
 
@@ -38,17 +36,20 @@ class Context {
   std::vector<Context> &getContext(std::string token);
   std::map<std::string, std::vector<Context> > &getContexts();
 
-  // Setters/Adders
   void setParent(Context *parent);
   void setArgs(std::vector<std::string> args);
   void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
   void addDirective(std::string token, std::vector<std::string> values);
   std::string addContext(Context &context);
 
-  // Remove
+  // Removes all directives with the given token
+  // @exception No custom exceptions
   void removeDirective(std::string token);
+  // Removes all contexts with the given token
+  // @exception No custom exceptions
   void removeContext(std::string token);
 
+  // Returns the number of context arguments
   size_t argCount() const;
 
   // Checks if the token exists in the context

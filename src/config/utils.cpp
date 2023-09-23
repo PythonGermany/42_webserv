@@ -132,7 +132,7 @@ std::string percentEncode(std::string str, std::string reserved) {
       encoded += str[i];
     } else {
       std::string hex = toHexString(str[i]);
-      std::transform(hex.begin(), hex.end(), hex.begin(), ::tolower);
+      std::transform(hex.begin(), hex.end(), hex.begin(), ::toupper);
       encoded += "%" + hex;
     }
   }

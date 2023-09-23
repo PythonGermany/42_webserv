@@ -1,10 +1,6 @@
 #ifndef HTTP_HPP
 #define HTTP_HPP
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
 #include "AConnection.hpp"
 #include "Log.hpp"
 #include "Request.hpp"

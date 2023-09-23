@@ -7,7 +7,9 @@
 
 #include "Context.hpp"
 #include "File.hpp"
+#include "Log.hpp"
 #include "utils.hpp"
+#include "webserv.hpp"
 
 class Config {
  private:
