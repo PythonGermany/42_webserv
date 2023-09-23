@@ -253,7 +253,7 @@ Response &Http::processAutoindex(std::string uri) {
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
-  // Find longest file name
+  // Find end of longest file name to align columns
   size_t maxWidth = 50;
   for (size_t i = 0; i < files.size(); i++) {
     if (files[i] == "." && files[i] == "..") continue;
