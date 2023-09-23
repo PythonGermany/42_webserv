@@ -254,12 +254,12 @@ Response &Http::processAutoindex(std::string uri) {
     return processError("500", "Internal Server Error");
   }
   // Find longest file name
-  size_t maxFileSize = 3;
+  size_t maxWidth = 50;
   for (size_t i = 0; i < files.size(); i++) {
     if (files[i] == "." && files[i] == "..") continue;
     if (File(path + files[i]).dir() && !endsWith(files[i], "/"))
       files[i] += "/";
-    if (files[i].size() > maxFileSize) maxFileSize = files[i].size();
+    if (files[i].size() > maxWidth) maxWidth = files[i].size();
   }
 
   for (size_t i = 0; i < files.size(); i++) {
@@ -267,8 +267,7 @@ Response &Http::processAutoindex(std::string uri) {
     if (file == "./" || file == "../") continue;
     body +=
         "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file + "</a>";
-    size_t spaceCount = maxFileSize - file.size() + 5;
-    if (file.size() <= 45) spaceCount = 50 - file.size();
+    size_t spaceCount = maxWidth - file.size() + 5;
     for (size_t j = 0; j < spaceCount; j++) body += " ";
     File f(path + files[i]);
     body += f.lastModified() + "          " +
