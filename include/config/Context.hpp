@@ -18,7 +18,7 @@ class Context {
   Context *_parentContext;
   std::vector<std::string> _args;
   std::map<std::string, size_t> _tokenOccurences;
-  std::map<std::string, std::vector<std::string> > _directives;
+  std::map<std::string, std::vector<std::vector<std::string> > > _directives;
   std::map<std::string, std::vector<Context> > _contexts;
 
  public:
@@ -34,8 +34,8 @@ class Context {
   std::vector<std::string> &getArgs();
   size_t getTokenOccurence(std::string token);
   std::map<std::string, size_t> getTokenOccurences();
-  std::vector<std::string> &getDirective(std::string token,
-                                         bool searchTree = false);
+  std::vector<std::vector<std::string> > &getDirective(std::string token,
+                                                       bool searchTree = false);
   std::vector<Context> &getContext(std::string token);
 
   // Setters/Adders
@@ -59,8 +59,6 @@ class Context {
   // Checks if the token is a valid context token
   // @exception No custom exceptions
   bool isValidContext(std::string token) const;
-  // Checks if the arguments are valid this context
-  std::string isValidContextArgs(std::vector<std::string> args) const;
   // Checks if the token is a valid directive token
   // @exception No custom exceptions
   bool isValidDirective(std::string token) const;

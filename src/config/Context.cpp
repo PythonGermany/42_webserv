@@ -49,8 +49,8 @@ std::map<std::string, size_t> Context::getTokenOccurences() {
   return _tokenOccurences;
 }
 
-std::vector<std::string> &Context::getDirective(std::string token,
-                                                bool searchTree) {
+std::vector<std::vector<std::string> > &Context::getDirective(std::string token,
+                                                              bool searchTree) {
   if (exists(token, false)) return _directives[token];
   if (searchTree && _parentContext != NULL)
     return _parentContext->getDirective(token, searchTree);
@@ -82,8 +82,7 @@ std::string Context::addDirective(std::string token,
   if (error.size() > 0) return error;
   error = validArguments(token, values);
   if (error.size() > 0) return error;
-  for (size_t i = 0; i < values.size(); i++)
-    _directives[token].push_back(values[i]);
+  _directives[token].push_back(values);
   addTokenOccurence(token);
   return "";
 }
@@ -123,24 +122,6 @@ bool Context::isValidContext(std::string token) const {
   return false;
 }
 
-std::string Context::isValidContextArgs(std::vector<std::string> args) const {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
-    if (tokens[i].name == _name && tokens[i].isContext) {
-      if (tokens[i].func != NULL) {
-        for (size_t j = 0; j < args.size(); j++) {
-          std::string error = tokens[i].func(args[j]);
-          if (error != "") return "Argument '" + args[j] + "': " + error;
-        }
-      }
-      if (tokens[i].minArgs <= args.size() && tokens[i].maxArgs >= args.size())
-        return "";
-      return "'" + _name + "' requires between " + toString(tokens[i].minArgs) +
-             " and " + toString(tokens[i].maxArgs) + " arguments";
-    }
-  }
-  return "Context '" + _name + "' not found";
-}
-
 bool Context::isValidDirective(std::string token) const {
   for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
     if (tokens[i].name == token && tokens[i].parent == _name &&
@@ -164,7 +145,7 @@ std::string Context::validArguments(std::string token,
     if (tokens[i].name == token && tokens[i].parent == _name) {
       if (tokens[i].func != NULL) {
         for (size_t j = 0; j < args.size(); j++) {
-          std::string error = tokens[i].func(args[j]);
+          std::string error = tokens[i].func(args[j], j);
           if (error != "") return "Argument '" + args[j] + "': " + error;
         }
       }
@@ -211,13 +192,16 @@ void Context::print(int indent) const {
   std::cout << RESET << std::endl;
 
   // Print directives
-  for (std::map<std::string, std::vector<std::string> >::const_iterator it =
+  for (std::map<std::string,
+                std::vector<std::vector<std::string> > >::const_iterator it =
            _directives.begin();
        it != _directives.end(); it++) {
-    std::cout << spaces << BLUE << it->first << ": " << GREEN;
-    for (size_t i = 0; i < it->second.size(); i++)
-      std::cout << "'" << it->second[i] << "' ";
-    std::cout << RESET << std::endl;
+    for (size_t i = 0; i < it->second.size(); i++) {
+      std::cout << spaces << BLUE << it->first << " " << GREEN;
+      for (size_t j = 0; j < it->second[i].size(); j++)
+        std::cout << it->second[i][j] << " ";
+      std::cout << RESET << std::endl;
+    }
   }
 
   // Recursively print contexts

@@ -8,7 +8,7 @@ VirtualHost::VirtualHost() {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
-  std::string listen = _context.getDirective("listen")[0];
+  std::string listen = _context.getDirective("listen")[0][0];
   bool ipv6 = startsWith(listen, "[");
   std::string address, port;
   if (ipv6) {
@@ -74,7 +74,7 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
       // Check if server name matches
       if (_virtualHosts[i].getContext().exists("server_name")) {
         std::vector<std::string> &names =
-            _virtualHosts[i].getContext().getDirective("server_name");
+            _virtualHosts[i].getContext().getDirective("server_name")[0];
         for (size_t j = 0; j < names.size(); j++)
           if (names[j] == host) return &_virtualHosts[i];
       }

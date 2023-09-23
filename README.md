@@ -100,10 +100,7 @@ server {
     autoindex [on|off];
     max_client_body_size SIZE;
     allow METHOD [METHOD ...];
-
-    error_page CODE {
-        [directives]
-    }
+    error_page CODE PATH;
 
     location PATH {
         [directives]
@@ -112,15 +109,6 @@ server {
 ```
 Virtual server context. It contains the configuration of a virtual server.  
 **Allowed tokens:** [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [location](#location)
-
-## Error page
-```nginx
-error_page CODE {
-    [directives]
-}
-```
-Custom error page context for status `CODE`. It contains the path of the error page.  
-**Allowed tokens:** [page_path](#page_path)
 
 ## Location
 ```nginx
@@ -243,6 +231,13 @@ Set the allowed methods.
 Default: `GET` / `HEAD` / `POST` / `PUT` / `DELETE`  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
+### error_page
+```nginx
+error_page CODE PATH;
+```
+Set a custom error page for the given status code.  
+**Allowed contexts:** [Server](#server) / [Location](#location)
+
 ### alias
 ```nginx
 alias PATH;
@@ -263,14 +258,6 @@ redirect URL;
 ```
 Redirects the request of the location to the given url.   
 **Allowed contexts:** [Server](#server) / [Location](#location)
-
-### page_path
-#
-```nginx
-page_path PATH;
-```
-Set the path of a custom error page.  
-**Allowed contexts:** [Error page](#error-page)
 
 ### cgi_path
 ```nginx

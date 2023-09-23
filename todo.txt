@@ -46,6 +46,8 @@ Request processing flow: -------------------------------------------------------
 
 Todo: --------------------------------------------------------
 
+Fix config parsing error incorrect line number
+
 Directive parsing and http implementation
 Implement multivalue for location?
 Implement multivalue for error_page?

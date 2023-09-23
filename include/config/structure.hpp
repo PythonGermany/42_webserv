@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-typedef enum e_log_level { WARNING, INFO, DEBUG } t_log_level;
+typedef enum e_log_level { ERROR, WARNING, INFO, DEBUG } t_log_level;
 
 typedef struct s_token {
   std::string name;
@@ -15,24 +15,28 @@ typedef struct s_token {
   size_t maxOccurence;
   size_t minArgs;
   size_t maxArgs;
-  std::string (*func)(std::string const &value);
+  std::string (*func)(std::string const &value, size_t index);
 } t_token;
 
 // Validation functions are supposed to return a non-empty string if value is
 // invalid
 
-std::string isNumeric(std::string const &value);
+std::string isMimeType(std::string const &value, size_t index);
 
-std::string isMethod(std::string const &value);
+std::string isErrorPage(std::string const &value, size_t index);
 
-std::string isLogLevel(std::string const &value);
+std::string isNumeric(std::string const &value, size_t index);
 
-std::string isAbsolutePath(std::string const &value);
+std::string isMethod(std::string const &value, size_t index);
 
-std::string isExtension(std::string const &value);
+std::string isLogLevel(std::string const &value, size_t index);
 
-std::string isBoolean(std::string const &value);
+std::string isAbsolutePath(std::string const &value, size_t index);
 
-std::string isListen(std::string const &value);
+std::string isExtension(std::string const &value, size_t index);
+
+std::string isBoolean(std::string const &value, size_t index);
+
+std::string isListen(std::string const &value, size_t index);
 
 #endif

@@ -21,53 +21,51 @@ void Init::initVirtualHosts(Context& context) {
     VirtualHost::add(VirtualHost(serverContexts[i]));
   }
   size_t size = VirtualHost::getVirtualHosts().size();
-  {
-    Log::write("Number of Virtual Hosts: " + toString(size), INFO);
-    Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
-  }
+  Log::write("Number of Virtual Hosts: " + toString(size), INFO);
+  Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
 }
 
 void Init::initMimeTypes(Context& context) {
   Log::write("-------- Loading mime types ---------", INFO, BRIGHT_GREEN);
   std::map<std::string, std::string> types;
-  std::vector<Context>& mimes =
-      context.getContext("http")[0].getContext("types")[0].getContext("type");
+  std::vector<std::vector<std::string> >& mimes =
+      context.getContext("http")[0].getContext("types")[0].getDirective("type");
   for (size_t i = 0; i < mimes.size(); i++) {
-    std::string mime = mimes[i].getArgs()[0];
-    std::vector<std::string> exts = mimes[i].getDirective("extension");
-    for (size_t j = 0; j < exts.size(); j++) {
-      if (types.find(exts[j]) != types.end())
-        Log::write("WARNING: Duplicate mime type extension '" + exts[j] + "'",
-                   WARNING, YELLOW);
-      types[exts[j]] = mime;
+    std::string mime = mimes[i][0];
+    for (size_t j = 1; j < mimes[i].size(); j++) {
+      if (types.find(mimes[i][j]) != types.end())
+        Log::write(
+            "WARNING: Duplicate mime type extension '" + mimes[i][j] + "'",
+            WARNING, YELLOW);
+      types[mimes[i][j]] = mime;
     }
   }
   context.getContext("http")[0].removeContext("types");
   VirtualHost::setMimeTypes(types);
-  {
-    Log::write("Number of mime extensions: " + toString(types.size()), INFO);
-    Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
-  }
+  Log::write("Number of mime extensions: " + toString(types.size()), INFO);
+  Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
 }
 
 void Init::initLogDefaults(Context& context) {
   Context& http = context.getContext("http")[0];
   // Init log level
   if (http.exists("log_level")) {
-    std::string level = http.getDirective("log_level")[0];
-    if (level == "DEBUG")
+    std::string level = http.getDirective("log_level")[0][0];
+    if (level == "debug")
       Log::setLevel(DEBUG);
-    else if (level == "INFO")
+    else if (level == "info")
       Log::setLevel(INFO);
-    else if (level == "WARNING")
+    else if (level == "warning")
       Log::setLevel(WARNING);
+    else if (level == "error")
+      Log::setLevel(ERROR);
   }
 
   // Init log files
   if (http.exists("access_log"))
-    Log::setLogFile(http.getDirective("access_log")[0]);
+    Log::setLogFile(http.getDirective("access_log")[0][0]);
   if (http.exists("error_log"))
-    Log::setErrorLogFile(http.getDirective("error_log")[0]);
+    Log::setErrorLogFile(http.getDirective("error_log")[0][0]);
   Log::init();
   {
     Log::write("--------- Log configuration ---------", INFO, BRIGHT_GREEN);

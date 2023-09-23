@@ -89,18 +89,18 @@ Response &Http::processRequest() {
 
   // Check if the request should be redirected
   if (_context->exists("redirect"))
-    return processRedirect(_context->getDirective("redirect")[0]);
+    return processRedirect(_context->getDirective("redirect")[0][0]);
 
   return processFile(_uri);
 }
 
 Response &Http::processFile(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0] + uri;
+  std::string path = _context->getDirective("root", true)[0][0] + uri;
   File file(path);
 
   // Add index file if needed
   if (endsWith(uri, "/") && _context->exists("index", true)) {
-    std::vector<std::string> indexes = _context->getDirective("index", true);
+    std::vector<std::string> indexes = _context->getDirective("index", true)[0];
     std::string index;
     for (size_t i = 0; i < indexes.size(); i++) {
       index = indexes[i];
@@ -119,7 +119,7 @@ Response &Http::processFile(std::string uri) {
   if (file.dir()) {
     if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
-        _context->getDirective("autoindex", true)[0] == "on")
+        _context->getDirective("autoindex", true)[0][0] == "on")
       return processAutoindex(uri);
     return processError("403", "Forbidden");
   } else if (!file.readable())
@@ -153,7 +153,7 @@ Response &Http::processUploadHead() {
   size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
   if (_context->exists("max_client_body_size", true))
     maxBodySize = fromString<size_t>(
-        _context->getDirective("max_client_body_size", true)[0]);
+        _context->getDirective("max_client_body_size", true)[0][0]);
 
   // Check if body size is too large
   if (bodySize > maxBodySize)
@@ -162,8 +162,9 @@ Response &Http::processUploadHead() {
 }
 
 Response &Http::processUploadBody(std::string uri) {
-  if (_request.getMethod() == "PUT") _uri = getContextPath("upload") + _uri;
-  std::string path = _context->getDirective("root", true)[0] + uri;
+  if (_request.getMethod() == "PUT")
+    _uri = getContextPath("upload_store") + _uri;
+  std::string path = _context->getDirective("root", true)[0][0] + uri;
 
   // Create and write file
   File file(path);
@@ -186,7 +187,7 @@ Response &Http::processUploadBody(std::string uri) {
 }
 
 Response &Http::processDelete(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0] + uri;
+  std::string path = _context->getDirective("root", true)[0][0] + uri;
   File file(path);
 
   if (!file.exists()) return processError("404", "Not Found");
@@ -203,7 +204,7 @@ Response &Http::processDelete(std::string uri) {
 }
 
 Response &Http::processAutoindex(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0] + uri;
+  std::string path = _context->getDirective("root", true)[0][0] + uri;
   _response = Response("HTTP/1.1", "200", "OK");
   std::string body =
       "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>";
@@ -255,16 +256,17 @@ Response &Http::processRedirect(std::string uri) {
 Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
   std::string body;
-  if (_virtualHost != NULL) {
-    std::vector<Context> &errors =
-        _virtualHost->getContext().getContext("error_page");
+  if (_virtualHost != NULL &&
+      _virtualHost->getContext().exists("error_page", true)) {
+    std::vector<std::vector<std::string> > &pages =
+        _virtualHost->getContext().getDirective("error_page", true);
 
     // Search for matching custom error page
-    for (size_t i = 0; i < errors.size(); i++) {
-      std::string error = errors[i].getArgs()[0];
-      if (error == code) {
-        std::string path = _context->getDirective("root", true)[0] +
-                           errors[i].getDirective("path")[0];
+    for (size_t i = 0; i < pages.size(); i++) {
+      std::string pageCode = pages[i][0];
+      if (pageCode == code) {
+        std::string path =
+            _context->getDirective("root", true)[0][0] + pages[i][1];
         File file(path);
         if (file.exists()) {
           if (file.file() && file.readable()) {
@@ -355,12 +357,12 @@ std::string Http::getAbsoluteUri(std::string uri) const {
 
 bool Http::isMethodValid() {
   if (_context->exists("allow", true)) {
-    std::vector<std::string> methods = _context->getDirective("allow", true);
+    std::vector<std::string> methods = _context->getDirective("allow", true)[0];
     if (std::find(methods.begin(), methods.end(), _request.getMethod()) !=
         methods.end())
       return true;
     _response = processError("405", "Method Not Allowed");
-    _response.setHeader("Allow", concatenate(methods, ","));
+    _response.setHeader("Allow", concatenate(methods, ", "));
     return false;
   }
   return true;
@@ -368,8 +370,8 @@ bool Http::isMethodValid() {
 
 std::string Http::getContextPath(std::string token, bool searchTree) const {
   if (_context->exists(token, searchTree) &&
-      _context->getDirective(token)[0] != "/")
-    return _context->getDirective(token, searchTree)[0];
+      _context->getDirective(token)[0][0] != "/")
+    return _context->getDirective(token, searchTree)[0][0];
   return "";
 }
 

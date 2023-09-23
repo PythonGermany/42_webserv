@@ -1,9 +1,9 @@
 types {
-  type text/html { extension html htm; }
-  type text/plain { extension txt; }
-  type text/css { extension css; }
-  type text/javascript { extension js; }
-  type image/jpeg { extension jpg jpeg; }
-  type image/png { extension png; }
-  type image/gif { extension gif; }
+  type text/html html htm;
+  type text/plain txt;
+  type text/css css;
+  type text/javascript js;
+  type image/jpeg jpg jpeg;
+  type image/png png;
+  type image/gif gif;
 }

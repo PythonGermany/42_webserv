@@ -24,7 +24,7 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[34] = {
+const t_token tokens[32] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -34,8 +34,7 @@ const t_token tokens[34] = {
 
     // Mime type context
     {"types", "http", true, 1, 1, 0, 0, NULL},
-    {"type", "types", true, 1, -1, 1, 1, NULL},
-    {"extension", "type", false, 1, 1, 1, -1, isExtension},
+    {"type", "types", false, 1, -1, 2, -1, isMimeType},
 
     // Server context
     {"server", "http", true, 1, -1, 0, 0, NULL},
@@ -45,12 +44,11 @@ const t_token tokens[34] = {
     {"index", "server", false, 0, 1, 1, -1, NULL},
     {"allow", "server", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
-    {"upload", "server", false, 0, 1, 1, 1, isAbsolutePath},
+    {"upload_store", "server", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
     // Error page context
-    {"error_page", "server", true, 0, -1, 1, 1, isNumeric},
-    {"path", "error_page", false, 1, 1, 1, 1, isAbsolutePath},
+    {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
     // Location context
     {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
     {"alias", "location", false, 0, 1, 1, 1, NULL},
@@ -58,11 +56,11 @@ const t_token tokens[34] = {
     {"index", "location", false, 0, 1, 1, -1, NULL},
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
-    {"upload", "location", false, 0, 1, 1, 1, isAbsolutePath},
+    {"upload_store", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
     // CGI context
     {"cgi", "location", true, 0, 1, 1, 1, isExtension},
-    {"path", "cgi", false, 1, 1, 1, 1, NULL}};
+    {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};
 
 #endif

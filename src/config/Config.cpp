@@ -102,7 +102,7 @@ void Config::processContext(Context &context, std::string &data,
   // Parse, validate and add
   std::vector<std::string> args =
       split(trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
-  _error = child.isValidContextArgs(args);
+  _error = context.validArguments(token, args);
   if (_error != "") throwExeption(line, _error);
   child.setArgs(args);
 
