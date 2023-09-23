@@ -4,10 +4,10 @@ Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
   this->headDelimiter = "\r\n\r\n";
-  this->headSizeLimit = 10000;  // TODO: Check how to handle this properly
+  this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
-  this->_error = false;
+  this->_responseReady = false;
   Log::write(toString<Address &>(this->host) +
                  " -> add: " + toString<Address &>(this->client),
              DEBUG);
@@ -36,56 +36,13 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
 
   // Process request
   _response = processRequest();
-
-  // Set default header values
-  size_t content_length = _response.getBody().size();
-  if (_request.getMethod() == "HEAD") _response.setBody("");
-  _response.setHeader("Server", "webserv");
-  _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
-  _response.setHeader("Content-Length", toString(content_length));
-
-  // Check if connection should be kept alive
-  if (_request.getHeader("Connection") == "keep-alive")
-    _response.setHeader("Connection", "keep-alive");
-  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
-                 ": '" + _response.getVersion() + " " + _response.getStatus() +
-                 " " + _response.getReason() + "'",
-             INFO);
-
-  // Send response
-  send(_response.generate());
-
-  // Close connection if needed or asked for
-  if (_response.getHeader("Connection") == "close" ||
-      _request.getHeader("Connection") == "close")
-    closeConnection();
+  if (_responseReady) sendResponse();
 }
 
 void Http::OnBodyRecv(std::string msg) {
   _request.setBody(msg);
-  _response = processUploadBody(_request.getUri().getPath());
-
-  // Set default header values
-  size_t content_length = _response.getBody().size();
-  _response.setHeader("Server", "webserv");
-  _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
-  _response.setHeader("Content-Length", toString(content_length));
-
-  // Check if connection should be kept alive
-  if (_request.getHeader("Connection") == "keep-alive")
-    _response.setHeader("Connection", "keep-alive");
-  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
-                 ": '" + _response.getVersion() + " " + _response.getStatus() +
-                 " " + _response.getReason() + "'",
-             INFO);
-
-  // Send response
-  send(_response.generate());
-
-  // Close connection if needed or asked for
-  if (_response.getHeader("Connection") == "close" ||
-      _request.getHeader("Connection") == "close")
-    closeConnection();
+  _response = processUploadBody(_uri);
+  if (_responseReady) sendResponse();
 }
 
 void Http::OnCgiRecv(std::string msg) {
@@ -109,7 +66,8 @@ Response &Http::processRequest() {
     return processError("505", "HTTP Version Not Supported");
 
   // Find correct location context
-  _context = _virtualHost->matchLocation(_request.getUri().getPath());
+  _uri = _request.getUri().getPath();
+  _context = _virtualHost->matchLocation(_uri);
   if (_context == NULL) return processError("500", "Internal Server Error");
 
   std::string contextUri = getContextArgs();
@@ -118,23 +76,22 @@ Response &Http::processRequest() {
   // Check if method is allowed
   if (isMethodValid() == false) return _response;
 
+  // Process alias
+  if (_context->exists("alias"))
+    _uri = getContextPath("alias") + _uri.substr(contextUri.size());
+  Log::write("Resource URI: " + _uri, DEBUG);
+
   // Handle PUT request
   if (_request.getMethod() == "PUT") return processUploadHead();
 
-  // Process alias
-  std::string uri = _request.getUri().getPath();
-  if (_context->exists("alias"))
-    uri = getContextPath("alias") + uri.substr(contextUri.size());
-  Log::write("Resource URI: " + uri, DEBUG);
-
   // Handle DELETE request
-  if (_request.getMethod() == "DELETE") return processDelete(uri);
+  if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
   // Check if the request should be redirected
   if (_context->exists("redirect"))
     return processRedirect(_context->getDirective("redirect")[0]);
 
-  return processFile(uri);
+  return processFile(_uri);
 }
 
 Response &Http::processFile(std::string uri) {
@@ -154,7 +111,7 @@ Response &Http::processFile(std::string uri) {
   }
 
   if (!file.exists()) {
-    // Try file as directory if file is not found
+    // Redirect to directory if file does not exist
     if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
       return processRedirect(uri + "/");
     return processError("404", "Not Found");
@@ -182,6 +139,7 @@ Response &Http::processFile(std::string uri) {
   std::string mimeType = VirtualHost::getMimeType(file.getExtension());
   if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
 
+  _responseReady = true;
   return _response;
 }
 
@@ -204,13 +162,7 @@ Response &Http::processUploadHead() {
 }
 
 Response &Http::processUploadBody(std::string uri) {
-  // Process alias
-  if (_context->exists("alias"))
-    uri = getContextPath("alias") + uri.substr(getContextArgs().size());
-
-  if (_context->exists("upload")) uri = getContextPath("upload") + uri;
-  Log::write("Resource URI: " + uri, DEBUG);
-
+  if (_request.getMethod() == "PUT") _uri = getContextPath("upload") + _uri;
   std::string path = _context->getDirective("root", true)[0] + uri;
 
   // Create and write file
@@ -229,6 +181,7 @@ Response &Http::processUploadBody(std::string uri) {
   else
     _response = Response("HTTP/1.1", "204", "No Content");
   _response.setHeader("Location", getAbsoluteUri(uri));
+  _responseReady = true;
   return _response;
 }
 
@@ -245,6 +198,57 @@ Response &Http::processDelete(std::string uri) {
     return processError("500", "Internal Server Error");
   }
   _response = Response("HTTP/1.1", "204", "No Content");
+  _responseReady = true;
+  return _response;
+}
+
+Response &Http::processAutoindex(std::string uri) {
+  std::string path = _context->getDirective("root", true)[0] + uri;
+  _response = Response("HTTP/1.1", "200", "OK");
+  std::string body =
+      "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>";
+  std::vector<std::string> files;
+
+  body += "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
+
+  // Get list of files in directory
+  try {
+    files = File::list(path);
+  } catch (const std::exception &e) {
+    return processError("500", "Internal Server Error");
+  }
+  // Find longest file name
+  size_t maxFileSize = 3;
+  for (size_t i = 0; i < files.size(); i++) {
+    if (files[i] == "." && files[i] == "..") continue;
+    if (File(path + files[i]).dir() && !endsWith(files[i], "/"))
+      files[i] += "/";
+    if (files[i].size() > maxFileSize) maxFileSize = files[i].size();
+  }
+
+  for (size_t i = 0; i < files.size(); i++) {
+    std::string file = files[i];
+    if (file == "./" || file == "../") continue;
+    body +=
+        "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file + "</a>";
+    size_t spaceCount = maxFileSize - file.size() + 5;
+    if (file.size() <= 45) spaceCount = 50 - file.size();
+    for (size_t j = 0; j < spaceCount; j++) body += " ";
+    File f(path + files[i]);
+    body += f.lastModified() + "          " +
+            (f.dir() ? "-" : toString(f.size())) + "\r\n";
+  }
+  body += "</pre><hr></body>\r\n</html>\r\n";
+  _response.setBody(body);
+  _response.setHeader("Connection", "close");
+  _responseReady = true;
+  return _response;
+}
+
+Response &Http::processRedirect(std::string uri) {
+  _response = Response("HTTP/1.1", "301", "Moved Permanently");
+  _response.setHeader("Location", getAbsoluteUri(uri));
+  _responseReady = true;
   return _response;
 }
 
@@ -289,55 +293,8 @@ Response &Http::processError(std::string code, std::string reason) {
     body = getDefaultBody(code, reason);
     _response.setHeader("Content-Type", "text/html");
   }
-
   _response.setBody(body);
-  _error = true;
-  return _response;
-}
-
-Response &Http::processAutoindex(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0] + uri;
-  _response = Response("HTTP/1.1", "200", "OK");
-  std::string body =
-      "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>";
-  std::vector<std::string> files;
-
-  body += "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
-  try {
-    files = File::list(path);
-  } catch (const std::exception &e) {
-    return processError("500", "Internal Server Error");
-  }
-  // Find longest file name
-  size_t maxFileSize = 3;
-  for (size_t i = 0; i < files.size(); i++) {
-    if (files[i] == "." && files[i] == "..") continue;
-    if (File(path + files[i]).dir() && !endsWith(files[i], "/"))
-      files[i] += "/";
-    if (files[i].size() > maxFileSize) maxFileSize = files[i].size();
-  }
-
-  for (size_t i = 0; i < files.size(); i++) {
-    std::string file = files[i];
-    if (file == "./" || file == "../") continue;
-    body +=
-        "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file + "</a>";
-    size_t spaceCount = maxFileSize - file.size() + 5;
-    if (file.size() <= 45) spaceCount = 50 - file.size();
-    for (size_t j = 0; j < spaceCount; j++) body += " ";
-    File f(path + files[i]);
-    body += f.lastModified() + "          " +
-            (f.dir() ? "-" : toString(f.size())) + "\r\n";
-  }
-  body += "</pre><hr></body>\r\n</html>\r\n";
-  _response.setBody(body);
-  _response.setHeader("Connection", "close");
-  return _response;
-}
-
-Response &Http::processRedirect(std::string uri) {
-  _response = Response("HTTP/1.1", "301", "Moved Permanently");
-  _response.setHeader("Location", getAbsoluteUri(uri));
+  _responseReady = true;
   return _response;
 }
 
@@ -346,6 +303,39 @@ std::string Http::getDefaultBody(std::string code, std::string reason) const {
          "</title></head>\r\n<body>\r\n<center><h1>" + code + " " + reason +
          "</h1></center>\r\n<hr><center>webserv</center>\r\n</body>\r\n</"
          "html>\r\n";
+}
+
+void Http::sendResponse() {
+  if (_responseReady == false) {
+    Log::write("WARNING: Trying to send response before it is ready", WARNING);
+    return;
+  }
+
+  // Set default header values
+  size_t content_length = _response.getBody().size();
+  if (_request.getMethod() == "HEAD") _response.setBody("");
+  _response.setHeader("Server", "webserv");
+  _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
+  _response.setHeader("Content-Length", toString(content_length));
+
+  // Check if connection should be kept alive
+  if (_request.getHeader("Connection") == "keep-alive")
+    _response.setHeader("Connection", "keep-alive");
+
+  // Send response
+  send(_response.generate());
+  _responseReady = false;
+  bodySize = WAIT_FOR_HEAD;
+
+  // Close connection if needed or asked for
+  if (_response.getHeader("Connection") == "close" ||
+      _request.getHeader("Connection") == "close")
+    closeConnection();
+
+  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
+                 ": '" + _response.getVersion() + " " + _response.getStatus() +
+                 " " + _response.getReason() + "'",
+             INFO);
 }
 
 std::string Http::getAbsoluteUri(std::string uri) const {

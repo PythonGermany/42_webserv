@@ -19,6 +19,15 @@ Request::~Request() {}
 
 void Request::setBody(std::string body) { _body = body; }
 
+void Request::setHeader(std::string key, std::string value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  trimStart(value, " \t");
+  if (_headers.find(key) != _headers.end())
+    _headers[key] += ", " + value;
+  else
+    _headers[key] = value;
+}
+
 std::string Request::getMethod() const { return _method; }
 
 Uri &Request::getUri() { return _uri; }
@@ -33,6 +42,18 @@ std::string Request::getHeader(std::string key) const {
 }
 
 std::string Request::getBody() const { return _body; }
+
+void Request::deleteHeaderField(std::string key, std::string value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  std::map<std::string, std::string>::iterator it = _headers.find(key);
+  if (it == _headers.end()) return;
+  std::string &field = it->second;
+  size_t pos = field.find(value);
+  if (pos == std::string::npos) return;
+  field.erase(pos, value.size());
+  trim(field, ", ");
+  if (field.empty()) _headers.erase(it);
+}
 
 void Request::parseHead(std::string msg) {
   // Find head delimiter
@@ -53,12 +74,15 @@ void Request::parseHead(std::string msg) {
   _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
 
-  // Parse headers
-  while (pos != std::string::npos) {
-    pos += 2;
-    size_t end = msg.find("\r\n", pos);
-    std::string line = msg.substr(pos, end - pos);
-    pos = end;
+  // Parse header
+  parseHeader(msg.substr(pos + 2));
+}
+
+void Request::parseHeader(std::string fields) {
+  size_t end = fields.find("\r\n");
+
+  while (end != std::string::npos) {
+    std::string line = fields.substr(0, end);
     if (line.empty()) break;
     size_t colon = line.find(":");
     if (colon == std::string::npos) {
@@ -67,12 +91,9 @@ void Request::parseHead(std::string msg) {
     }
     std::string key = line.substr(0, colon);
     std::string value = line.substr(colon + 1);
-    std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-    trimStart(value, " \t");
-    if (_headers.find(key) != _headers.end())
-      _headers[key] += ", " + value;
-    else
-      _headers[key] = value;
+    setHeader(key, value);
+    fields.erase(0, line.size() + 2);
+    end = fields.find("\r\n");
   }
 }
 

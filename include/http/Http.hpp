@@ -18,7 +18,9 @@ class Http : public AConnection {
   VirtualHost* _virtualHost;
   Context* _context;
 
-  bool _error;
+  std::string _uri;
+
+  bool _responseReady;
 
  public:
   Http(Address const& client, Address const& host);
@@ -35,12 +37,13 @@ class Http : public AConnection {
   Response& processUploadHead();
   Response& processUploadBody(std::string uri);
   Response& processDelete(std::string uri);
-  Response& processError(std::string code, std::string reason);
-
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
+  Response& processError(std::string code, std::string reason);
 
   std::string getDefaultBody(std::string code, std::string reason) const;
+
+  void sendResponse();
 
   std::string getAbsoluteUri(std::string uri) const;
 

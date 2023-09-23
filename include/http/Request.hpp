@@ -26,6 +26,7 @@ class Request {
   ~Request();
 
   void setBody(std::string body);
+  void setHeader(std::string key, std::string value);
 
   std::string getMethod() const;
   Uri &getUri();
@@ -33,7 +34,10 @@ class Request {
   std::string getHeader(std::string key) const;
   std::string getBody() const;
 
+  void deleteHeaderField(std::string key, std::string value);
+
   void parseHead(std::string msg);
+  void parseHeader(std::string fields);
   bool isValid() const;
 };
 
