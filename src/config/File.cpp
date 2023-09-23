@@ -37,7 +37,7 @@ std::string File::getExtension() const {
   std::string name = getName();
   std::string::size_type pos = name.find_last_of('.');
   if (pos == std::string::npos) return "";
-  return _path.substr(pos + 1);
+  return name.substr(pos + 1);
 }
 
 void File::setPath(std::string path) { _path = path; }
