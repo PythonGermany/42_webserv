@@ -30,9 +30,17 @@ void Http::OnHeadRecv(std::string msg) {
                  "'",
              INFO);
 
+  // If possible use host from absolute uri otherwise use host from header
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-5.2
+  std::string requestHost = _request.getHeader("Host");
+  if (!_request.getUri().getHost().empty()) {
+    requestHost = _request.getUri().getHost();
+    if (!_request.getUri().getPort().empty())
+      requestHost += ":" + _request.getUri().getPort();
+  }
+
   // Find virtual host
-  _virtualHost =
-      VirtualHost::matchVirtualHost(host, _request.getHeader("Host"));
+  _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
 
   // Process request
   _response = processRequest();
@@ -59,11 +67,17 @@ Response &Http::processRequest() {
              DEBUG);
 
   // Check if the request is valid
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
   if (_request.getUri().decode() || !_request.isValid())
     return processError("400", "Bad Request");
 
-  if (_request.getVersion() != "HTTP/1.1")
+  if (_request.getVersion() != HTTP_VERSION)
     return processError("505", "HTTP Version Not Supported");
+
+  // Check if method is implemented
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.5.2
+  if (!isMehodImplemented(_request.getMethod()))
+    return processError("501", "Not Implemented");
 
   // Find correct location context
   _uri = _request.getUri().getPath();
@@ -74,7 +88,15 @@ Response &Http::processRequest() {
   Log::write("Context URI: " + (contextUri != "" ? contextUri : "/"), DEBUG);
 
   // Check if method is allowed
-  if (isMethodValid() == false) return _response;
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
+  if (!isMethodValid()) {
+    _responseReady = true;
+    return _response;
+  }
+
+  // Handle OPTIONS request
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.2
+  if (_request.getMethod() == "OPTIONS") return processOptions();
 
   // Process alias
   if (_context->exists("alias"))
@@ -82,9 +104,11 @@ Response &Http::processRequest() {
   Log::write("Resource URI: " + _uri, DEBUG);
 
   // Handle PUT request
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
   if (_request.getMethod() == "PUT") return processUploadHead();
 
   // Handle DELETE request
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
   // Check if the request should be redirected
@@ -129,7 +153,10 @@ Response &Http::processFile(std::string uri) {
   _response = Response("HTTP/1.1", "200", "OK");
   try {
     file.open(O_RDONLY);
-    _response.setBody(file.read());
+    if (_request.getMethod() != "HEAD")
+      _response.setBody(file.read());
+    else
+      _response.setHeader("Content-Length", toString(file.size()));
     file.close();
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
@@ -162,8 +189,6 @@ Response &Http::processUploadHead() {
 }
 
 Response &Http::processUploadBody(std::string uri) {
-  if (_request.getMethod() == "PUT")
-    _uri = getContextPath("upload_store") + _uri;
   std::string path = _context->getDirective("root", true)[0][0] + uri;
 
   // Create and write file
@@ -182,6 +207,16 @@ Response &Http::processUploadBody(std::string uri) {
   else
     _response = Response("HTTP/1.1", "204", "No Content");
   _response.setHeader("Location", getAbsoluteUri(uri));
+  _responseReady = true;
+  return _response;
+}
+
+Response &Http::processOptions() {
+  _response = Response("HTTP/1.1", "200", "OK");
+  if (_uri == "/*") {
+    _response.setHeader("Allow", concatenate(getAllowedMethods(false), ", "));
+  } else
+    _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
   _responseReady = true;
   return _response;
 }
@@ -240,8 +275,8 @@ Response &Http::processAutoindex(std::string uri) {
             (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
   body += "</pre><hr></body>\r\n</html>\r\n";
-  _response.setBody(body);
-  _response.setHeader("Connection", "close");
+  if (_request.getMethod() != "HEAD") _response.setBody(body);
+  _response.setHeader("Content-Length", toString(body.size()));
   _responseReady = true;
   return _response;
 }
@@ -256,37 +291,31 @@ Response &Http::processRedirect(std::string uri) {
 Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
   std::string body;
-  if (_virtualHost != NULL &&
-      _virtualHost->getContext().exists("error_page", true)) {
+  if (_virtualHost->getContext().exists("error_page", true)) {
     std::vector<std::vector<std::string> > &pages =
         _virtualHost->getContext().getDirective("error_page", true);
 
     // Search for matching custom error page
     for (size_t i = 0; i < pages.size(); i++) {
       std::string pageCode = pages[i][0];
-      if (pageCode == code) {
-        std::string path =
-            _context->getDirective("root", true)[0][0] + pages[i][1];
-        File file(path);
-        if (file.exists()) {
-          if (file.file() && file.readable()) {
-            try {
-              file.open(O_RDONLY);
-              body = file.read();
-              file.close();
-            } catch (const std::exception &e) {
-              processError("500", "Internal Server Error");
-            }
-          }
-        } else if (code != "404")
-          processError("404", "Not Found");
-        else {
-          code = "404";
-          reason = "Not Found";
-          _response = Response("HTTP/1.1", code, reason);
+      if (pageCode != code) continue;
+      std::string path =
+          _context->getDirective("root", true)[0][0] + pages[i][1];
+      File file(path);
+      if (file.exists() && file.file() && file.readable()) {
+        try {
+          file.open(O_RDONLY);
+          body = file.read();
+          file.close();
+        } catch (const std::exception &e) {
+          return processError("500", "Internal Server Error");
         }
-        break;
-      }
+        // Set mime type
+        std::string mimeType = VirtualHost::getMimeType(file.getExtension());
+        if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
+      } else if (code != "404")
+        return processError("404", "Not Found");
+      break;
     }
   }
 
@@ -295,7 +324,8 @@ Response &Http::processError(std::string code, std::string reason) {
     body = getDefaultBody(code, reason);
     _response.setHeader("Content-Type", "text/html");
   }
-  _response.setBody(body);
+  _response.setHeader("Content-Length", toString(body.size()));
+  if (_request.getMethod() != "HEAD") _response.setBody(body);
   _responseReady = true;
   return _response;
 }
@@ -314,11 +344,10 @@ void Http::sendResponse() {
   }
 
   // Set default header values
-  size_t content_length = _response.getBody().size();
-  if (_request.getMethod() == "HEAD") _response.setBody("");
   _response.setHeader("Server", "webserv");
   _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
-  _response.setHeader("Content-Length", toString(content_length));
+  if (_response.getHeader("Content-Length").empty())
+    _response.setHeader("Content-Length", toString(_response.getBody().size()));
 
   // Check if connection should be kept alive
   if (_request.getHeader("Connection") == "keep-alive" ||
@@ -330,11 +359,11 @@ void Http::sendResponse() {
   _responseReady = false;
   bodySize = WAIT_FOR_HEAD;
 
-  // Close connection if needed or asked for // TODO: Make it possible to close
-  // only after sending response
-  // if (_response.getHeader("Connection") == "close" ||
-  //     _request.getHeader("Connection") == "close")
-  //   closeConnection();
+  // Close connection if needed or asked for // TODO: Ask if it is guaranteed
+  // that everythign is sent before closing
+  if (_response.getHeader("Connection") == "close" ||
+      _request.getHeader("Connection") == "close")
+    closeConnection();
 
   Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
                  ": '" + _response.getVersion() + " " + _response.getStatus() +
@@ -357,17 +386,37 @@ std::string Http::getAbsoluteUri(std::string uri) const {
   return ret.encode();
 }
 
+bool Http::isMehodImplemented(std::string method) const {
+  std::string methods[HTTP_METHOD_COUNT] = HTTP_METHODS;
+  for (size_t i = 0; i < HTTP_METHOD_COUNT; i++)
+    if (methods[i] == method) return true;
+  return false;
+}
+
 bool Http::isMethodValid() {
-  if (_context->exists("allow", true)) {
-    std::vector<std::string> methods = _context->getDirective("allow", true)[0];
-    if (std::find(methods.begin(), methods.end(), _request.getMethod()) !=
-        methods.end())
-      return true;
-    _response = processError("405", "Method Not Allowed");
-    _response.setHeader("Allow", concatenate(methods, ", "));
-    return false;
+  std::vector<std::string> allowedMethods = getAllowedMethods();
+  for (size_t i = 0; i < allowedMethods.size(); i++)
+    if (allowedMethods[i] == _request.getMethod()) return true;
+  _response = processError("405", "Method Not Allowed");
+  if (_response.getStatus() == "405")
+    _response.setHeader("Allow", concatenate(allowedMethods, ", "));
+  _responseReady = true;
+  return false;
+}
+
+std::vector<std::string> Http::getAllowedMethods(bool forUri) const {
+  std::vector<std::string> ret;
+  if (forUri == false) {
+    std::string methods[HTTP_METHOD_COUNT] = HTTP_METHODS;
+    for (size_t i = 0; i < HTTP_METHOD_COUNT; i++) ret.push_back(methods[i]);
+  } else if (_context->exists("allow", true))
+    ret = _context->getDirective("allow", true)[0];
+  else {
+    std::string methods[HTTP_DEFAULT_METHOD_COUNT] = HTTP_DEFAULT_METHODS;
+    for (size_t i = 0; i < HTTP_DEFAULT_METHOD_COUNT; i++)
+      ret.push_back(methods[i]);
   }
-  return true;
+  return ret;
 }
 
 std::string Http::getContextPath(std::string token, bool searchTree) const {

@@ -36,6 +36,7 @@ class Http : public AConnection {
   Response& processFile(std::string uri);
   Response& processUploadHead();
   Response& processUploadBody(std::string uri);
+  Response& processOptions();
   Response& processDelete(std::string uri);
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
@@ -47,7 +48,9 @@ class Http : public AConnection {
 
   std::string getAbsoluteUri(std::string uri) const;
 
+  bool isMehodImplemented(std::string method) const;
   bool isMethodValid();
+  std::vector<std::string> getAllowedMethods(bool forUri = true) const;
   std::string getContextPath(std::string token, bool searchTree = false) const;
   std::string getContextArgs() const;
 };

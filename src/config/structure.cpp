@@ -13,16 +13,13 @@ std::string isMimeType(std::string const &value, size_t index) {
 std::string isErrorPage(std::string const &value,
                         size_t index) {  // TODO find better way to do this
   if (index == 0) {
-    if (value == "100" || value == "101" || value == "200" || value == "201" ||
-        value == "202" || value == "203" || value == "204" || value == "205" ||
-        value == "206" || value == "300" || value == "301" || value == "302" ||
-        value == "303" || value == "304" || value == "305" || value == "307" ||
-        value == "400" || value == "401" || value == "402" || value == "403" ||
-        value == "404" || value == "405" || value == "406" || value == "407" ||
-        value == "408" || value == "409" || value == "410" || value == "411" ||
-        value == "412" || value == "413" || value == "414" || value == "415" ||
-        value == "416" || value == "417" || value == "500" || value == "501" ||
-        value == "502" || value == "503" || value == "504" || value == "505")
+    if (value == "100" || value == "101" || value == "300" || value == "400" ||
+        value == "401" || value == "402" || value == "403" || value == "404" ||
+        value == "405" || value == "406" || value == "407" || value == "408" ||
+        value == "409" || value == "410" || value == "411" || value == "412" ||
+        value == "413" || value == "414" || value == "415" || value == "416" ||
+        value == "417" || value == "500" || value == "501" || value == "502" ||
+        value == "503" || value == "504" || value == "505")
       return "";
     return "Invalid error code";
   } else
@@ -39,8 +36,8 @@ std::string isNumeric(std::string const &value, size_t index) {
 
 std::string isMethod(std::string const &value, size_t index) {
   (void)index;
-  if (value == "GET" || value == "HEAD" || value == "PUT" || value == "POST" ||
-      value == "DELETE")
+  if (value == "GET" || value == "HEAD" || value == "OPTIONS" ||
+      value == "PUT" || value == "POST" || value == "DELETE")
     return "";
   return "Invalid method";
 }

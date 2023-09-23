@@ -7,24 +7,35 @@
 #include "config/structure.hpp"
 #include "config/utils.hpp"
 
+// Default values for program
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
 
+// Default values for log class
 #define LOG_LEVEL DEBUG
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
 
+// Default values for http class
+#define HTTP_VERSION "HTTP/1.1"
+#define HTTP_METHOD_COUNT 6
+#define HTTP_METHODS \
+  { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
+#define HTTP_DEFAULT_METHOD_COUNT 3
+#define HTTP_DEFAULT_METHODS \
+  { "GET", "HEAD", "OPTIONS" }
+#define MAX_CLIENT_BODY_SIZE 1048576
+
+// Default values for poll class
 /**
  * close connections if they are TIMEOUT milliseconds inactive
  */
-#define TIMEOUT 100000
-
-#define MAX_CLIENT_BODY_SIZE 1048576
+#define TIMEOUT 60000
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[32] = {
+const t_token tokens[30] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -44,7 +55,6 @@ const t_token tokens[32] = {
     {"index", "server", false, 0, 1, 1, -1, NULL},
     {"allow", "server", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
-    {"upload_store", "server", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
     // Error page context
@@ -56,7 +66,6 @@ const t_token tokens[32] = {
     {"index", "location", false, 0, 1, 1, -1, NULL},
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
-    {"upload_store", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
     // CGI context

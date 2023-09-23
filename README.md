@@ -26,10 +26,10 @@ This project is a webserver written in C++98. It's functionality is listed below
 | Functionality | Description |
 | --- | --- |
 | Http | Http/1.1 |
-| Methods | `GET` / `HEAD` / `POST` / `PUT` / `DELETE` |
-| Logs | `Access log` / `Error log` |
-| Configuration file context | `Http` / `Server` / `Error page` / `Location` / `Cgi` |
-| Configuration file directives | `include` / `log_level` / `access_log` / `error_log` / `listen` / `server_name` / `root` / `index` / `autoindex` / `max_client_body_size` / `allow` / `error_page` / `location` / `alias` / `upload_store` / `redirect` / `cgi` |
+| Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
+| Logs | Access log / Error log |
+| Configuration file context | Http / Server / Error page / Location / Cgi |
+| Configuration file directives | include / log_level / access_log / error_log / listen / server_name / root / index / autoindex / max_client_body_size / allow / error_page / location / alias / redirect / cgi |
 
 # Linux installation
 
@@ -37,8 +37,8 @@ This project is a webserver written in C++98. It's functionality is listed below
 
 | Requirement | Installation |
 | --- | --- |
-| C++98 | ```sudo apt-get install clang``` |
-| Make | ```sudo apt-get install make``` |
+| C++98 | sudo apt-get install clang |
+| Make | sudo apt-get install make |
 
 ## Compilation
 
@@ -118,7 +118,6 @@ location PATH {
     index FILE [FILE ...];
     allow METHOD [METHOD ...];
     autoindex [on|off];
-    upload_store PATH;
     redirect URL;
     max_client_body_size SIZE;
 
@@ -128,7 +127,7 @@ location PATH {
 }
 ```
 Location context for `PATH`. It contains the configuration of a location.  
-**Allowed tokens:** [alias](#alias) / [root](#root) / [index](#index) / [allow](#allow) / [autoindex](#autoindex) / [upload_store](#upload_store) / [redirect](#redirect) / [max_client_body_size](#max_client_body_size) / [cgi](#cgi)
+**Allowed tokens:** [alias](#alias) / [root](#root) / [index](#index) / [allow](#allow) / [autoindex](#autoindex) / [redirect](#redirect) / [max_client_body_size](#max_client_body_size) / [cgi](#cgi)
 
 ## Cgi
 ```nginx
@@ -228,7 +227,7 @@ Default: `1048576`
 allow METHOD [METHOD ...];
 ```
 Set the allowed methods.  
-Default: `GET` / `HEAD` / `POST` / `PUT` / `DELETE`  
+Default: `GET` / `HEAD` / `OPTIONS`
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### error_page
@@ -244,13 +243,6 @@ alias PATH;
 ```
 Set the alias path. Example request: `GET /alias/file` -> `root/PATH/file`  
 **Allowed contexts:** [Location](#location)
-
-### upload_store
-```nginx
-upload_store PATH;
-```
-Set the upload store path.  
-**Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### redirect
 ```nginx
