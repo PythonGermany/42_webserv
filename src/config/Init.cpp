@@ -21,7 +21,7 @@ void Init::initVirtualHosts(Context& context) {
     VirtualHost::add(VirtualHost(serverContexts[i]));
   }
   size_t size = VirtualHost::getVirtualHosts().size();
-  Log::write("Number of Virtual Hosts: " + toString(size), INFO);
+  Log::write(toString(size) + " virtual hosts created", INFO);
   Log::write("------- Virtual Hosts loaded --------", INFO, BRIGHT_GREEN);
 }
 
@@ -42,7 +42,7 @@ void Init::initMimeTypes(Context& context) {
   }
   context.getContext("http")[0].removeContext("types");
   VirtualHost::setMimeTypes(types);
-  Log::write("Number of loaded mime extensions: " + toString(types.size()),
+  Log::write("Mime types loaded for " + toString(types.size()) + " extensions",
              INFO);
   Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
 }

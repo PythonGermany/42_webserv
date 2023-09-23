@@ -19,14 +19,14 @@ Http::~Http() {
       DEBUG);
 }
 
-void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
+void Http::OnHeadRecv(std::string msg) {
   _request = Request();
 
   // Parse request
   _request.parseHead(msg);
   Log::write(toString<Address &>(host) + " <- " + toString<Address &>(client) +
-                 ": '" + _request.getMethod() + "' '" +
-                 _request.getUri().generate() + "' '" + _request.getVersion() +
+                 ": '" + _request.getMethod() + " " +
+                 _request.getUri().generate() + " " + _request.getVersion() +
                  "'",
              INFO);
 
@@ -321,7 +321,8 @@ void Http::sendResponse() {
   _response.setHeader("Content-Length", toString(content_length));
 
   // Check if connection should be kept alive
-  if (_request.getHeader("Connection") == "keep-alive")
+  if (_request.getHeader("Connection") == "keep-alive" ||
+      _response.getHeader("Connection") != "close")
     _response.setHeader("Connection", "keep-alive");
 
   // Send response
@@ -329,10 +330,11 @@ void Http::sendResponse() {
   _responseReady = false;
   bodySize = WAIT_FOR_HEAD;
 
-  // Close connection if needed or asked for
-  if (_response.getHeader("Connection") == "close" ||
-      _request.getHeader("Connection") == "close")
-    closeConnection();
+  // Close connection if needed or asked for // TODO: Make it possible to close
+  // only after sending response
+  // if (_response.getHeader("Connection") == "close" ||
+  //     _request.getHeader("Connection") == "close")
+  //   closeConnection();
 
   Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
                  ": '" + _response.getVersion() + " " + _response.getStatus() +
