@@ -13,7 +13,6 @@ class Config {
  private:
   File _file;
   std::string _config;
-  std::string _error;
 
  public:
   Config();
@@ -52,21 +51,68 @@ class Config {
   // @exception std::runtime_error If the context is invalid
   void processContext(Context &context, std::string &data, std::string token,
                       size_t &line);
+
   // Processes an include directive
   // @param context The context to add the included context to
   // @param path The path to the included config file
-  std::string processInclude(Context &context, std::string path);
+  void processInclude(Context &context, std::string path);
+
+  // Checks if the token is a valid context in the given context
+  // @param context The context to check in
+  // @param token The token to check
+  // @return True if the token is valid in the context, false otherwise
+  // @exception No custom exceptions
+  bool isValidContext(Context &context, std::string token) const;
+
+  // Checks if the token is a valid directive in the given context
+  // @param context The context to check in
+  // @param token The token to check
+  // @return True if the token is valid in the context, false otherwise
+  // @exception No custom exceptions
+  bool isValidDirective(Context &context, std::string token) const;
+
+  // Checks if the token is valid to add to the context
+  // @param context The context to check in
+  // @param token The token to check
+  // @return An empty string if the token is valid, an error message otherwise
+  // @exception No custom exceptions
+  std::string validToAdd(Context &context, std::string token);
+
+  // Checks if the arguments are valid for the given token
+  // @param context The context to check in
+  // @param token The token to check
+  // @param args The arguments to check
+  // @return An empty string if the arguments are valid, an error message
+  // otherwise
+  // @exception No custom exceptions
+  std::string validArguments(Context &context, std::string token,
+                             std::vector<std::string> args);
+
+  // Validates the context
+  // @param context The context to validate
+  // @param recursive If true, the function will validate all child contexts
+  // @return An empty string if the context is valid, an error message otherwise
+  // @exception No custom exceptions
+  std::string validate(Context &context, bool recursive);
+
   // Returns the number of lines until the given position
   // @param data The string to search in
   // @param pos The position to search until
   // @return The number of lines until the given position
   // @exception No custom exceptions
   int linesUntilPos(const std::string &data, size_t pos) const;
+
   // Returns the position of the end of the context
   // @param context The context to search in
   // @return The position of the end of the context
   // @exception No custom exceptions
   size_t findContextEnd(const std::string &context) const;
+
+ private:
+  // Checks if error is not empty and throws an exeption with the given message
+  // and line
+  void checkError(size_t line, std::string error);
+
   // Throws an exeption with the given message and line
   // @param line The line in the config file where the error occured
   // @param msg The message to display

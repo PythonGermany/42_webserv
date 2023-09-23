@@ -42,7 +42,8 @@ void Init::initMimeTypes(Context& context) {
   }
   context.getContext("http")[0].removeContext("types");
   VirtualHost::setMimeTypes(types);
-  Log::write("Number of mime extensions: " + toString(types.size()), INFO);
+  Log::write("Number of loaded mime extensions: " + toString(types.size()),
+             INFO);
   Log::write("-- Mime types successfully loaded ---", INFO, BRIGHT_GREEN);
 }
 

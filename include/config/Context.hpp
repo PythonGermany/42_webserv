@@ -14,8 +14,7 @@
 class Context {
  private:
   std::string _name;
-  std::string _parent;
-  Context *_parentContext;
+  Context *_parent;
   std::vector<std::string> _args;
   std::map<std::string, size_t> _tokenOccurences;
   std::map<std::string, std::vector<std::vector<std::string> > > _directives;
@@ -37,12 +36,13 @@ class Context {
   std::vector<std::vector<std::string> > &getDirective(std::string token,
                                                        bool searchTree = false);
   std::vector<Context> &getContext(std::string token);
+  std::map<std::string, std::vector<Context> > &getContexts();
 
   // Setters/Adders
   void setParent(Context *parent);
   void setArgs(std::vector<std::string> args);
   void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
-  std::string addDirective(std::string token, std::vector<std::string> values);
+  void addDirective(std::string token, std::vector<std::string> values);
   std::string addContext(Context &context);
 
   // Remove
@@ -55,26 +55,6 @@ class Context {
   // @param searchTree If true, the function will search its parent tree
   // @exception No custom exceptions
   bool exists(std::string token, bool searchTree = false) const;
-
-  // Checks if the token is a valid context token
-  // @exception No custom exceptions
-  bool isValidContext(std::string token) const;
-  // Checks if the token is a valid directive token
-  // @exception No custom exceptions
-  bool isValidDirective(std::string token) const;
-  // Checks if the token is a valid token and if it can be added to the context
-  // @return Empty string if the token is valid, an error message otherwise
-  // @exception No custom exceptions
-  std::string validToAdd(std::string token);
-  // Checks if the arguments are valid for the token
-  // @return Empty string if the arguments are valid, an error message otherwise
-  // @exception No custom exceptions
-  std::string validArguments(std::string token, std::vector<std::string> args);
-
-  // Checks if the context is valid
-  // @return Empty string if the context is valid, an error message otherwise
-  // @exception No custom exceptions
-  std::string validate(bool recursive = true);
 
   // Prints the context to the standard output
   // @exception No custom exceptions
