@@ -21,16 +21,23 @@ int File::getFilesOpen() { return _filesOpen; }
 
 std::string File::getPath() const { return _path; }
 
-std::string File::getExtension() const {
-  std::string::size_type pos = _path.find_last_of('.');
+std::string File::getDir() const {
+  std::string::size_type pos = _path.find_last_of('/');
   if (pos == std::string::npos) return "";
+  return _path.substr(0, pos + 1);
+}
+
+std::string File::getName() const {
+  std::string::size_type pos = _path.find_last_of("/");
+  if (pos == std::string::npos) return _path;
   return _path.substr(pos + 1);
 }
 
-std::string File::getDir() {
-  std::string::size_type pos = _path.find_last_of('/');
+std::string File::getExtension() const {
+  std::string name = getName();
+  std::string::size_type pos = name.find_last_of('.');
   if (pos == std::string::npos) return "";
-  return _path.substr(0, pos);
+  return _path.substr(pos + 1);
 }
 
 void File::setPath(std::string path) { _path = path; }

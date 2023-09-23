@@ -43,7 +43,7 @@
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while uploading the file.');
+        document.getElementById('result').innerHTML = 'An error occurred while uploading the file. status: ' + response.status + " " + response.statusText;
       });
   }
 

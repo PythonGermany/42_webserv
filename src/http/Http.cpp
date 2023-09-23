@@ -8,11 +8,9 @@ Http::Http(Address const &client, Address const &host) {
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_error = false;
-  {
-    Log::write(toString<Address &>(this->host) +
-                   " -> add: " + toString<Address &>(this->client),
-               DEBUG);
-  }
+  Log::write(toString<Address &>(this->host) +
+                 " -> add: " + toString<Address &>(this->client),
+             DEBUG);
 }
 
 Http::~Http() {
@@ -26,13 +24,11 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
 
   // Parse request
   _request.parseHead(msg);
-  {
-    Log::write(toString<Address &>(host) + " <- " +
-                   toString<Address &>(client) + ": '" + _request.getMethod() +
-                   "' '" + _request.getUri().generate() + "' '" +
-                   _request.getVersion() + "'",
-               INFO);
-  }
+  Log::write(toString<Address &>(host) + " <- " + toString<Address &>(client) +
+                 ": '" + _request.getMethod() + "' '" +
+                 _request.getUri().generate() + "' '" + _request.getVersion() +
+                 "'",
+             INFO);
 
   // Find virtual host
   _virtualHost =
@@ -51,13 +47,10 @@ void Http::OnHeadRecv(std::string msg) {  // TODO: Add function to discard body?
   // Check if connection should be kept alive
   if (_request.getHeader("Connection") == "keep-alive")
     _response.setHeader("Connection", "keep-alive");
-  {
-    Log::write(toString<Address &>(host) + " -> " +
-                    toString<Address &>(client) + ": '" +
-                    _response.getVersion() + " " + _response.getStatus() +
-                    " " + _response.getReason() + "'",
-                INFO);
-  }
+  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
+                 ": '" + _response.getVersion() + " " + _response.getStatus() +
+                 " " + _response.getReason() + "'",
+             INFO);
 
   // Send response
   send(_response.generate());
@@ -81,13 +74,10 @@ void Http::OnBodyRecv(std::string msg) {
   // Check if connection should be kept alive
   if (_request.getHeader("Connection") == "keep-alive")
     _response.setHeader("Connection", "keep-alive");
-  {
-    Log::write(toString<Address &>(host) + " -> " +
-                   toString<Address &>(client) + ": '" +
-                   _response.getVersion() + " " + _response.getStatus() + " " +
-                   _response.getReason() + "'",
-               INFO);
-  }
+  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
+                 ": '" + _response.getVersion() + " " + _response.getStatus() +
+                 " " + _response.getReason() + "'",
+             INFO);
 
   // Send response
   send(_response.generate());
@@ -108,11 +98,8 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  {
-    Log::write(
-        "VirtualHost: " + toString<Address &>(_virtualHost->getAddress()),
-        DEBUG);
-  }
+  Log::write("VirtualHost: " + toString<Address &>(_virtualHost->getAddress()),
+             DEBUG);
 
   // Check if the request is valid
   if (_request.getUri().decode() || !_request.isValid())
@@ -147,9 +134,6 @@ Response &Http::processRequest() {
   if (_context->exists("redirect"))
     return processRedirect(_context->getDirective("redirect")[0]);
 
-  // Add index if needed
-  if (_context->exists("index") && uri == contextUri + "/")
-    uri += _context->getDirective("index", true)[0];
   return processFile(uri);
 }
 
@@ -157,12 +141,26 @@ Response &Http::processFile(std::string uri) {
   std::string path = _context->getDirective("root", true)[0] + uri;
   File file(path);
 
+  // Add index file if needed
+  if (endsWith(uri, "/") && _context->exists("index", true)) {
+    std::vector<std::string> indexes = _context->getDirective("index", true);
+    std::string index;
+    for (size_t i = 0; i < indexes.size(); i++) {
+      index = indexes[i];
+      if (index[0] == '/') index = index.substr(1);
+      file = File(path + index);
+      if (file.exists() && file.file() && file.readable()) break;
+    }
+  }
+
   if (!file.exists()) {
-    if (!endsWith(path, "/")) return processRedirect(uri + "/");
+    // Try file as directory if file is not found
+    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
+      return processRedirect(uri + "/");
     return processError("404", "Not Found");
   }
   if (file.dir()) {
-    if (!endsWith(path, "/")) return processRedirect(uri + "/");
+    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
         _context->getDirective("autoindex", true)[0] == "on")
       return processAutoindex(uri);
@@ -312,19 +310,24 @@ Response &Http::processAutoindex(std::string uri) {
   }
   // Find longest file name
   size_t maxFileSize = 3;
-  for (size_t i = 0; i < files.size(); i++)
-    if (files[i] != "." && files[i] != ".." && files[i].size() > maxFileSize)
-      maxFileSize = files[i].size();
+  for (size_t i = 0; i < files.size(); i++) {
+    if (files[i] == "." && files[i] == "..") continue;
+    if (File(path + files[i]).dir() && !endsWith(files[i], "/"))
+      files[i] += "/";
+    if (files[i].size() > maxFileSize) maxFileSize = files[i].size();
+  }
 
   for (size_t i = 0; i < files.size(); i++) {
     std::string file = files[i];
-    if (file == "." || file == "..") continue;
-    body += "<a href=\"" + files[i] + "\">" + file + "</a>";
+    if (file == "./" || file == "../") continue;
+    body +=
+        "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file + "</a>";
     size_t spaceCount = maxFileSize - file.size() + 5;
     if (file.size() <= 45) spaceCount = 50 - file.size();
     for (size_t j = 0; j < spaceCount; j++) body += " ";
     File f(path + files[i]);
-    body += f.lastModified() + "          " + toString(f.size()) + "\r\n";
+    body += f.lastModified() + "          " +
+            (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
   body += "</pre><hr></body>\r\n</html>\r\n";
   _response.setBody(body);

@@ -31,9 +31,10 @@ class File {
   // Getters
   static int getFilesOpen();
   std::string getPath() const;
-  std::string getExtension() const;
 
-  std::string getDir();
+  std::string getDir() const;
+  std::string getName() const;
+  std::string getExtension() const;
 
   // Setters
   void setPath(std::string path);

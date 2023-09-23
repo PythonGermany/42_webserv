@@ -105,7 +105,7 @@ std::string Uri::encode() const {
   if (_scheme != "" && _host != "") uri += percentEncode(_scheme, "") + "://";
   uri += percentEncode(_host, "@");
   if (_port != "" && _port != "80") uri += ":" + percentEncode(_port, "");
-  uri += percentEncode(_path, "/");
+  uri += percentEncode(_path, "/.");
   if (_query != "") uri += "?" + percentEncode(_query, "?=&");
   return uri;
 }
