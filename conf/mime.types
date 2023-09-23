@@ -1,9 +1,88 @@
 types {
-  type text/html html htm;
-  type text/plain txt;
-  type text/css css;
-  type text/javascript js;
-  type image/jpeg jpg jpeg;
-  type image/png png;
-  type image/gif gif;
+    type text/html                             html htm shtml;
+    type text/css                              css;
+    type text/xml                              xml;
+    type image/gif                             gif;
+    type image/jpeg                            jpeg jpg;
+    type application/javascript                js;
+    type application/atom+xml                  atom;
+    type application/rss+xml                   rss;
+
+    type text/mathml                           mml;
+    type text/plain                            txt;
+    type text/vnd.sun.j2me.app-descriptor      jad;
+    type text/vnd.wap.wml                      wml;
+    type text/x-component                      htc;
+
+    type image/png                             png;
+    type image/tiff                            tif tiff;
+    type image/vnd.wap.wbmp                    wbmp;
+    type image/x-icon                          ico;
+    type image/x-jng                           jng;
+    type image/x-ms-bmp                        bmp;
+    type image/svg+xml                         svg svgz;
+    type image/webp                            webp;
+
+    type application/font-woff                 woff;
+    type application/java-archive              jar war ear;
+    type application/json                      json;
+    type application/mac-binhex40              hqx;
+    type application/msword                    doc;
+    type application/pdf                       pdf;
+    type application/postscript                ps eps ai;
+    type application/rtf                       rtf;
+    type application/vnd.apple.mpegurl         m3u8;
+    type application/vnd.ms-excel              xls;
+    type application/vnd.ms-fontobject         eot;
+    type application/vnd.ms-powerpoint         ppt;
+    type application/vnd.wap.wmlc              wmlc;
+    type application/vnd.google-earth.kml+xml  kml;
+    type application/vnd.google-earth.kmz      kmz;
+    type application/x-7z-compressed           7z;
+    type application/x-cocoa                   cco;
+    type application/x-java-archive-diff       jardiff;
+    type application/x-java-jnlp-file          jnlp;
+    type application/x-makeself                run;
+    type application/x-perl                    pl pm;
+    type application/x-pilot                   prc pdb;
+    type application/x-rar-compressed          rar;
+    type application/x-redhat-package-manager  rpm;
+    type application/x-sea                     sea;
+    type application/x-shockwave-flash         swf;
+    type application/x-stuffit                 sit;
+    type application/x-tcl                     tcl tk;
+    type application/x-x509-ca-cert            der pem crt;
+    type application/x-xpinstall               xpi;
+    type application/xhtml+xml                 xhtml;
+    type application/xspf+xml                  xspf;
+    type application/zip                       zip;
+
+    type application/octet-stream              bin exe dll;
+    type application/octet-stream              deb;
+    type application/octet-stream              dmg;
+    type application/octet-stream              iso img;
+    type application/octet-stream              msi msp msm;
+
+    type application/vnd.openxmlformats-officedocument.wordprocessingml.document    docx;
+    type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet          xlsx;
+    type application/vnd.openxmlformats-officedocument.presentationml.presentation  pptx;
+
+    type audio/midi                            mid midi kar;
+    type audio/mpeg                            mp3;
+    type audio/ogg                             ogg;
+    type audio/x-m4a                           m4a;
+    type audio/x-realaudio                     ra;
+
+    type video/3gpp                            3gpp 3gp;
+    type video/mp2t                            ts;
+    type video/mp4                             mp4;
+    type video/mpeg                            mpeg mpg;
+    type video/quicktime                       mov;
+    type video/webm                            webm;
+    type video/x-flv                           flv;
+    type video/x-m4v                           m4v;
+    type video/x-mng                           mng;
+    type video/x-ms-asf                        asx asf;
+    type video/x-ms-wmv                        wmv;
+    type video/x-msvideo                       avi;
 }
