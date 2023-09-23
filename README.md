@@ -12,11 +12,6 @@
   - [Usage](#usage)
     - [Configuration](#configuration)
       - [Contexts](#contexts)
-        - [Http](#http)
-        - [Server](#server)
-        - [Error page](#error-page)
-        - [Location](#location)
-        - [Cgi](#cgi)
       - [Directives](#directives)
 
 # Introduction
@@ -28,9 +23,8 @@ This project is a webserver written in C++98. It's functionality is listed below
 | Http | Http/1.1 |
 | Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
 | Logs | Access log / Error log |
-| Configuration file context | Http / Server / Error page / Location / Cgi |
-| Configuration file directives | include / log_level / access_log / error_log / listen / server_name / root / index / autoindex / max_client_body_size / allow / error_page / location / alias / redirect / cgi |
-
+| Configuration file context | [http](#http) / [server](#server) / [location](#location) / [cgi](#cgi) |
+| Configuration file directives | [type](#type) / [include](#include) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [alias](#alias) / [redirect](#redirect) / [cgi_path](#cgi_path) |
 # Linux installation
 
 ## Requirements
@@ -86,7 +80,7 @@ types {
   type MIME_TYPE EXTENSION [EXTENSION ...];
 }
 ```
-Types context. It contains the mime types of the server.
+Types context. It contains the mime types of the server.  
 **Allowed tokens:** [type](#type)
 
 ### Server
