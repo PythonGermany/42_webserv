@@ -30,6 +30,7 @@ const Cache &Http::getCache() { return _cache; }
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
+  _writeBufferPos = 0;  // TODO: Pythongermany code
 
   // Parse request
   _request.parseHead(msg);
