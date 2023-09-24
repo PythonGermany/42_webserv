@@ -57,14 +57,17 @@ void AConnection::onPollOut(
   if (_writeBuffer.size() - _writeBufferPos > BUFFER_SIZE)
     lenToSend = BUFFER_SIZE;
   else
-    lenToSend = _writeBuffer.size();
+    lenToSend = _writeBuffer.size() - _writeBufferPos;
+  if (_writeBufferPos + lenToSend > _writeBuffer.size())
+    throw std::runtime_error("AConnection::onPollOut(): out of range");
   lenSent =
       ::send(pollfd.fd, _writeBuffer.data() + _writeBufferPos, lenToSend, 0);
   if (lenSent == -1)
     throw std::runtime_error(std::string("AConnection::onPollOut(): ") +
                              std::strerror(errno));
   //_writeBuffer.erase(0, lenSent);
-  _writeBufferPos += lenToSend;
+  _writeBufferPos +=
+      lenToSend;  // TODO: Implement more integrated way of _writeBufferPos
   if (_writeBufferPos >= _writeBuffer.size()) {
     _writeBuffer.clear();
     pollfd.events &= ~POLLOUT;
