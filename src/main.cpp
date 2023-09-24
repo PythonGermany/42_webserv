@@ -1,9 +1,11 @@
+#include <csignal>
+
 #include "Config.hpp"
+#include "Http.hpp"
 #include "Init.hpp"
 #include "ListenSocket.hpp"
 #include "Poll.hpp"
 #include "webserv.hpp"
-#include <csignal>
 
 Context loadConfig(std::string path) {
   Log::write("-------- Loading config file --------", INFO, BRIGHT_GREEN);
@@ -24,16 +26,15 @@ int main(int argc, char** argv) {
   try {
     Context context = loadConfig(argc > 1 ? argv[1] : CONFIG_PATH);
     Init::init(context);
-    while (true)
-    {
-      if (!Poll::poll())
-        break;
+    while (true) {
+      if (!Poll::poll()) break;
+      if (Http::updateCache())
+        Log::write("Cache has changed: " + Http::getCache().info(), DEBUG);
     }
   } catch (const std::exception& e) {
     Log::writeError(e.what(), BRIGHT_YELLOW);
   }
   Log::close();
-  if (File::getFilesOpen())
-    return 1;
+  if (File::getFilesOpen()) return 1;
   return 0;
 }

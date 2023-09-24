@@ -23,6 +23,7 @@ SRC			+= config/structure.cpp
 SRC			+= config/utils.cpp
 SRC			+= config/VirtualHost.cpp
 
+SRC			+= http/Cache.cpp
 SRC			+= http/Http.cpp
 SRC			+= http/Request.cpp
 SRC			+= http/Response.cpp
@@ -49,6 +50,7 @@ HEADERS		+= poll/ResponsePipe.hpp
 HEADERS		+= poll/RequestPipe.hpp
 HEADERS		+= poll/timeval.hpp
 
+HEADERS		+= http/Cache.hpp
 HEADERS		+= http/testconn.hpp
 HEADERS		+= http/Http.hpp
 HEADERS		+= http/Request.hpp

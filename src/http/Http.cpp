@@ -1,5 +1,9 @@
 #include "Http.hpp"
 
+Cache Http::_cache;
+
+#define INDENT "\r\n                          "
+
 Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
@@ -19,16 +23,18 @@ Http::~Http() {
       DEBUG);
 }
 
+bool Http::updateCache() { return _cache.update(); }
+
+const Cache &Http::getCache() { return _cache; }
+
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
 
   // Parse request
   _request.parseHead(msg);
-  Log::write(toString<Address &>(host) + " <- " + toString<Address &>(client) +
-                 ": '" + _request.getMethod() + " " +
-                 _request.getUri().generate() + " " + _request.getVersion() +
-                 "'",
-             INFO);
+  _log = toString<Address &>(client) + ": '" + _request.getMethod() + " " +
+         _request.getUri().generate() + " " + _request.getVersion() + "' -> " +
+         toString<Address &>(host);
 
   // If possible use host from absolute uri otherwise use host from header
   // https://datatracker.ietf.org/doc/html/rfc2616#section-5.2
@@ -63,8 +69,9 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  Log::write("VirtualHost: " + toString<Address &>(_virtualHost->getAddress()),
-             DEBUG);
+  if (Log::getLevel() >= DEBUG)
+    _log += std::string(INDENT) +
+            "VirtualHost: " + toString<Address &>(_virtualHost->getAddress());
 
   // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
@@ -85,7 +92,9 @@ Response &Http::processRequest() {
   if (_context == NULL) return processError("500", "Internal Server Error");
 
   std::string contextUri = getContextArgs();
-  Log::write("Context URI: " + (contextUri != "" ? contextUri : "/"), DEBUG);
+  if (Log::getLevel() >= DEBUG)
+    _log += std::string(INDENT) +
+            "Context URI: " + (contextUri != "" ? contextUri : "/");
 
   // Check if method is allowed
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
@@ -101,7 +110,8 @@ Response &Http::processRequest() {
   // Process alias
   if (_context->exists("alias"))
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
-  Log::write("Resource URI: " + _uri, DEBUG);
+  if (Log::getLevel() >= DEBUG)
+    _log += std::string(INDENT) + "Resource URI: " + _uri;
 
   // Handle PUT request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
@@ -152,15 +162,24 @@ Response &Http::processFile(std::string uri) {
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
   try {
-    file.open(O_RDONLY);
-    if (_request.getMethod() != "HEAD")
-      _response.setBody(file.read());
-    else
-      _response.setHeader("Content-Length", toString(file.size()));
+    std::string body;
+    bool isCached = _cache.isCached(path);
+    if (!_cache.isCached(path) || _cache.isStale(path, std::time(NULL))) {
+      file.open(O_RDONLY);
+      body = file.read();
+      isCached ? _cache.update(path, body) : _cache.add(path, body);
+    } else
+      body = _cache.get(path);
+    if (Log::getLevel() >= DEBUG)
+      _log += std::string(INDENT) + "Cache : " + _cache.info();
+    if (_request.getMethod() != "HEAD") _response.setBody(body);
+    _response.setHeader("Content-Length", toString(body.size()));
     file.close();
   } catch (const std::exception &e) {
     return processError("500", "Internal Server Error");
   }
+  _response.setHeader("Last-modified",
+                      file.lastModified("%a, %d %b %Y %H:%M:%S"));
 
   // Set mime type
   std::string mimeType = VirtualHost::getMimeType(file.getExtension());
@@ -270,7 +289,7 @@ Response &Http::processAutoindex(std::string uri) {
     size_t spaceCount = maxWidth - file.size() + 5;
     for (size_t j = 0; j < spaceCount; j++) body += " ";
     File f(path + files[i]);
-    body += f.lastModified() + "          " +
+    body += f.lastModified("%d-%m-%Y %H:%M") + "          " +
             (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
   body += "</pre><hr></body>\r\n</html>\r\n";
@@ -338,14 +357,15 @@ std::string Http::getDefaultBody(std::string code, std::string reason) const {
 
 void Http::sendResponse() {
   if (_responseReady == false) {
-    Log::write("WARNING: Trying to send response before it is ready", WARNING);
+    Log::write("WARNING: Trying to send response before it is ready", WARNING,
+               BRIGHT_YELLOW);
     return;
   }
 
   // Set default header values
   _response.setHeader("Server", "webserv");
   // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
-  _response.setHeader("Date", getDate("%a, %d %b %Y %H:%M:%S GMT"));
+  _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
   if (_response.getHeader("Content-Length").empty())
     _response.setHeader("Content-Length", toString(_response.getBody().size()));
 
@@ -365,9 +385,9 @@ void Http::sendResponse() {
       _request.getHeader("Connection") == "close")
     closeConnection();
 
-  Log::write(toString<Address &>(host) + " -> " + toString<Address &>(client) +
-                 ": '" + _response.getVersion() + " " + _response.getStatus() +
-                 " " + _response.getReason() + "'",
+  Log::write(_log + std::string(INDENT) + "'" + _response.getVersion() + " " +
+                 _response.getStatus() + " " + _response.getReason() + "' " +
+                 _request.getHeader("User-Agent"),
              INFO);
 }
 

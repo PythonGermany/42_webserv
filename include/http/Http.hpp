@@ -2,25 +2,30 @@
 #define HTTP_HPP
 
 #include "AConnection.hpp"
+#include "Cache.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "VirtualHost.hpp"
 
 class Http : public AConnection {
+  static Cache _cache;
+
   Request _request;
   Response _response;
-
   VirtualHost* _virtualHost;
   Context* _context;
-
   std::string _uri;
-
   bool _responseReady;
+
+  std::string _log;
 
  public:
   Http(Address const& client, Address const& host);
   ~Http();
+
+  static bool updateCache();
+  static const Cache& getCache();
 
   void OnHeadRecv(std::string msg);
   void OnBodyRecv(std::string msg);

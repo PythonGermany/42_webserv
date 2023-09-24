@@ -1,6 +1,13 @@
 [![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
 [![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
 
+# TODO
+
+- [ ] Figure out how to work with error_page so that they dont shadow the configuration from the parent context block
+- [ ] Check if PUT is conform to the RFC and the subject
+- [ ] Implement cgi support
+- [ ] Implement chunked transfer encoding
+
 # Contents
 
 - [42_webserv](#42_webserv)
@@ -105,7 +112,7 @@ server {
 Virtual server context. It contains the configuration of a virtual server.  
 **Allowed tokens:** [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [location](#location)
 
-## Location
+### Location
 ```nginx
 location PATH {
     alias PATH;
@@ -116,7 +123,6 @@ location PATH {
     autoindex [on|off];
     redirect URL;
     max_client_body_size SIZE;
-    error_page CODE PATH;
 
     cgi EXTENSION {
         [directives];
@@ -126,7 +132,7 @@ location PATH {
 Location context for `PATH`. It contains the configuration of a location.  
 **Allowed tokens:** [alias](#alias) / [root](#root) / [index](#index) / [allow](#allow) / [autoindex](#autoindex) / [redirect](#redirect) / [max_client_body_size](#max_client_body_size) / [cgi](#cgi)
 
-## Cgi
+### Cgi
 ```nginx
 cgi EXTENSION {
     cgi_path PATH;
@@ -232,7 +238,7 @@ Default: `GET` / `HEAD` / `OPTIONS`
 error_page CODE PATH;
 ```
 Set a custom error page for the given status code.  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+**Allowed contexts:** [Server](#server)
 
 ### alias
 ```nginx

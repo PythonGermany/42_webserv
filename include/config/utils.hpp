@@ -120,6 +120,8 @@ std::string percentEncode(std::string str, std::string reserved);
 
 // Returns the current date as a string
 // @exception No custom exceptions
-std::string getDate(std::string format);
+std::string getTime(std::string format, const time_t* timer = NULL);
+
+std::string getMemorySize(size_t size);
 
 #endif

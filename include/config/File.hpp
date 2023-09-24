@@ -8,10 +8,13 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "utils.hpp"
 
 // Class to check file properties and read/write files
 class File {
@@ -62,7 +65,10 @@ class File {
   size_t size() const;
   // Returns the last time the file was modified
   // @exception No custom exceptions
-  std::string lastModified(std::string format = "%d-%m-%Y %H:%M") const;
+  time_t getLastModified() const;
+  // Returns the last time the file was modified
+  // @exception No custom exceptions
+  std::string lastModified(std::string format) const;
 
   // Checks if the file has been opened through member function open()
   // @exception No custom exceptions

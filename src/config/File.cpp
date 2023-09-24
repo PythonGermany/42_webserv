@@ -42,8 +42,6 @@ std::string File::getExtension() const {
 
 void File::setPath(std::string path) { _path = path; }
 
-#include <iostream>
-
 std::vector<std::string> File::list(std::string path) {
   std::vector<std::string> files;
   DIR *dir;
@@ -95,12 +93,15 @@ size_t File::size() const {
   return buf.st_size;
 }
 
-std::string File::lastModified(std::string format) const {
+time_t File::getLastModified() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
-  char buffer[80];
-  strftime(buffer, 80, format.c_str(), localtime(&buf.st_mtime));
-  return std::string(buffer);
+  return buf.st_mtim.tv_sec;
+}
+
+std::string File::lastModified(std::string format) const {
+  time_t buf = getLastModified();
+  return getTime(format, &buf);
 }
 
 bool File::isOpen() const { return _fd != -1; }

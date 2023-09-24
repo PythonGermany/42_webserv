@@ -11,7 +11,7 @@
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
 
 // Default values for log class
-#define LOG_LEVEL DEBUG
+#define LOG_LEVEL INFO
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
@@ -27,6 +27,10 @@
   { "GET", "HEAD", "OPTIONS" }
 #define MAX_CLIENT_BODY_SIZE 1048576
 
+// Default values for cache class
+#define CACHE_DATA_LIFETIME 60            // seconds
+#define CACHE_MAX_SIZE 256 * 1024 * 1024  // 256 MB
+
 // Default values for poll class
 /**
  * close connections if they are TIMEOUT milliseconds inactive
@@ -35,7 +39,7 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[31] = {
+const t_token tokens[30] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -67,7 +71,6 @@ const t_token tokens[31] = {
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
-    {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
     // CGI context
     {"cgi", "location", true, 0, 1, 1, 1, isExtension},
     {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};

@@ -139,14 +139,19 @@ std::string percentEncode(std::string str, std::string reserved) {
   return encoded;
 }
 
-std::string getDate(std::string format) {
-  time_t rawtime;
+std::string getTime(std::string format, const time_t* timer) {
   struct tm* timeinfo;
   size_t size = 64;
+
+  time_t rawtime;
+  if (timer == NULL) {
+    std::time(&rawtime);
+    timer = &rawtime;
+  }
+  if (!endsWith(format, " GMT")) format += " GMT";
   while (true) {
     char buffer[size];
-    std::time(&rawtime);
-    timeinfo = std::gmtime(&rawtime);
+    timeinfo = std::gmtime(timer);
     if (std::strftime(buffer, size, format.c_str(), timeinfo) == 0 &&
         size < 256) {
       size *= 2;
@@ -154,4 +159,15 @@ std::string getDate(std::string format) {
     }
     return std::string(buffer);
   }
+}
+
+std::string getMemorySize(size_t size) {
+  std::stringstream ss;
+  if (size < 1024)
+    ss << size << "B";
+  else if (size < 1024 * 1024)
+    ss << size / 1024 << "KB";
+  else
+    ss << size / (1024 * 1024) << "MB";
+  return ss.str();
 }
