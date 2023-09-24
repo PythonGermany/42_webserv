@@ -8,7 +8,7 @@ VirtualHost::VirtualHost() {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
-  _resolvedListenDirective = Address::resolveHost(_context.getDirective("listen")[0]);
+  _resolvedListenDirective = Address::resolveHost(_context.getDirective("listen")[0][0]);
 }
 
 VirtualHost::VirtualHost(const VirtualHost &rhs) { *this = rhs; }
@@ -41,7 +41,7 @@ std::string VirtualHost::getMimeType(std::string extension) {
   if (it != _mimeTypes.end()) return it->second;
   return "";
 }
-std::string const &VirtualHost::getAddress() { return _context.getDirective("listen")[0]; }
+std::string const &VirtualHost::getAddress() { return _context.getDirective("listen")[0][0]; }
 
 std::set<Address> const &VirtualHost::getResolvedAddress() const { return _resolvedListenDirective; }
 
@@ -65,7 +65,7 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   {
     if ((*it)->getContext().exists("server_name"))
     {
-      std::vector<std::string> serverNames = (*it)->getContext().getDirective("server_name");
+      std::vector<std::string> serverNames = (*it)->getContext().getDirective("server_name")[0];
       for (std::vector<std::string>::const_iterator itSn = serverNames.begin(); itSn != serverNames.end(); ++itSn)
       {
         if (*itSn == host)
