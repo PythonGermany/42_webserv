@@ -25,6 +25,7 @@ AConnection &AConnection::operator=(AConnection const &other) {
     headSizeLimit = other.headSizeLimit;
     bodySize = other.bodySize;
     headDelimiter = other.headDelimiter;
+    _writeBufferPos = other._writeBufferPos;  // TODO: Pythongermany code
     _writeBuffer = other._writeBuffer;
     _readBuffer = other._readBuffer;
     lastTimeActive = other.lastTimeActive;
@@ -47,21 +48,27 @@ void AConnection::onPollEvent(struct pollfd &pollfd) {
   gettimeofday(&lastTimeActive, NULL);
 }
 
-void AConnection::onPollOut(struct pollfd &pollfd) {
+void AConnection::onPollOut(
+    struct pollfd &pollfd) {  // TODO: Pythongermany changed code
   size_t lenToSend;
   ssize_t lenSent;
 
   pollfd.revents &= ~POLLOUT;
-  if (_writeBuffer.size() > BUFFER_SIZE)
+  if (_writeBuffer.size() - _writeBufferPos > BUFFER_SIZE)
     lenToSend = BUFFER_SIZE;
   else
     lenToSend = _writeBuffer.size();
-  lenSent = ::send(pollfd.fd, _writeBuffer.data(), lenToSend, 0);
+  lenSent =
+      ::send(pollfd.fd, _writeBuffer.data() + _writeBufferPos, lenToSend, 0);
   if (lenSent == -1)
     throw std::runtime_error(std::string("AConnection::onPollOut(): ") +
                              std::strerror(errno));
-  _writeBuffer.erase(0, lenSent);
-  if (_writeBuffer.empty()) pollfd.events &= ~POLLOUT;
+  //_writeBuffer.erase(0, lenSent);
+  _writeBufferPos += lenToSend;
+  if (_writeBufferPos >= _writeBuffer.size()) {
+    _writeBuffer.clear();
+    pollfd.events &= ~POLLOUT;
+  }
 }
 
 void AConnection::onPollIn(struct pollfd &pollfd) {

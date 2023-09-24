@@ -89,6 +89,9 @@ cgi: cgi/cgi
 cgi/cgi:
 	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
 
+perfornance:
+	make CXXFLAGS="-O3 $(CXXFLAGS)"
+
 debug:
 	make CXXFLAGS="-g $(CXXFLAGS)"
 

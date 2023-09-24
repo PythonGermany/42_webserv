@@ -12,6 +12,7 @@ Http::Http(Address const &client, Address const &host) {
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_responseReady = false;
+  this->_writeBufferPos = 0;  // TODO: Pythongermany code
   Log::write(toString<Address &>(this->host) +
                  " -> add: " + toString<Address &>(this->client),
              DEBUG);
