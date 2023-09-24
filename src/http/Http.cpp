@@ -110,7 +110,7 @@ Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
   {
     Log::write(
-        "VirtualHost: " + toString<Address &>(_virtualHost->getAddress()),
+        "VirtualHost: " + _virtualHost->getAddress(),
         DEBUG);
   }
 

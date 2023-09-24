@@ -12,8 +12,8 @@ class VirtualHost {
  private:
   static std::vector<VirtualHost> _virtualHosts;
   static std::map<std::string, std::string> _mimeTypes;
-  Address _address;
   Context _context;
+  std::set<Address> _resolvedListenDirective;
 
  public:
   VirtualHost();
@@ -30,7 +30,8 @@ class VirtualHost {
   // Getters
   static std::vector<VirtualHost> &getVirtualHosts();
   static std::string getMimeType(std::string extension);
-  Address &getAddress();
+  std::string const &getAddress();
+  std::set<Address> const &getResolvedAddress() const;
   Context &getContext();
 
   static VirtualHost *matchVirtualHost(Address &address, std::string host);

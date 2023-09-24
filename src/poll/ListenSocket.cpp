@@ -7,12 +7,6 @@
 
 ListenSocket::ListenSocket() {}
 
-ListenSocket::ListenSocket(std::string const &addr, std::string const &port,
-                           int backlog)
-    : _addr(addr, port) {
-  init(backlog);
-}
-
 ListenSocket::ListenSocket(Address const &addr, int backlog) : _addr(addr) {
   init(backlog);
 }
@@ -69,11 +63,12 @@ ListenSocket &ListenSocket::operator=(ListenSocket const &other) {
 void ListenSocket::onPollEvent(struct pollfd &pollfd) {
   struct pollfd newPollfd;
   socklen_t len = sizeof(sockaddr_in6);
-  Address client;
+  Address remoteAddress;
+  Address serverAdresss;
 
   if ((pollfd.revents & POLLIN) == false) return;
   pollfd.revents &= ~POLLIN;
-  newPollfd.fd = ::accept(pollfd.fd, client.data(), &len);
+  newPollfd.fd = ::accept(pollfd.fd, remoteAddress.data(), &len);
   if (newPollfd.fd == -1)
     throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
                              std::strerror(errno));
@@ -81,11 +76,16 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd) {
   if (flags == -1)
     throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
                              std::strerror(errno));
-  // std::cout << (flags & O_RDWR) << std::endl;
-  client.size(len);
+  if (fcntl(newPollfd.fd, F_SETFL, flags | O_NONBLOCK) == -1)
+    throw std::runtime_error(std::string("ListenSocket(): onPollIn(): fcntl(): ") + std::strerror(errno));
+  remoteAddress.size(len);
   newPollfd.events = POLLIN;
   newPollfd.revents = 0;
-  Poll::add(new Http(client, _addr));
-  // std::cout << "client fd: " << newPollfd.fd << std::endl;
+
+  if (getsockname(newPollfd.fd, serverAdresss.data(), &len) == -1)
+    throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
+                             std::strerror(errno));
+  serverAdresss.size(len);
+  Poll::add(new Http(remoteAddress, serverAdresss));
   Poll::add(newPollfd);
 }
