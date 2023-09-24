@@ -29,7 +29,7 @@
 
 // Default values for cache class
 #define CACHE_DATA_LIFETIME 60            // seconds
-#define CACHE_MAX_SIZE 512 * 1024 * 1024  // 512 MB
+#define CACHE_MAX_SIZE 256 * 1024 * 1024  // 512 MB
 
 // Default values for poll class
 /**
