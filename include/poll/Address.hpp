@@ -15,6 +15,9 @@
 #include <stdexcept>
 #include <string>
 
+#include <set>
+#include <utility>
+
 /**
  * @brief stores either an ipv4 or an ipv6 address with port
  * @throw std::runtime_error() can be thrown by Constructor and stream insertion
@@ -23,7 +26,8 @@
 class Address {
  public:
   Address();
-  Address(std::string const &src, std::string const &port);
+  Address(sa_family_t family, in_port_t port);
+  Address(sa_family_t family, sockaddr *src);
   Address(Address const &other);
   Address &operator=(Address const &other);
   ~Address();
@@ -37,9 +41,9 @@ class Address {
   void port(in_port_t port);
   in_port_t port() const;
 
-  // Start pythongermany code
+  bool operator<(Address const &other) const;
+  static std::set<Address> resolveHost(std::string const &src);
   bool operator==(Address const &other) const;
-  // End pythongermany code
 
  private:
   union _Address {

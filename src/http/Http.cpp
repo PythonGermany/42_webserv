@@ -73,7 +73,7 @@ Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
   if (Log::getLevel() >= DEBUG)
     _log += std::string(INDENT) +
-            "VirtualHost: " + toString<Address &>(_virtualHost->getAddress());
+            "VirtualHost: " + _virtualHost->getAddress();
 
   // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1

@@ -74,6 +74,7 @@ std::string isBoolean(std::string const &value, size_t index) {
 std::string isListen(std::string const &value, size_t index) {
   (void)index;
   if (value.empty()) return "Invalid listen format (empty)";
+  if (value.size() <= 5) return "";
 
   bool ipv6 = value[0] == '[';
   std::string address, port;

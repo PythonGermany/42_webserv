@@ -8,32 +8,15 @@ VirtualHost::VirtualHost() {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
-  std::string listen = _context.getDirective("listen")[0][0];
-  bool ipv6 = startsWith(listen, "[");
-  std::string address, port;
-  if (ipv6) {
-    size_t pos = listen.find("]:");
-    if (pos == std::string::npos)
-      throw std::runtime_error("Invalid listen directive");
-    address = listen.substr(1, pos - 1);
-    port = listen.substr(pos + 2);
-  } else {
-    size_t pos = listen.find(":");
-    if (pos == std::string::npos)
-      throw std::runtime_error("Invalid listen directive");
-    address = listen.substr(0, pos);
-    port = listen.substr(pos + 1);
-  }
-  _address = Address(address, port);
-  _context.removeDirective("listen");
+  _resolvedListenDirective = Address::resolveHost(_context.getDirective("listen")[0]);
 }
 
 VirtualHost::VirtualHost(const VirtualHost &rhs) { *this = rhs; }
 
 VirtualHost &VirtualHost::operator=(const VirtualHost &rhs) {
   if (this == &rhs) return *this;
-  _address = rhs._address;
   _context = rhs._context;
+  _resolvedListenDirective = rhs._resolvedListenDirective;
   return *this;
 }
 
@@ -58,29 +41,41 @@ std::string VirtualHost::getMimeType(std::string extension) {
   if (it != _mimeTypes.end()) return it->second;
   return "";
 }
+std::string const &VirtualHost::getAddress() { return _context.getDirective("listen")[0]; }
 
-Address &VirtualHost::getAddress() { return _address; }
+std::set<Address> const &VirtualHost::getResolvedAddress() const { return _resolvedListenDirective; }
 
 Context &VirtualHost::getContext() { return _context; }
 
 VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
-  VirtualHost *match = NULL;
-  for (size_t i = 0; i < _virtualHosts.size(); i++) {
-    // Check if address matches
-    if (_virtualHosts[i].getAddress() == address) {
-      // Set default match if none was found already
-      if (match == NULL) match = &_virtualHosts[i];
+  std::vector<VirtualHost *> possibleHosts;
 
-      // Check if server name matches
-      if (_virtualHosts[i].getContext().exists("server_name")) {
-        std::vector<std::string> &names =
-            _virtualHosts[i].getContext().getDirective("server_name")[0];
-        for (size_t j = 0; j < names.size(); j++)
-          if (names[j] == host) return &_virtualHosts[i];
+  for (std::vector<VirtualHost>::iterator it = _virtualHosts.begin(); it != _virtualHosts.end(); ++it)
+  {
+    std::set<Address> const &listenDirective = it->getResolvedAddress();
+    for (std::set<Address>::const_iterator itLd = listenDirective.begin(); itLd != listenDirective.end(); ++itLd)
+    {
+      if (*itLd == address)
+        possibleHosts.push_back(&(*it));
+      else if (*itLd == Address(address.family(), address.port()))
+        possibleHosts.push_back(&(*it));
+    }
+  }
+  for (std::vector<VirtualHost *>::iterator it = possibleHosts.begin(); it != possibleHosts.end(); ++it)
+  {
+    if ((*it)->getContext().exists("server_name"))
+    {
+      std::vector<std::string> serverNames = (*it)->getContext().getDirective("server_name");
+      for (std::vector<std::string>::const_iterator itSn = serverNames.begin(); itSn != serverNames.end(); ++itSn)
+      {
+        if (*itSn == host)
+          return *it;
       }
     }
   }
-  return match;
+  if (possibleHosts.empty())
+    return NULL;
+  return *possibleHosts.begin();
 }
 
 Context *VirtualHost::matchLocation(const std::string &uri) {

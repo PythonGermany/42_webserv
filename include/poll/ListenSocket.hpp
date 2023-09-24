@@ -9,8 +9,6 @@
 
 class ListenSocket : public IFileDescriptor {
  public:
-  ListenSocket(std::string const &addr, std::string const &port,
-               int backlog = SOMAXCONN);
   ListenSocket(Address const &addr, int backlog = SOMAXCONN);
   ListenSocket(ListenSocket const &other);
   ~ListenSocket();
