@@ -96,7 +96,7 @@ size_t File::size() const {
 time_t File::getLastModified() const {
   struct stat buf;
   stat(_path.c_str(), &buf);
-  return buf.st_mtim.tv_sec;
+  return buf.st_mtime;
 }
 
 std::string File::lastModified(std::string format) const {

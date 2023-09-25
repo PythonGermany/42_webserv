@@ -29,7 +29,7 @@ void Response::setHeaders(std::map<std::string, std::string> &headers) {
   _headers = headers;
 }
 
-void Response::setBody(std::string body) { _body = body; }
+void Response::setBody(const std::string &body) { _body = body; }
 
 void Response::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);

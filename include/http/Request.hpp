@@ -25,7 +25,7 @@ class Request {
   Request &operator=(const Request &rhs);
   ~Request();
 
-  void setBody(std::string body);
+  void setBody(const std::string &body);
   void setHeader(std::string key, std::string value);
 
   std::string getMethod() const;

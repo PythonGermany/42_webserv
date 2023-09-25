@@ -6,6 +6,12 @@ tests/obj/
 tests/jmeter/
 *.logs
 
+*.out
+perf.*
+profiling/
+*.log
+tests/jmeter/
+
 #executables
 test
 webserv
