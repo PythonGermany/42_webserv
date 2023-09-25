@@ -18,7 +18,7 @@ bool Cache::update() {
   std::map<std::string, data_t>::iterator it = _entries.begin();
   while (it != _entries.end()) {
     data_t& entry = it->second;
-    if (entry._timestamp < std::time(NULL) - CACHE_DATA_LIFETIME) {
+    if (entry._timestamp < std::time(NULL) - CACHE_DATA_TTL) {
       _size -= it->second._data.size();
       _entries.erase(it++);
       changed = true;
@@ -46,9 +46,13 @@ void Cache::add(const std::string& key, const std::string& data) {
   }
 }
 
-std::string Cache::get(const std::string& key) {
-  if (isCached(key)) return _entries.at(key)._data;
-  return "";
+std::string& Cache::get(const std::string& key) {
+  if (isCached(key)) {
+    data_t& entry = _entries.at(key);
+    entry._timestamp = std::time(NULL);
+    return entry._data;
+  }
+  throw std::runtime_error("Cache::get(): key not found");
 }
 
 bool Cache::isCached(const std::string& key) const {

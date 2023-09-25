@@ -1,317 +1,290 @@
-[![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
-[![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
+<h1 align="center"><img src="https://jmeter.apache.org/images/logo.svg" alt="Apache JMeter logo" /></h1>
 
-# TODO
+An Open Source Java application designed to measure performance and load test applications.
 
-- [ ] Figure out how to work with error_page so that they dont shadow the configuration from the parent context block
-- [ ] Check if PUT is conform to the RFC and the subject
-- [ ] Implement cgi support
-- [ ] Implement chunked transfer encoding
+By The Apache Software Foundation
 
-# Contents
+[![Build Status](https://api.travis-ci.com/apache/jmeter.svg?branch=master)](https://travis-ci.com/apache/jmeter/)
+[![codecov](https://codecov.io/gh/apache/jmeter/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/jmeter)
+[![License](https://img.shields.io/:license-apache-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![Stack Overflow](https://img.shields.io/:stack%20overflow-jmeter-brightgreen.svg)](https://stackoverflow.com/questions/tagged/jmeter)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.jmeter/ApacheJMeter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.jmeter/ApacheJMeter)
+[![Javadocs](https://www.javadoc.io/badge/org.apache.jmeter/ApacheJMeter_core.svg)](https://www.javadoc.io/doc/org.apache.jmeter/ApacheJMeter_core)
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/apache/jmeter.svg?style=social)](https://twitter.com/intent/tweet?text=Powerful%20load%20testing%20with%20Apache%20JMeter:&url=https://jmeter.apache.org)
 
-- [42_webserv](#42_webserv)
-  - [Contents](#contents)
-  - [Introduction](#introduction)
-  - [Linux installation](#linux-installation)
-    - [Requirements](#requirements)
-    - [Compilation](#compilation)
-  - [Usage](#usage)
-  - [Configuration](#configuration)
-    - [Contexts](#contexts)
-    - [Directives](#directives)
-    - [Example](#example)
+## What Is It?
 
-# Introduction
+Apache JMeter can measure performance and load test static and dynamic web applications.
 
-This project is a webserver written in C++98. It's functionality is listed below:
+It can be used to simulate a heavy load on a server, group of servers,
+network or object to test its strength or to analyze overall performance under different load types.
 
-| Functionality | Description |
-| --- | --- |
-| Http | Http/1.1 |
-| Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
-| Logs | Access log / Error log |
-| Configuration file context | [http](#http) / [server](#server) / [location](#location) / [cgi](#cgi) |
-| Configuration file directives | [type](#type) / [include](#include) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [alias](#alias) / [redirect](#redirect) / [cgi_path](#cgi_path) |
-# Linux installation
+![JMeter screen](https://raw.githubusercontent.com/apache/jmeter/master/xdocs/images/screenshots/jmeter_screen.png)
+
+## Features
+
+Complete portability and 100% Java.
+
+Multi-threading allows concurrent sampling by many threads and
+simultaneous sampling of different functions by separate thread groups.
+
+### Protocols
+
+Ability to load and performance test many applications/server/protocol types:
+
+- Web - HTTP, HTTPS (Java, NodeJS, PHP, ASP.NET,...)
+- SOAP / REST Webservices
+- FTP
+- Database via JDBC
+- LDAP
+- Message-oriented Middleware (MOM) via JMS
+- Mail - SMTP(S), POP3(S) and IMAP(S)
+- Native commands or shell scripts
+- TCP
+- Java Objects
+
+### IDE
+
+Fully featured Test IDE that allows fast Test Plan **recording**
+ (from Browsers or native applications), **building** and **debugging**.
+
+### Command Line
+
+[Command-line mode (Non GUI / headless mode)](https://jmeter.apache.org/usermanual/get-started.html#non_gui)
+to load test from any Java compatible OS (Linux, Windows, Mac OSX, ...)
+
+### Reporting
+
+A complete and ready to present [dynamic HTML report](https://jmeter.apache.org/usermanual/generating-dashboard.html)
+
+![Dashboard screenshot](https://raw.githubusercontent.com/apache/jmeter/master/xdocs/images/screenshots/dashboard/response_time_percentiles_over_time.png)
+
+[Live reporting](https://jmeter.apache.org/usermanual/realtime-results.html)
+into 3rd party databases like InfluxDB or Graphite
+
+![Live report](https://raw.githubusercontent.com/apache/jmeter/master/xdocs/images/screenshots/grafana_dashboard.png)
+
+### Correlation
+
+Easy correlation through ability to extract data from most popular response formats,
+[HTML](https://jmeter.apache.org/usermanual/component_reference.html#CSS/JQuery_Extractor),
+[JSON](https://jmeter.apache.org/usermanual/component_reference.html#JSON_Extractor),
+[XML](https://jmeter.apache.org/usermanual/component_reference.html#XPath_Extractor) or
+[any textual format](https://jmeter.apache.org/usermanual/component_reference.html#Regular_Expression_Extractor)
+
+### Highly Extensible Core
+
+- Pluggable Samplers allow unlimited testing capabilities.
+- **Scriptable Samplers** (JSR223-compatible languages like Groovy).
+- Several load statistics can be chosen with **pluggable tiers**.
+- Data analysis and **visualization plugins** allow great extensibility and personalization.
+- Functions can be used to provide dynamic input to a test or provide data manipulation.
+- Easy Continuous Integration via 3rd party Open Source libraries for Maven, Gradle and Jenkins.
+
+## The Latest Version
+
+Details of the latest version can be found on the
+[JMeter Apache Project web site](https://jmeter.apache.org/)
 
 ## Requirements
 
-| Requirement | Installation |
-| --- | --- |
-| C++98 | sudo apt-get install clang |
-| Make | sudo apt-get install make |
+The following requirements exist for running Apache JMeter:
 
-## Compilation
+- Java Interpreter:
 
+  A fully compliant Java 8 Runtime Environment is required
+  for Apache JMeter to execute. A JDK with `keytool` utility is better suited
+  for Recording HTTPS websites.
+
+- Optional jars:
+
+  Some jars are not included with JMeter.
+  If required, these should be downloaded and placed in the lib directory
+  - JDBC - available from the database supplier
+  - JMS - available from the JMS provider
+  - [Bouncy Castle](https://www.bouncycastle.org/) -
+  only needed for SMIME Assertion
+
+- Java Compiler (*OPTIONAL*):
+
+  A Java compiler is not needed since the distribution includes a
+  precompiled Java binary archive.
+  > **Note** that a compiler is required to build plugins for Apache JMeter.
+
+## Installation Instructions
+
+> **Note** that spaces in directory names can cause problems.
+
+- Release builds
+
+  Unpack the binary archive into a suitable directory structure.
+
+## Running JMeter
+
+1. Change to the `bin` directory
+2. Run the `jmeter` (Un\*x) or `jmeter.bat` (Windows) file.
+
+### Windows
+
+For Windows, there are also some other scripts which you can drag-and-drop
+a JMX file onto:
+
+- `jmeter-n.cmd` - runs the file as a non-GUI test
+- `jmeter-n-r.cmd` - runs the file as a non-GUI remote (client-server) test
+- `jmeter-t.cmd` - loads the file ready to run it as a GUI test
+
+## Documentation
+
+The documentation available as of the date of this release is
+also included, in HTML format, in the [printable_docs](printable_docs) directory,
+and it may be browsed starting from the file called [index.html](printable_docs/index.html).
+
+## Reporting a bug/enhancement
+
+See [Issue Tracking](https://jmeter.apache.org/issues.html).
+
+## Build instructions
+
+### Release builds
+
+Unpack the source archive into a suitable directory structure.
+Most of the 3rd party library files can be extracted from the binary archive
+by unpacking it into the same directory structure.
+
+Any optional jars (see above) should be placed in `lib/opt` and/or `lib`.
+
+Jars in `lib/opt` will be used for building JMeter and running the unit tests,
+but won't be used at run-time.
+
+_This is useful for testing what happens if the optional jars are not
+downloaded by other JMeter users._
+
+If you are behind a proxy, you can set a few build properties in
+`~/.gradle/gradle.properties` for Gradle to use the proxy:
+
+```properties
+systemProp.http.proxyHost=proxy.example.invalid
+systemProp.http.proxyPort=8080
+systemProp.http.proxyUser=your_user_name
+systemProp.http.proxyPassword=your_password
+systemProp.https.proxyHost=proxy.example.invalid
+systemProp.https.proxyPort=8080
+systemProp.https.proxyUser=your_user_name
+systemProp.https.proxyPassword=your_password
 ```
-make [debug]
+
+### Test builds
+
+JMeter is built using Gradle, and it uses [Gradle's Toolchains for JVM projects](https://docs.gradle.org/current/userguide/toolchains.html)
+for provisioning JDKs. It means the code would search for the needed JDKs locally, or download them
+if they are not found.
+
+By default, the code would use JDK 17 for build purposes, however it would set the target release to 8,
+so the resulting artifacts would be compatible with Java 8.
+
+The following command builds and tests JMeter:
+
+```sh
+./gradlew build
 ```
 
-# Usage
+If you want to use a custom JDK for building you can set `-PjdkBuildVersion=11`,
+and you can select `-PjdkTestVersion=21` if you want to use a different JDK for testing.
 
-Default configuration file: `/etc/webserv/webserv.conf`
+You can list the available build parameters by executing
+
+```sh
+./gradlew parameters
 ```
-./webserv [configuration_file]
+
+If the system does not have a GUI display then:
+
+```sh
+./gradlew build -Djava.awt.headless=true
 ```
 
+The output artifacts (jars, reports) are placed in the `build` folder.
+For instance, binary artifacts can be found under `src/dist/build/distributions`.
 
-# Configuration
+The following command would compile the application and enable you to run `jmeter`
+from the `bin` directory.
 
-The configuration file is used to define the global configuration of the webserver. It is composed of multiple contexts. Each context can contain multiple directives. A directive is composed of a name arguments and a value. The value can be a string, a number or a block. A block is a list of directives.
+> **Note** that it completely refreshes `lib/` contents,
+so it would remove custom plugins should you have them installed to `lib/`. However, it would keep `lib/ext/` plugins intact.
 
-## Contexts
-
-### Http
-```nginx
-http {
-    types {
-        [directives]
-    }
-
-    include PATH;
-    log_level LEVEL;
-    access_log PATH;
-    error_log PATH;
-
-    server {
-        [directives]
-    }
-}
+```sh
+./gradlew createDist
 ```
-Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [types](#types) / [include](#include) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [server](#server)
 
-### Types
-```nginx
-types {
-  type MIME_TYPE EXTENSION [EXTENSION ...];
-}
+Alternatively, you could get Gradle to start the GUI:
+
+```sh
+./gradlew runGui
 ```
-Types context. It contains the mime types of the server.  
-**Allowed tokens:** [type](#type)
 
-### Server
-```nginx
-server {
-    listen HOST:PORT;
-    server_name NAME [NAME ...];
-    root PATH;
-    index FILE [FILE ...];
+## Developer Information
 
-    autoindex [on|off];
-    max_client_body_size SIZE;
-    allow METHOD [METHOD ...];
-    error_page CODE PATH;
+Building and contributing is explained in details at
+[building JMeter](https://jmeter.apache.org/building.html)
+and [CONTRIBUTING.md](CONTRIBUTING.md). More information on the tasks available for
+building JMeter with Gradle is available in [gradle.md](gradle.md).
 
-    location PATH {
-        [directives]
-    }
-} 
-```
-Virtual server context. It contains the configuration of a virtual server.  
-**Allowed tokens:** [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [location](#location)
+The code can be obtained from:
 
-### Location
-```nginx
-location PATH {
-    alias PATH;
-    root PATH;
-    index FILE [FILE ...];
-    
-    allow METHOD [METHOD ...];
-    autoindex [on|off];
-    redirect URL;
-    max_client_body_size SIZE;
+- https://github.com/apache/jmeter
+- https://gitbox.apache.org/repos/asf/jmeter.git
 
-    cgi EXTENSION {
-        [directives];
-    }
-}
-```
-Location context for `PATH`. It contains the configuration of a location.  
-**Allowed tokens:** [alias](#alias) / [root](#root) / [index](#index) / [allow](#allow) / [autoindex](#autoindex) / [redirect](#redirect) / [max_client_body_size](#max_client_body_size) / [cgi](#cgi)
+## Licensing and Legal Information
 
-### Cgi
-```nginx
-cgi EXTENSION {
-    cgi_path PATH;
-}
-```
-Cgi context for `EXTENSION`. It contains the path of the cgi file.  
-**Allowed tokens:** [cgi_path](#cgi_path)
+For legal and licensing information, please see the following files:
 
-## Directives
+- [LICENSE](LICENSE)
+- [NOTICE](NOTICE)
 
-### type
-```nginx
-type MIME_TYPE EXTENSION [EXTENSION ...];
-```
-Set the mime type for the given extensions.  
-**Allowed contexts:** [Types](#types)
+## Cryptographic Software Notice
 
-### include
-```nginx
-include PATH;
-```
-Include another configuration file.  
-**Allowed contexts:** [Http](#http) / [Server](#server) / [Location](#location) / [Cgi](#cgi)
+This distribution may include software that has been designed for use
+with cryptographic software. The country in which you currently reside
+may have restrictions on the import, possession, use, and/or re-export
+to another country, of encryption software. BEFORE using any encryption
+software, please check your country's laws, regulations and policies
+concerning the import, possession, or use, and re-export of encryption
+software, to see if this is permitted. See <https://www.wassenaar.org/>
+for more information.
 
-### log_level
-```nginx
-log_level LEVEL;
-```
-Set the log level. The log level can be `debug`, `info`, `warning` or `error`.  
-Default: `info`  
-**Allowed contexts:** [Http](#http)
+The U.S. Government Department of Commerce, Bureau of Industry and
+Security (BIS), has classified this software as Export Commodity
+Control Number (ECCN) 5D002.C.1, which includes information security
+software using or performing cryptographic functions with asymmetric
+algorithms. The form and manner of this Apache Software Foundation
+distribution makes it eligible for export under the License Exception
+ENC Technology Software Unrestricted (TSU) exception (see the BIS
+Export Administration Regulations, Section 740.13) for both object
+code and source code.
 
-### access_log
-```nginx
-access_log PATH;
-```
-Set the path of the access log file.  
-Default: `/var/log/webserv/access.log`  
-**Allowed contexts:** [Http](#http)
+The following provides more details on the included software that
+may be subject to export controls on cryptographic software:
 
-### error_log
-```nginx
-error_log PATH;
-```
-Set the path of the error log file.  
-Default: `/var/log/webserv/error.log`  
-**Allowed contexts:** [Http](#http)
+Apache JMeter interfaces with the
+Java Secure Socket Extension (JSSE) API to provide
 
-### listen
-```nginx
-listen HOST:PORT;
-```
-Set the host and port of the server.  
-**Allowed contexts:** [Server](#server)
+- HTTPS support
 
-### server_name
-```nginx
-server_name NAME [NAME ...];
-```
-Set the server names.  
-**Allowed contexts:** [Server](#server)
+Apache JMeter interfaces (via Apache HttpClient4) with the
+Java Cryptography Extension (JCE) API to provide
 
-### root
-```nginx
-root PATH;
-```
-Set the root path of the server.  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+- NTLM authentication
 
-### index
-```nginx
-index FILE [FILE ...];
-```
-Set the index files.  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+Apache JMeter does not include any implementation of JSSE or JCE.
 
-### autoindex
-```nginx
-autoindex [on|off];
-```
-Enable or disable the directory listing.  
-Default: `off`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+## Thanks
 
-### max_client_body_size
-```nginx
-max_client_body_size SIZE;
-```
-Set the maximum size of the body of a request.  
-Default: `1048576`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+**Thank you for using Apache JMeter.**
 
-### allow
-```nginx
-allow METHOD [METHOD ...];
-```
-Set the allowed methods.  
-Default: `GET` / `HEAD` / `OPTIONS`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+### Third party notices
 
-### error_page
-```nginx
-error_page CODE PATH;
-```
-Set a custom error page for the given status code.  
-**Allowed contexts:** [Server](#server)
+* Notice for mxparser:
 
-### alias
-```nginx
-alias PATH;
-```
-Set an alias path. Example request: `GET /alias/file` -> `root/PATH/file`  
-**Allowed contexts:** [Location](#location)
-
-### redirect
-```nginx
-redirect URL;
-```
-Redirects the request of the location to the given url.   
-**Allowed contexts:** [Server](#server) / [Location](#location)
-
-### cgi_path
-```nginx
-cgi_path PATH;
-```
-Set the path of the cgi executable.  
-**Allowed contexts:** [Cgi](#cgi)
-
-## Example
-
-```nginx
-
-# File -> /example/mime.types
-types {
-  type text/html html htm;
-  type text/css css;
-  type text/javascript js;
-  type image/jpeg jpeg jpg;
-  type image/png png;
-  type image/svg+xml svg;
-  type image/gif gif;
-}
-
-# File -> /example/webserv.conf
-http {
-  include /example/mime.types;
-
-  log_level info;
-  access_log /var/log/webserv/access.log;
-  error_log /var/log/webserv/error.log;
-
-  include /example/server.conf;
-}
-
-# File -> /example/server.conf
-server {
-  listen localhost:8080;
-  server_name localhost:8080;
-  root /example/www;
-  index index.html index.htm;
-  autoindex on;
-  max_client_body_size 1048576;
-  allow GET HEAD OPTIONS;
-
-  error_page 404 /404.html;
-
-  location /example {
-    alias /example/www; # Request: GET /example/file -> root/www/file
-    index example.html;
-    allow GET HEAD OPTIONS PUT DELETE;
-    autoindex off;
-  }
-  location /redirect {
-    redirect http://www.duckduckgo.com;
-  }
-  location /cgi {
-    cgi php {
-      cgi_path /usr/bin/php-cgi;
-    }
-  }
-}
-```
+  >  This product includes software developed by the Indiana
+  >  University Extreme! Lab.  For further information please visit
+  >  http://www.extreme.indiana.edu/

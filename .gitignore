@@ -7,6 +7,8 @@ tests/obj/
 *.out
 perf.*
 profiling/
+*.log
+tests/jmeter/
 
 #executables
 test

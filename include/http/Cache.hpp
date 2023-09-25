@@ -29,7 +29,7 @@ class Cache {
   void update(const std::string& key, const std::string& data);
 
   void add(const std::string& key, const std::string& data);
-  std::string get(const std::string& key);
+  std::string& get(const std::string& key);
 
   bool isCached(const std::string& key) const;
   bool isStale(const std::string& key, const time_t dataTime) const;
