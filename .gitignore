@@ -9,8 +9,6 @@ tests/jmeter/
 *.out
 perf.*
 profiling/
-*.log
-tests/jmeter/
 
 #executables
 test
