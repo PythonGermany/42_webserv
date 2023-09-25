@@ -3,6 +3,8 @@ logs/
 
 tests/googletest/build
 tests/obj/
+tests/jmeter/
+*.logs
 
 #executables
 test
