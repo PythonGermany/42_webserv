@@ -105,11 +105,11 @@ flamegraph:
 jmeter:
 	mkdir -p tests/jmeter
 	if [ ! "$(shell ls -A tests/jmeter)" ]; then \
-        wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz -O tests/jmeter/jmeter.tgz; \
-				tar -xzf tests/jmeter/jmeter.tgz -C tests/jmeter --strip-components=1; \
-        rm tests/jmeter/jmeter.tgz; \
-    fi
-		./tests/jmeter/bin/jmeter
+		wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz -O tests/jmeter/jmeter.tgz; \
+		tar -xzf tests/jmeter/jmeter.tgz -C tests/jmeter --strip-components=1; \
+		rm tests/jmeter/jmeter.tgz; \
+	fi
+	./tests/jmeter/bin/jmeter
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp
