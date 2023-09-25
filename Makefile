@@ -89,11 +89,18 @@ cgi: cgi/cgi
 cgi/cgi:
 	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
 
-perfornance:
+performance:
 	make CXXFLAGS="-O3 $(CXXFLAGS)"
 
 debug:
 	make CXXFLAGS="-g $(CXXFLAGS)"
+
+custom:
+	make CXXFLAGS="$(ARG) $(CXXFLAGS)"
+
+flamegraph:
+	mkdir -p profiling
+	flamegraph -o profiling/flamegraph-$(shell date "+%d-%m-%Y:%H:%M:%S").svg -- ./$(NAME) $(ARG)
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp

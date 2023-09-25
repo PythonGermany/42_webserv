@@ -17,7 +17,7 @@ Request &Request::operator=(const Request &rhs) {
 
 Request::~Request() {}
 
-void Request::setBody(std::string body) { _body = body; }
+void Request::setBody(const std::string &body) { _body = body; }
 
 void Request::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);

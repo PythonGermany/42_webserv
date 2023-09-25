@@ -4,6 +4,10 @@ logs/
 tests/googletest/build
 tests/obj/
 
+*.out
+perf.*
+profiling/
+
 #executables
 test
 webserv

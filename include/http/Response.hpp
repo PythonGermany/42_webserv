@@ -24,7 +24,7 @@ class Response {
   void setStatus(std::string status);
   void setReason(std::string reason);
   void setHeaders(std::map<std::string, std::string> &headers);
-  void setBody(std::string body);
+  void setBody(const std::string &body);
 
   void setHeader(std::string key, std::string value);
 

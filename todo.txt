@@ -6,7 +6,7 @@ Needed from rfc 2616: ----------------------------------------------------------
 - Transfer-Encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
                     && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
 
-Request processing flow: --------------------------------------------------------
+Request processing flow (incomplete): -----------------------------------------
 1. Parse request line
   - if not valid, return 400
 2. Parse headers
@@ -43,8 +43,3 @@ Request processing flow: -------------------------------------------------------
 14. Load file
   - for error, return 500
   - for success, return 200
-
-Todo: --------------------------------------------------------
-
-Directive parsing and http implementation
-Implement chunked transfer encoding
