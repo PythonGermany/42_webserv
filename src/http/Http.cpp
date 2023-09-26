@@ -304,6 +304,7 @@ Response &Http::processAutoindex(std::string uri) {
 Response &Http::processRedirect(std::string uri) {
   _response = Response("HTTP/1.1", "301", "Moved Permanently");
   _response.setHeader("Location", getAbsoluteUri(uri));
+  _response.setHeader("Content-Length", toString(0));
   _responseReady = true;
   return _response;
 }
