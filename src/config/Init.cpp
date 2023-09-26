@@ -76,18 +76,20 @@ void Init::initLogDefaults(Context& context) {
   }
 }
 
-void Init::initPoll() {  // TODO: Implement correct socket creation
+void Init::initPoll() {
   Log::write("--------- Creating sockets ----------", INFO, BRIGHT_GREEN);
   size_t sockets = 0;
   std::vector<VirtualHost>& virtualHosts = VirtualHost::getVirtualHosts();
   std::set<Address> allAddresses;
 
   for (size_t i = 0; i < virtualHosts.size(); i++) {
-    std::set<Address> const &toadd = virtualHosts[i].getResolvedAddress();
+    std::set<Address> const& toadd = virtualHosts[i].getResolvedAddress();
     allAddresses.insert(toadd.begin(), toadd.end());
   }
-  for (std::set<Address>::const_iterator it = allAddresses.begin(); it != allAddresses.end(); ++it) {
-    std::set<Address>::const_iterator addr_any = allAddresses.find(Address(it->family(), it->port()));
+  for (std::set<Address>::const_iterator it = allAddresses.begin();
+       it != allAddresses.end(); ++it) {
+    std::set<Address>::const_iterator addr_any =
+        allAddresses.find(Address(it->family(), it->port()));
     if (addr_any == allAddresses.end() || addr_any == it) {
       Poll::add(new ListenSocket(*it));
       ++sockets;

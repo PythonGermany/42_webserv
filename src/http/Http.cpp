@@ -160,23 +160,27 @@ Response &Http::processFile(std::string uri) {
 
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
-  try {
-    std::string body;
-    bool isCached = _cache.isCached(path);
-    if (!_cache.isCached(path) || _cache.isStale(path, std::time(NULL))) {
-      file.open(O_RDONLY);
-      body = file.read();
-      isCached ? _cache.update(path, body) : _cache.add(path, body);
-    } else
-      body = _cache.get(path);
-    if (Log::getLevel() >= DEBUG)
-      _log += std::string(INDENT) + "Cache : " + _cache.info();
-    if (_request.getMethod() != "HEAD") _response.setBody(body);
-    _response.setHeader("Content-Length", toString(body.size()));
-    file.close();
-  } catch (const std::exception &e) {
+  // try {
+  std::ifstream *body = new std::ifstream(path.c_str());
+  if (body->is_open() == false) {
+    delete body;
     return processError("500", "Internal Server Error");
   }
+  // bool isCached = _cache.isCached(path);
+  // if (!_cache.isCached(path) || _cache.isStale(path, std::time(NULL))) {
+  //   file.open(O_RDONLY);
+  //   body = file.read();
+  //   isCached ? _cache.update(path, body) : _cache.add(path, body);
+  // } else
+  //   body = _cache.get(path);
+  // if (Log::getLevel() >= DEBUG)
+  //   _log += std::string(INDENT) + "Cache : " + _cache.info();
+  if (_request.getMethod() != "HEAD") _response.setBody(body);
+  _response.setHeader("Content-Length", toString(file.size()));
+  // file.close();
+  // } catch (const std::exception &e) {
+  //   return processError("500", "Internal Server Error");
+  // }
   _response.setHeader("Last-modified",
                       file.lastModified("%a, %d %b %Y %H:%M:%S"));
 
@@ -258,12 +262,12 @@ Response &Http::processDelete(std::string uri) {
 
 Response &Http::processAutoindex(std::string uri) {
   std::string path = _context->getDirective("root", true)[0][0] + uri;
-  _response = Response("HTTP/1.1", "200", "OK");
-  std::string body =
-      "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>";
   std::vector<std::string> files;
+  _response = Response("HTTP/1.1", "200", "OK");
+  std::stringstream *body = new std::stringstream(
+      "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>");
 
-  body += "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
+  *body << "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
 
   // Get list of files in directory
   try {
@@ -283,17 +287,17 @@ Response &Http::processAutoindex(std::string uri) {
   for (size_t i = 0; i < files.size(); i++) {
     std::string file = files[i];
     if (file == "./" || file == "../") continue;
-    body +=
-        "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file + "</a>";
+    *body << "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file +
+                 "</a>";
     size_t spaceCount = maxWidth - file.size() + 5;
-    for (size_t j = 0; j < spaceCount; j++) body += " ";
+    for (size_t j = 0; j < spaceCount; j++) *body << " ";
     File f(path + files[i]);
-    body += f.lastModified("%d-%m-%Y %H:%M") + "          " +
-            (f.dir() ? "-" : toString(f.size())) + "\r\n";
+    *body << f.lastModified("%d-%m-%Y %H:%M") + "          " +
+                 (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
-  body += "</pre><hr></body>\r\n</html>\r\n";
+  *body << "</pre><hr></body>\r\n</html>\r\n";
   if (_request.getMethod() != "HEAD") _response.setBody(body);
-  _response.setHeader("Content-Length", toString(body.size()));
+  _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   _responseReady = true;
   return _response;
 }
@@ -307,7 +311,7 @@ Response &Http::processRedirect(std::string uri) {
 
 Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
-  std::string body;
+  std::istream *body = NULL;
   if (_virtualHost->getContext().exists("error_page", true)) {
     std::vector<std::vector<std::string> > &pages =
         _virtualHost->getContext().getDirective("error_page", true);
@@ -320,13 +324,8 @@ Response &Http::processError(std::string code, std::string reason) {
           _context->getDirective("root", true)[0][0] + pages[i][1];
       File file(path);
       if (file.exists() && file.file() && file.readable()) {
-        try {
-          file.open(O_RDONLY);
-          body = file.read();
-          file.close();
-        } catch (const std::exception &e) {
-          return processError("500", "Internal Server Error");
-        }
+        body = new std::ifstream(path.c_str());
+
         // Set mime type
         std::string mimeType = VirtualHost::getMimeType(file.getExtension());
         if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
@@ -337,11 +336,11 @@ Response &Http::processError(std::string code, std::string reason) {
   }
 
   // If no custom error page was found, use default
-  if (body.empty()) {
-    body = getDefaultBody(code, reason);
+  if (body == NULL) {
+    body = new std::stringstream(getDefaultBody(code, reason));
     _response.setHeader("Content-Type", "text/html");
   }
-  _response.setHeader("Content-Length", toString(body.size()));
+  _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _responseReady = true;
   return _response;
@@ -365,8 +364,6 @@ void Http::sendResponse() {
   _response.setHeader("Server", "webserv");
   // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
-  if (_response.getHeader("Content-Length").empty())
-    _response.setHeader("Content-Length", toString(_response.getBody().size()));
 
   // Check if connection should be kept alive
   if (_request.getHeader("Connection") == "keep-alive" ||
@@ -374,9 +371,8 @@ void Http::sendResponse() {
     _response.setHeader("Connection", "keep-alive");
 
   // Send response
-  send(new std::istringstream(_response.generate()));
-  if (_response.getBody().size() > 0)
-    send(new std::istringstream(_response.getBody()));
+  send(new std::istringstream(_response.generateHead()));
+  if (_response.getBody() != NULL) send(_response.getBody());
   _responseReady = false;
   bodySize = WAIT_FOR_HEAD;
 

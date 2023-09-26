@@ -1,9 +1,9 @@
 #include "Response.hpp"
 
-Response::Response() {}
+Response::Response() : _body(NULL) {}
 
 Response::Response(std::string version, std::string status, std::string reason)
-    : _version(version), _status(status), _reason(reason) {}
+    : _version(version), _status(status), _reason(reason), _body(NULL) {}
 
 Response::Response(const Response &rhs) { *this = rhs; }
 
@@ -29,7 +29,7 @@ void Response::setHeaders(std::map<std::string, std::string> &headers) {
   _headers = headers;
 }
 
-void Response::setBody(const std::string &body) { _body = body; }
+void Response::setBody(std::istream *body) { _body = body; }
 
 void Response::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
@@ -49,9 +49,9 @@ std::string Response::getHeader(std::string key) const {
   return it->second;
 }
 
-std::string &Response::getBody() { return _body; }
+std::istream *Response::getBody() { return _body; }
 
-std::string Response::generate() {
+std::string Response::generateHead() {
   std::string response = _version + " " + _status + " " + _reason + "\r\n";
   for (std::map<std::string, std::string>::iterator it = _headers.begin();
        it != _headers.end(); ++it) {

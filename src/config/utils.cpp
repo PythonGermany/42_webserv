@@ -171,3 +171,10 @@ std::string getMemorySize(size_t size) {
     ss << size / (1024 * 1024) << "MB";
   return ss.str();
 }
+
+size_t getStreamBufferSize(std::istream& stream) {
+  stream.seekg(0, std::ios::end);
+  size_t size = stream.tellg();
+  stream.seekg(0, std::ios::beg);
+  return size;
+}

@@ -43,6 +43,7 @@ void AConnection::send(std::istream *msg) {
   try {
     _writeStreams.push(msg);
   } catch (std::bad_alloc const &) {
+    std::cerr << "TEST" << std::endl;
     delete msg;
     throw;
   }
@@ -62,6 +63,10 @@ void AConnection::onPollOut(struct pollfd &pollfd) {
   std::istream *stream;
   ssize_t lenSent;
 
+  if (_writeStreams.empty()) {
+    std::cerr << "Error: Write stream is empty" << std::endl;
+    return;
+  }
   pollfd.revents &= ~POLLOUT;
   stream = _writeStreams.front();
   stream->read(_writeBuffer, BUFFER_SIZE);

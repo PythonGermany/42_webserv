@@ -124,4 +124,6 @@ std::string getTime(std::string format, const time_t* timer = NULL);
 
 std::string getMemorySize(size_t size);
 
+size_t getStreamBufferSize(std::istream& stream);
+
 #endif

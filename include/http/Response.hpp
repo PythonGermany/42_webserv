@@ -11,7 +11,7 @@ class Response {
   std::string _status;
   std::string _reason;
   std::map<std::string, std::string> _headers;
-  std::string _body;
+  std::istream *_body;
 
  public:
   Response();
@@ -24,7 +24,7 @@ class Response {
   void setStatus(std::string status);
   void setReason(std::string reason);
   void setHeaders(std::map<std::string, std::string> &headers);
-  void setBody(const std::string &body);
+  void setBody(std::istream *body);
 
   void setHeader(std::string key, std::string value);
 
@@ -33,9 +33,9 @@ class Response {
   std::string getReason() const;
   std::string getHeader(std::string key) const;
 
-  std::string &getBody();
+  std::istream *getBody();
 
-  std::string generate();
+  std::string generateHead();
 };
 
 #endif

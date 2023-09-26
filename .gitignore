@@ -4,7 +4,7 @@ logs/
 tests/googletest/build
 tests/obj/
 tests/jmeter/
-*.logs
+*.log
 
 *.out
 perf.*
