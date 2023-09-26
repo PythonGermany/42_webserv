@@ -376,7 +376,7 @@ void Http::sendResponse() {
     _response.setHeader("Connection", "keep-alive");
 
   // Send response
-  send(_response.generate());
+  send(new std::istringstream(_response.generate()));
   _responseReady = false;
   bodySize = WAIT_FOR_HEAD;
 

@@ -12,11 +12,17 @@
 AConnection::AConnection() {
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
+  _writeBufferPos = std::string::npos;
 }
 
 AConnection::AConnection(AConnection const &other) { *this = other; }
 
-AConnection::~AConnection() {}
+AConnection::~AConnection() {
+  while (_writeStreams.empty() == false) {
+    delete _writeStreams.front();
+    _writeStreams.pop();
+  }
+}
 
 AConnection &AConnection::operator=(AConnection const &other) {
   if (this != &other) {
@@ -25,17 +31,23 @@ AConnection &AConnection::operator=(AConnection const &other) {
     headSizeLimit = other.headSizeLimit;
     bodySize = other.bodySize;
     headDelimiter = other.headDelimiter;
-    _writeBufferPos = other._writeBufferPos;  // TODO: Pythongermany code
-    _writeBuffer = other._writeBuffer;
+    _writeBufferPos = other._writeBufferPos;
+    _writeBufferSize = other._writeBufferSize;
+    _writeStreams = other._writeStreams;
     _readBuffer = other._readBuffer;
     lastTimeActive = other.lastTimeActive;
   }
   return *this;
 }
 
-void AConnection::send(const std::string &msg) {
-  if (_writeBuffer.empty()) Poll::addPollEvent(POLLOUT, this);
-  _writeBuffer += msg;
+void AConnection::send(std::istream *msg) {
+  if (_writeStreams.empty()) Poll::addPollEvent(POLLOUT, this);
+  try {
+    _writeStreams.push(msg);
+  } catch (std::bad_alloc const &) {
+    delete msg;
+    throw;
+  }
 }
 
 void AConnection::onPollEvent(struct pollfd &pollfd) {
@@ -48,29 +60,34 @@ void AConnection::onPollEvent(struct pollfd &pollfd) {
   gettimeofday(&lastTimeActive, NULL);
 }
 
-void AConnection::onPollOut(
-    struct pollfd &pollfd) {  // TODO: Pythongermany changed code
-  size_t lenToSend;
+void AConnection::onPollOut(struct pollfd &pollfd) {
+  std::istream *stream;
   ssize_t lenSent;
 
   pollfd.revents &= ~POLLOUT;
-  if (_writeBuffer.size() - _writeBufferPos > BUFFER_SIZE)
-    lenToSend = BUFFER_SIZE;
-  else
-    lenToSend = _writeBuffer.size() - _writeBufferPos;
-  if (_writeBufferPos + lenToSend > _writeBuffer.size())
-    throw std::runtime_error("AConnection::onPollOut(): out of range");
+  if (_writeBufferPos == std::string::npos) {
+    stream = _writeStreams.front();
+    _writeBufferPos = 0;
+    stream->read(_writeBuffer, BUFFER_SIZE);
+    _writeBufferSize = stream->gcount();
+    if (stream->eof()) {
+      delete _writeStreams.front();
+      _writeStreams.pop();
+    } else if (stream->fail())
+      throw std::runtime_error("AConnection::onPollOut(): std::istream.read()");
+  }
   lenSent =
-      ::send(pollfd.fd, _writeBuffer.data() + _writeBufferPos, lenToSend, 0);
-  if (lenSent == -1)
-    throw std::runtime_error(std::string("AConnection::onPollOut(): ") +
-                             std::strerror(errno));
-  //_writeBuffer.erase(0, lenSent);
-  _writeBufferPos +=
-      lenToSend;  // TODO: Implement more integrated way of _writeBufferPos
-  if (_writeBufferPos >= _writeBuffer.size()) {
-    _writeBuffer.clear();
-    pollfd.events &= ~POLLOUT;
+      ::send(pollfd.fd, _writeBuffer + _writeBufferPos, _writeBufferSize, 0);
+  if (lenSent == -1) {
+    throw std::runtime_error(
+        std::string("AConnection::onPollOut(): ::send(): ") +
+        std::strerror(errno));
+  } else if (static_cast<size_t>(lenSent) == _writeBufferSize) {
+    _writeBufferPos = std::string::npos;
+    if (_writeStreams.empty()) pollfd.events &= ~POLLOUT;
+  } else {
+    _writeBufferPos += lenSent;
+    _writeBufferSize -= lenSent;
   }
 }
 

@@ -1,6 +1,8 @@
 #ifndef HTTP_HPP
 #define HTTP_HPP
 
+#include <sstream>
+
 #include "AConnection.hpp"
 #include "Cache.hpp"
 #include "Log.hpp"

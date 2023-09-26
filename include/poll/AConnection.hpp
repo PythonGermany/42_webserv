@@ -3,6 +3,8 @@
 
 #define BUFFER_SIZE 65536
 
+#include <istream>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -34,14 +36,16 @@ class AConnection : public IFileDescriptor {
 
   virtual void OnHeadRecv(std::string msg) = 0;
   virtual void OnBodyRecv(std::string msg) = 0;
-  void send(const std::string &msg);
+  void send(std::istream *msg);
   void cgiSend(std::string msg);
   void runCGI(std::string program, std::vector<std::string> &arg,
               std::vector<std::string> &env);
   void closeConnection();
 
  private:
-  std::string _writeBuffer;
+  std::queue<std::istream *> _writeStreams;
+  char _writeBuffer[BUFFER_SIZE];
+  size_t _writeBufferSize;
   std::string _readBuffer;
   std::string _cgiWriteBuffer;
   struct timeval lastTimeActive;
