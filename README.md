@@ -264,7 +264,6 @@ Set the path of the cgi executable.
 ## Example
 
 ```nginx
-
 # File -> /example/mime.types
 types {
   type text/html html htm;
@@ -275,7 +274,8 @@ types {
   type image/svg+xml svg;
   type image/gif gif;
 }
-
+```
+```nginx
 # File -> /example/webserv.conf
 http {
   include /example/mime.types;
@@ -286,7 +286,8 @@ http {
 
   include /example/server.conf;
 }
-
+```
+```nginx
 # File -> /example/server.conf
 server {
   listen localhost:8080;
