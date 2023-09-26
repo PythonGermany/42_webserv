@@ -19,6 +19,7 @@ class Http : public AConnection {
   Context* _context;
   std::string _uri;
 
+  File _file;
   bool _newFile;
   size_t _expectedBodySize;
   size_t _currBodySize;

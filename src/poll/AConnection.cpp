@@ -43,7 +43,6 @@ void AConnection::send(std::istream *msg) {
   try {
     _writeStreams.push(msg);
   } catch (std::bad_alloc const &) {
-    std::cerr << "TEST" << std::endl;
     delete msg;
     throw;
   }
