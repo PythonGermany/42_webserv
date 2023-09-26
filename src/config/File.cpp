@@ -143,13 +143,12 @@ void File::open(int flags, mode_t mode) {
   _filesOpen++;
 }
 
-void File::close() {
-  if (_fd == -1) return;
-  if (::close(_fd) == -1)
-    throwException("close", "Could not close file: " +
-                                std::string(strerror(errno)) + " " + _path);
+int File::close() {
+  if (_fd == -1) return 0;
+  if (::close(_fd) == -1) return -1;
   _fd = -1;
   _filesOpen--;
+  return 0;
 }
 
 std::string File::read() const {
@@ -165,9 +164,8 @@ std::string File::read() const {
   return data;
 }
 
-void File::write(std::string data) const {
-  if (::write(_fd, data.c_str(), data.length()) == -1)
-    throwException("write", "Could not write file");
+int File::write(const std::string &data) const {
+  return ::write(_fd, data.c_str(), data.length());
 }
 
 void File::throwException(std::string func, std::string msg) {

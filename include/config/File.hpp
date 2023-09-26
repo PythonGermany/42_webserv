@@ -86,15 +86,15 @@ class File {
   // @exception std::runtime_error if opening the file fails
   void open(int flags, mode_t mode = 0644);
   // Closes the file
-  // @exception std::runtime_error if closing the file fails
-  void close();
+  // @exception No custom exceptions
+  int close();
 
   // Reads the file
   // @exception std::runtime_error if reading the file fails
   std::string read() const;
   // Writes to the file
-  // @exception std::runtime_error if writing to the file fails
-  void write(std::string data) const;
+  // @exception No custom exceptions
+  int write(const std::string &data) const;
 
  private:
   // Throws an exception indicating the function and message

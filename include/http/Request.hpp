@@ -15,7 +15,6 @@ class Request {
   Uri _uri;
   std::string _version;
   std::map<std::string, std::string> _headers;
-  std::string _body;
 
   bool _error;
 
@@ -25,14 +24,12 @@ class Request {
   Request &operator=(const Request &rhs);
   ~Request();
 
-  void setBody(const std::string &body);
   void setHeader(std::string key, std::string value);
 
   std::string getMethod() const;
   Uri &getUri();
   std::string getVersion() const;
   std::string getHeader(std::string key) const;
-  std::string getBody() const;
 
   void deleteHeaderField(std::string key, std::string value);
 

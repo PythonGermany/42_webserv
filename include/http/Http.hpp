@@ -18,8 +18,11 @@ class Http : public AConnection {
   VirtualHost* _virtualHost;
   Context* _context;
   std::string _uri;
-  bool _responseReady;
 
+  bool _newFile;
+  size_t _expectedBodySize;
+  size_t _currBodySize;
+  bool _responseReady;
   std::string _log;
 
  public:
@@ -38,7 +41,7 @@ class Http : public AConnection {
   Response& processRequest();
   Response& processFile(std::string uri);
   Response& processUploadHead();
-  Response& processUploadBody(std::string uri);
+  Response& processUploadData(std::string uri, std::string& data);
   Response& processOptions();
   Response& processDelete(std::string uri);
   Response& processAutoindex(std::string uri);

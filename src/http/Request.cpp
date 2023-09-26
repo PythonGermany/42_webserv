@@ -10,14 +10,11 @@ Request &Request::operator=(const Request &rhs) {
   _uri = rhs._uri;
   _version = rhs._version;
   _headers = rhs._headers;
-  _body = rhs._body;
   _error = rhs._error;
   return *this;
 }
 
 Request::~Request() {}
-
-void Request::setBody(const std::string &body) { _body = body; }
 
 void Request::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
@@ -40,8 +37,6 @@ std::string Request::getHeader(std::string key) const {
   if (it == _headers.end()) return "";
   return it->second;
 }
-
-std::string Request::getBody() const { return _body; }
 
 void Request::deleteHeaderField(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);

@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
     Init::init(context);
     while (true) {
       if (!Poll::poll()) break;
-      if (Http::updateCache())
-        Log::write("Cache has changed: " + Http::getCache().info(), DEBUG);
+      // if (Http::updateCache()) // TODO: Remove if not needed anymore
+      //   Log::write("Cache has changed: " + Http::getCache().info(), DEBUG);
     }
   } catch (const std::exception& e) {
     Log::writeError(e.what(), BRIGHT_YELLOW);

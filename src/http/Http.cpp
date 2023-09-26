@@ -11,6 +11,8 @@ Http::Http(Address const &client, Address const &host) {
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
+  this->_expectedBodySize = 0;
+  this->_currBodySize = 0;
   this->_responseReady = false;
   Log::write(toString<Address &>(this->host) +
                  " -> add: " + toString<Address &>(this->client),
@@ -54,8 +56,7 @@ void Http::OnHeadRecv(std::string msg) {
 }
 
 void Http::OnBodyRecv(std::string msg) {
-  _request.setBody(msg);
-  _response = processUploadBody(_uri);
+  _response = processUploadData(_uri, msg);
   if (_responseReady) sendResponse();
 }
 
@@ -166,21 +167,8 @@ Response &Http::processFile(std::string uri) {
     delete body;
     return processError("500", "Internal Server Error");
   }
-  // bool isCached = _cache.isCached(path);
-  // if (!_cache.isCached(path) || _cache.isStale(path, std::time(NULL))) {
-  //   file.open(O_RDONLY);
-  //   body = file.read();
-  //   isCached ? _cache.update(path, body) : _cache.add(path, body);
-  // } else
-  //   body = _cache.get(path);
-  // if (Log::getLevel() >= DEBUG)
-  //   _log += std::string(INDENT) + "Cache : " + _cache.info();
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Content-Length", toString(file.size()));
-  // file.close();
-  // } catch (const std::exception &e) {
-  //   return processError("500", "Internal Server Error");
-  // }
   _response.setHeader("Last-modified",
                       file.lastModified("%a, %d %b %Y %H:%M:%S"));
 
@@ -196,7 +184,7 @@ Response &Http::processUploadHead() {
   // Check if body size is specified
   std::string bodySizeStr = _request.getHeader("Content-Length");
   if (bodySizeStr.empty()) return processError("411", "Length Required");
-  bodySize = fromString<size_t>(bodySizeStr);
+  _expectedBodySize = fromString<size_t>(bodySizeStr);
 
   // Find max body size
   size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
@@ -205,31 +193,42 @@ Response &Http::processUploadHead() {
         _context->getDirective("max_client_body_size", true)[0][0]);
 
   // Check if body size is too large
-  if (bodySize > maxBodySize)
+  if (_expectedBodySize > maxBodySize)
     return processError("413", "Request Entity Too Large");
+  _currBodySize = 0;
+  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize);
   return _response;
 }
 
-Response &Http::processUploadBody(std::string uri) {
+Response &Http::processUploadData(std::string uri, std::string &data) {
   std::string path = _context->getDirective("root", true)[0][0] + uri;
 
   // Create and write file
   File file(path);
-  bool newFile = !file.exists();
-  try {
-    if (!file.exists()) file.create();
-    file.open(O_WRONLY | O_TRUNC);
-    file.write(_request.getBody());
-    file.close();
-  } catch (const std::exception &e) {
-    return processError("500", "Internal Server Error");
+  if (_currBodySize == 0) {
+    _newFile = !file.exists();
+    try {
+      if (!file.exists()) file.create();
+      file.open(O_WRONLY | O_TRUNC);
+    } catch (const std::exception &e) {
+      return processError("500", "Internal Server Error");
+    }
   }
-  if (newFile)
-    _response = Response("HTTP/1.1", "201", "Created");
-  else
-    _response = Response("HTTP/1.1", "204", "No Content");
-  _response.setHeader("Location", getAbsoluteUri(uri));
-  _responseReady = true;
+  if (file.write(data) == -1)
+    return processError("500", "Internal Server Error");
+  _currBodySize += data.size();
+  if (_currBodySize >= _expectedBodySize) {
+    if (file.close() == -1)
+      Log::write("Failed to close file: " + file.getPath(), WARNING,
+                 BRIGHT_YELLOW);
+    if (_newFile)
+      _response = Response("HTTP/1.1", "201", "Created");
+    else
+      _response = Response("HTTP/1.1", "204", "No Content");
+    _response.setHeader("Location", getAbsoluteUri(uri));
+    _responseReady = true;
+  } else
+    bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
   return _response;
 }
 
@@ -312,9 +311,9 @@ Response &Http::processRedirect(std::string uri) {
 Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
   std::istream *body = NULL;
-  if (_virtualHost->getContext().exists("error_page", true)) {
+  if (_virtualHost->getContext().exists("error_page")) {
     std::vector<std::vector<std::string> > &pages =
-        _virtualHost->getContext().getDirective("error_page", true);
+        _virtualHost->getContext().getDirective("error_page");
 
     // Search for matching custom error page
     for (size_t i = 0; i < pages.size(); i++) {
@@ -325,6 +324,10 @@ Response &Http::processError(std::string code, std::string reason) {
       File file(path);
       if (file.exists() && file.file() && file.readable()) {
         body = new std::ifstream(path.c_str());
+        if (((std::ifstream *)body)->is_open() == false) {
+          delete body;
+          return processError("505", "Internal Server Error");
+        }
 
         // Set mime type
         std::string mimeType = VirtualHost::getMimeType(file.getExtension());
