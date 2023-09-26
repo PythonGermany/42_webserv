@@ -49,7 +49,7 @@ std::string Response::getHeader(std::string key) const {
   return it->second;
 }
 
-std::string Response::getBody() const { return _body; }
+std::string &Response::getBody() { return _body; }
 
 std::string Response::generate() {
   std::string response = _version + " " + _status + " " + _reason + "\r\n";
@@ -57,6 +57,6 @@ std::string Response::generate() {
        it != _headers.end(); ++it) {
     response += it->first + ": " + it->second + "\r\n";
   }
-  response += "\r\n" + _body;
+  response += "\r\n";
   return response;
 }

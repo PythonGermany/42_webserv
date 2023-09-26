@@ -12,7 +12,6 @@ Http::Http(Address const &client, Address const &host) {
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_responseReady = false;
-  this->_writeBufferPos = 0;  // TODO: Pythongermany code
   Log::write(toString<Address &>(this->host) +
                  " -> add: " + toString<Address &>(this->client),
              DEBUG);
@@ -30,7 +29,6 @@ const Cache &Http::getCache() { return _cache; }
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
-  _writeBufferPos = 0;  // TODO: Pythongermany code
 
   // Parse request
   _request.parseHead(msg);
@@ -377,6 +375,8 @@ void Http::sendResponse() {
 
   // Send response
   send(new std::istringstream(_response.generate()));
+  if (_response.getBody().size() > 0)
+    send(new std::istringstream(_response.getBody()));
   _responseReady = false;
   bodySize = WAIT_FOR_HEAD;
 

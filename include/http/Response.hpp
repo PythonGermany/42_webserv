@@ -33,7 +33,7 @@ class Response {
   std::string getReason() const;
   std::string getHeader(std::string key) const;
 
-  std::string getBody() const;
+  std::string &getBody();
 
   std::string generate();
 };

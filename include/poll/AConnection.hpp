@@ -32,8 +32,6 @@ class AConnection : public IFileDescriptor {
   std::string::size_type bodySize;
   std::string headDelimiter;
 
-  size_t _writeBufferPos;  // TODO: Pythongermany code
-
   virtual void OnHeadRecv(std::string msg) = 0;
   virtual void OnBodyRecv(std::string msg) = 0;
   void send(std::istream *msg);

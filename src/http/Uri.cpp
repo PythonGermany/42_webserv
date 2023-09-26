@@ -140,7 +140,7 @@ bool Uri::pathOutOfBound() const {
       if (depth < 0) return true;
     }
     if (pos == std::string::npos) return false;
-    path = path.substr(pos + 1);
+    path.erase(0, pos + 1);
   }
   return false;
 }
