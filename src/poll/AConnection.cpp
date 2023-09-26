@@ -12,6 +12,7 @@
 AConnection::AConnection() {
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
+  _writeBufferPos = std::string::npos;
 }
 
 AConnection::AConnection(AConnection const &other) { *this = other; }
@@ -30,6 +31,7 @@ AConnection &AConnection::operator=(AConnection const &other) {
     headSizeLimit = other.headSizeLimit;
     bodySize = other.bodySize;
     headDelimiter = other.headDelimiter;
+    _writeBufferPos = other._writeBufferPos;
     _writeBufferSize = other._writeBufferSize;
     _writeStreams = other._writeStreams;
     _readBuffer = other._readBuffer;
@@ -62,25 +64,30 @@ void AConnection::onPollOut(struct pollfd &pollfd) {
   std::istream *stream;
   ssize_t lenSent;
 
-  if (_writeStreams.empty()) {
-    std::cerr << "Error: Write stream is empty" << std::endl;
-    return;
-  }
   pollfd.revents &= ~POLLOUT;
-  stream = _writeStreams.front();
-  stream->read(_writeBuffer, BUFFER_SIZE);
-  _writeBufferSize = stream->gcount();
-  if (stream->eof()) {
-    delete _writeStreams.front();
-    _writeStreams.pop();
-    if (_writeStreams.empty()) pollfd.events &= ~POLLOUT;
-  } else if (stream->fail())
-    throw std::runtime_error("AConnection::onPollOut(): std::istream.read()");
-  lenSent = ::send(pollfd.fd, _writeBuffer, _writeBufferSize, 0);
+  if (_writeBufferPos == std::string::npos) {
+    stream = _writeStreams.front();
+    _writeBufferPos = 0;
+    stream->read(_writeBuffer, BUFFER_SIZE);
+    _writeBufferSize = stream->gcount();
+    if (stream->eof()) {
+      delete _writeStreams.front();
+      _writeStreams.pop();
+    } else if (stream->fail())
+      throw std::runtime_error("AConnection::onPollOut(): std::istream.read()");
+  }
+  lenSent =
+      ::send(pollfd.fd, _writeBuffer + _writeBufferPos, _writeBufferSize, 0);
   if (lenSent == -1) {
     throw std::runtime_error(
         std::string("AConnection::onPollOut(): ::send(): ") +
         std::strerror(errno));
+  } else if (static_cast<size_t>(lenSent) == _writeBufferSize) {
+    _writeBufferPos = std::string::npos;
+    if (_writeStreams.empty()) pollfd.events &= ~POLLOUT;
+  } else {
+    _writeBufferPos += lenSent;
+    _writeBufferSize -= lenSent;
   }
 }
 
@@ -120,7 +127,7 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
       if (_readBuffer.size() < bodySize) break;
       OnBodyRecv(_readBuffer.substr(0, bodySize));
       _readBuffer.erase(0, bodySize);
-      // bodySize = WAIT_FOR_HEAD;
+      bodySize = WAIT_FOR_HEAD;
     }
   }
 }

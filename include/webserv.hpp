@@ -53,7 +53,9 @@ const t_token tokens[30] = {
 
     // Server context
     {"server", "http", true, 1, -1, 0, 0, NULL},
-    {"listen", "server", false, 1, -1, 1, 1, isListen},
+    {"listen", "server", false, 1, -1, 1, 1,
+     isListen},  // TODO: Implement support for multilistendirective or change
+                 // config
     {"server_name", "server", false, 0, -1, 1, -1, NULL},
     {"root", "server", false, 1, 1, 1, 1, NULL},
     {"index", "server", false, 0, 1, 1, -1, NULL},

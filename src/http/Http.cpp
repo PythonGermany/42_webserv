@@ -161,7 +161,6 @@ Response &Http::processFile(std::string uri) {
 
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
-  // try {
   std::ifstream *body = new std::ifstream(path.c_str());
   if (body->is_open() == false) {
     delete body;
