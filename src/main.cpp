@@ -32,6 +32,5 @@ int main(int argc, char** argv) {
   } catch (const std::exception& e) {
     Log::writeError(e.what(), BRIGHT_YELLOW);
   }
-  if (File::getFilesOpen()) return 1;
   return 0;
 }

@@ -17,11 +17,12 @@ class Http : public AConnection {
   Context* _context;
   std::string _uri;
 
-  File _file;
+  std::ofstream _file;
   bool _newFile;
   size_t _expectedBodySize;
   size_t _currBodySize;
   bool _responseReady;
+
   std::string _log;
 
  public:

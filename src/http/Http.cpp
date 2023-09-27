@@ -198,23 +198,16 @@ Response &Http::processUploadData(std::string uri, std::string &data) {
   // Create and write file
   if (_currBodySize == 0) {
     std::string path = _context->getDirective("root", true)[0][0] + uri;
-    _file = File(path);
-    _newFile = !_file.exists();
-    try {
-      if (_file.exists()) _file.remove();
-      _file.create();
-      _file.open(O_WRONLY | O_APPEND);
-    } catch (const std::exception &e) {
+    _newFile = !File(path).exists();
+    _file.open(path.c_str());
+    if (_file.is_open() == false)
       return processError("500", "Internal Server Error");
-    }
   }
-  if (_file.write(data) == -1)
+  _file << data;
+  if (_file.good() == false)
     return processError("500", "Internal Server Error");
   _currBodySize += data.size();
   if (_currBodySize >= _expectedBodySize) {
-    if (_file.close() == -1)
-      Log::write("Failed to close file: " + _file.getPath(), WARNING,
-                 BRIGHT_YELLOW);
     if (_newFile)
       _response = Response("HTTP/1.1", "201", "Created");
     else
@@ -243,11 +236,8 @@ Response &Http::processDelete(std::string uri) {
   if (!file.exists()) return processError("404", "Not Found");
   if (file.dir()) return processError("403", "Forbidden");
   if (!file.readable()) return processError("403", "Forbidden");
-  try {
-    file.remove();
-  } catch (const std::exception &e) {
+  if (std::remove(file.getPath().c_str()) != 0)
     return processError("500", "Internal Server Error");
-  }
   _response = Response("HTTP/1.1", "204", "No Content");
   _responseReady = true;
   return _response;

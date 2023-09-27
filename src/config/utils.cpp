@@ -100,8 +100,7 @@ std::list<std::string> processWildcard(std::string path) {
 
     // Prepare directory
     DIR* dir = opendir(path.c_str());
-    if (dir == NULL)
-      throw std::runtime_error("opendir: " + std::string(strerror(errno)));
+    if (dir == NULL) continue;
     struct dirent* ent;
     errno = 0;
 

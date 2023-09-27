@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <fstream>
@@ -19,8 +18,6 @@
 // Class to check file properties and read/write files
 class File {
  private:
-  static int _filesOpen;
-  int _fd;
   std::string _path;
 
  public:
@@ -31,7 +28,6 @@ class File {
   ~File();
 
   // Getters
-  static int getFilesOpen();
   std::string getPath() const;
 
   std::string getDir() const;
@@ -51,6 +47,9 @@ class File {
   // Checks if the file is a regular file
   // @exception No custom exceptions
   bool file() const;
+  // Checks if the file is a symbolic link
+  // @exception No custom exceptions
+  bool isSymLink() const;
   // Checks if the file is a directory
   // @exception No custom exceptions
   bool dir() const;
@@ -70,36 +69,7 @@ class File {
   // @exception No custom exceptions
   std::string lastModified(std::string format) const;
 
-  // Checks if the file has been opened through member function open()
-  // @exception No custom exceptions
-  bool isOpen() const;
-
-  // Creates the file if it doesn't exist and the directories leading to it if
-  // they don't exist
-  // @exception std::runtime_error if the creation of the file or the
-  // directories fails
-  void create();
-  // Deletes the file
-  // @exception std::runtime_error if the deletion of the file fails
-  void remove();
-  // Opens the file
-  // @exception std::runtime_error if opening the file fails
-  void open(int flags, mode_t mode = 0644);
-  // Closes the file
-  // @exception No custom exceptions
-  int close();
-
-  // Reads the file
-  // @exception std::runtime_error if reading the file fails
-  std::string read() const;
-  // Writes to the file
-  // @exception No custom exceptions
-  int write(const std::string &data) const;
-
- private:
-  // Throws an exception indicating the function and message
-  // @exception std::runtime_error
-  static void throwException(std::string func, std::string msg);
+  int resolveSymlink();
 };
 
 #endif

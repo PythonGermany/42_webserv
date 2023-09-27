@@ -13,7 +13,7 @@
 
 class Config {
  private:
-  File _file;
+  std::string _path;
   std::string _config;
 
  public:
@@ -22,12 +22,6 @@ class Config {
   Config(const Config &rhs);
   Config &operator=(const Config &rhs);
   ~Config();
-
-  // Setters
-  // Sets the config file
-  // @exception std::runtime_error If the file is not found or not readable or
-  // if there is an error while reading the file
-  void setFile(std::string path);
 
   // Getters
   std::string getConfig() const;

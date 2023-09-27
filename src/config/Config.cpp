@@ -1,35 +1,39 @@
 #include "Config.hpp"
 
 Config::Config() {}
+#include <cstdlib>
+Config::Config(std::string path) {
+  _path = path;
 
-Config::Config(std::string path) { setFile(path); }
+  File f(path);
+  if (f.isSymLink() && f.resolveSymlink() != 0)
+    throw std::runtime_error("Config: Failed to resolve symlink '" + path +
+                             "'");
+  std::ifstream fstream(f.getPath().c_str());
+  if (fstream.is_open() == false)
+    throw std::runtime_error("Config: Failed to open file '" + path + "'");
+  std::stringstream stream;
+  stream << fstream.rdbuf();
+  if (stream.fail())
+    throw std::runtime_error("Config: Failed to read file '" + path + "'");
+  _config = stream.str();
+}
 
 Config::Config(const Config &rhs) { *this = rhs; }
 
 Config &Config::operator=(const Config &rhs) {
   if (this == &rhs) return *this;
-  _file = rhs._file;
+  _path = rhs._path;
   _config = rhs._config;
   return *this;
 }
 
 Config::~Config() {}
 
-void Config::setFile(std::string path) {
-  _file = File(path);
-  if (!_file.exists())
-    throw std::runtime_error("Config: File '" + path + "' not found");
-  if (!_file.readable())
-    throw std::runtime_error("Config: File '" + path + "' not readable");
-  _file.open(O_RDONLY);
-  _config = _file.read();
-  _file.close();
-}
-
 std::string Config::getConfig() const { return _config; }
 
 void Config::removeComments() {
-  Log::write(_file.getPath() + " Removing comments", DEBUG);
+  Log::write(_path + " Removing comments", DEBUG);
   size_t i = _config.find_first_of("#");
   while (i != std::string::npos) {
     size_t j = _config.find_first_of("\n", i);
@@ -37,7 +41,7 @@ void Config::removeComments() {
     _config.erase(i, j - i);
     i = _config.find_first_of("#");
   }
-  Log::write(_file.getPath() + " Comments removed", DEBUG);
+  Log::write(_path + " Comments removed", DEBUG);
 }
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
@@ -124,7 +128,7 @@ void Config::processInclude(Context &context, std::string path) {
   if (startsWith(path, "/"))
     includePath = path;
   else
-    includePath = _file.getDir() + path;
+    includePath = File(_path).getDir() + path;
 
   // Get file list
   std::list<std::string> files = processWildcard(includePath);
@@ -235,5 +239,5 @@ void Config::checkError(size_t line, std::string error) {
 }
 
 void Config::throwExeption(size_t line, std::string msg) {
-  throw std::runtime_error(_file.getPath() + ":" + toString(line) + ": " + msg);
+  throw std::runtime_error(_path + ":" + toString(line) + ": " + msg);
 }
