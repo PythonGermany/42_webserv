@@ -3,10 +3,8 @@
 
 # TODO
 
-- [ ] Figure out how to work with error_page so that they dont shadow the configuration from the parent context block
-- [ ] Check if PUT is conform to the RFC and the subject
-- [ ] Implement cgi support
 - [ ] Implement chunked transfer encoding
+- [ ] Implement cgi support
 
 # Contents
 

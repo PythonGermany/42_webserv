@@ -28,10 +28,6 @@
   { "GET", "HEAD", "OPTIONS" }
 #define MAX_CLIENT_BODY_SIZE 1048576
 
-// Default values for cache class
-#define CACHE_DATA_TTL 60                 // seconds
-#define CACHE_MAX_SIZE 256 * 1024 * 1024  // 256 MB
-
 // Default values for poll class
 /**
  * close connections if they are TIMEOUT milliseconds inactive
