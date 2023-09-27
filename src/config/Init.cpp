@@ -64,19 +64,11 @@ void Init::initLogDefaults(Context& context) {
     else if (level == "error")
       Log::setLevel(ERROR);
   }
-
   // Init log files
   if (http.exists("access_log"))
     Log::setLogFile(http.getDirective("access_log")[0][0]);
   if (http.exists("error_log"))
     Log::setErrorLogFile(http.getDirective("error_log")[0][0]);
-  Log::init();
-  {
-    Log::write("--------- Log configuration ---------", INFO, BRIGHT_GREEN);
-    Log::write("Log level: " + toString(Log::getLevel()), INFO);
-    Log::write("Access log file: " + Log::getLogFile().getPath(), INFO);
-    Log::write("Error log file: " + Log::getErrorLogFile().getPath(), INFO);
-  }
 }
 
 void Init::initPoll() {

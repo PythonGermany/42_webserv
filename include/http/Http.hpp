@@ -5,6 +5,7 @@
 
 #include "AConnection.hpp"
 #include "Cache.hpp"
+#include "File.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"

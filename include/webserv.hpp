@@ -14,7 +14,7 @@
 #define LOG_TO_STDOUT false
 #define LOG_LEVEL INFO
 #define LOG_PATH "/var/log/webserv/access.log"
-#define ERROR_LOG_PATH "/var/log/webserv/error.log"
+#define LOG_ERROR_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
 
