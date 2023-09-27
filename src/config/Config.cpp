@@ -51,9 +51,9 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
     if (data.length() == 0) break;
 
     // Find end of token
-    size_t nextEnd = data.find_first_of(" \n");
-    if (nextEnd == std::string::npos || data[nextEnd] != ' ')
-      throwExeption(line, "Expected token ' ' not found");
+    size_t nextEnd = data.find_first_of(" \t\n");
+    if (nextEnd == std::string::npos || data[nextEnd] == '\n')
+      throwExeption(line, "Unexpected token '\\n' found");
     line += linesUntilPos(data, nextEnd);
 
     // Process token
