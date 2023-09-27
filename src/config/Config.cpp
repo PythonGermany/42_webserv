@@ -119,7 +119,6 @@ void Config::processContext(Context &context, std::string &data,
 }
 
 void Config::processInclude(Context &context, std::string path) {
-  std::vector<std::string> files;
   // Prepare wildcard path
   std::string includePath;
   if (startsWith(path, "/"))
@@ -128,13 +127,13 @@ void Config::processInclude(Context &context, std::string path) {
     includePath = _file.getDir() + path;
 
   // Get file list
-  files = processWildcard(includePath);
-  for (size_t i = 0; i < files.size(); i++) {
-    Log::write(
-        "Context: '" + context.getName() + "' -> Include '" + files[i] + "'",
-        DEBUG);
+  std::list<std::string> files = processWildcard(includePath);
+  std::list<std::string>::iterator itr = files.begin();
+  for (; itr != files.end(); itr++) {
+    Log::write("Context: '" + context.getName() + "' -> Include '" + *itr + "'",
+               DEBUG);
     // Recursively parse included config files
-    Config config(files[i]);
+    Config config(*itr);
     config.removeComments();
     config.parseContext(context, config.getConfig(), 1, false);
   }

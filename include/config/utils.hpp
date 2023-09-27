@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <list>
 #include <sstream>
 #include <vector>
 
@@ -99,11 +100,12 @@ std::string toHexString(unsigned char c);
 std::string highlight(std::string str, std::string color,
                       std::string delim = "'");
 
-// Checks if a string contains a wildcard at the end
-// @param str The string to check
-// @return A vector of paths matching the wildcard
+// Expands all the wildcards in a path into a list of fully expanded paths
+// matching the wildcard patterns of the path
+// @param path The full path with wildcard patterns
+// @return A list of paths matching the wildcard path
 // @exception std::runtime_error if a function call fails
-std::vector<std::string> processWildcard(std::string str);
+std::list<std::string> processWildcard(std::string path);
 
 // Decodes percent encoding
 // @param str The string to decode
@@ -122,8 +124,11 @@ std::string percentEncode(std::string str, std::string reserved);
 // @exception No custom exceptions
 std::string getTime(std::string format, const time_t* timer = NULL);
 
+// Returns a string describing the size in different formats depending on the
+// size
 std::string getMemorySize(size_t size);
 
+// Returns the size until the end of the stream
 size_t getStreamBufferSize(std::istream& stream);
 
 #endif

@@ -75,36 +75,59 @@ std::string highlight(std::string str, std::string color, std::string delim) {
   return str;
 }
 
-std::vector<std::string> processWildcard(std::string str) {
-  std::vector<std::string> files;
-  std::string path = str.substr(0, str.find_last_of("/"));
-  std::string pattern = str.substr(str.find_last_of("/") + 1);
-  if (pattern.find("*") == std::string::npos) {
-    files.push_back(str);
-  } else {
+std::list<std::string> processWildcard(std::string path) {
+  std::list<std::string> fs(1, path);
+
+  std::list<std::string>::iterator itr = fs.begin();
+  for (; itr != fs.end(); itr++) {
+    size_t wildcard = itr->find('*');
+    if (wildcard == std::string::npos) continue;
+
+    // Find pattern delimiters
+    size_t patternStart = itr->rfind('/', wildcard);
+    if (patternStart == std::string::npos)
+      patternStart = 0;
+    else
+      patternStart += 1;
+    size_t patternEnd = itr->find('/', wildcard);
+    if (patternEnd == std::string::npos) patternEnd = itr->size();
+
+    // Split input path
+    std::string path = itr->substr(0, patternStart);
+    std::string pattern = itr->substr(patternStart, patternEnd - patternStart);
+    std::string prefix = itr->substr(patternEnd);
+    fs.erase(itr--);
+
+    // Prepare directory
     DIR* dir = opendir(path.c_str());
     if (dir == NULL)
       throw std::runtime_error("opendir: " + std::string(strerror(errno)));
     struct dirent* ent;
     errno = 0;
-    ent = readdir(dir);
-    while (ent != NULL) {
-      if (ent->d_name != std::string(".") && ent->d_name != std::string("..") &&
-          (ent->d_type == DT_REG || ent->d_type == DT_LNK)) {
-        int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
-        if (ret == 0)
-          files.push_back(path + "/" + ent->d_name);
-        else if (ret != FNM_NOMATCH)
-          throw std::runtime_error("fnmatch: " + std::string(strerror(errno)));
-      }
+
+    // Read directory
+    while (true) {
       ent = readdir(dir);
+      if (ent == NULL) break;
+      if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
+        continue;
+      if (ent->d_type != DT_DIR &&
+          prefix.find_first_of("*/") != std::string::npos)
+        continue;
+      int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
+      if (ret == 0) {
+        fs.insert(itr, path + ent->d_name + prefix);
+      } else if (ret != FNM_NOMATCH)
+        throw std::runtime_error("fnmatch: " + std::string(strerror(errno)));
     }
+
+    // Cleanup directory
     if (errno != 0)
       throw std::runtime_error("readdir: " + std::string(strerror(errno)));
     if (closedir(dir) == -1)
       throw std::runtime_error("closedir: " + std::string(strerror(errno)));
   }
-  return files;
+  return fs;
 }
 
 std::string percentDecode(std::string str) {
