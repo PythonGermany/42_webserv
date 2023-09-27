@@ -126,7 +126,7 @@ Response &Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
   // Add index file if needed
-  if (endsWith(uri, "/") && _context->exists("index", true)) {
+  if (getContextArgs() == uri && _context->exists("index", true)) {
     std::string path = file.getPath();
     std::vector<std::string> indexes = _context->getDirective("index", true)[0];
     for (size_t i = 0; i < indexes.size(); i++) {
