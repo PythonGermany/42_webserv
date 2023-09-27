@@ -87,8 +87,7 @@ Response &Http::processRequest() {
 
   std::string contextUri = getContextArgs();
   if (Log::getLevel() >= DEBUG)
-    _log += std::string(INDENT) +
-            "Context URI: " + (contextUri != "" ? contextUri : "/");
+    _log += std::string(INDENT) + "Context URI: " + contextUri;
 
   // Check if method is allowed
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
@@ -453,5 +452,5 @@ std::string Http::getContextPath(std::string token, bool searchTree) const {
 
 std::string Http::getContextArgs() const {
   if (_context->getArgs().size() > 0) return _context->getArgs()[0];
-  return "";
+  return "/";
 }
