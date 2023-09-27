@@ -54,7 +54,10 @@ std::vector<std::vector<std::string> > &Context::getDirective(std::string token,
   return _directives[token];
 }
 
-std::vector<Context> &Context::getContext(std::string token) {
+std::vector<Context> &Context::getContext(std::string token, bool searchTree) {
+  if (exists(token, false)) return _contexts[token];
+  if (searchTree && _parent != NULL)
+    return _parent->getContext(token, searchTree);
   return _contexts[token];
 }
 

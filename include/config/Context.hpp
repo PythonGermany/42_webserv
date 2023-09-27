@@ -33,7 +33,7 @@ class Context {
   std::map<std::string, size_t> getTokenOccurences();
   std::vector<std::vector<std::string> > &getDirective(std::string token,
                                                        bool searchTree = false);
-  std::vector<Context> &getContext(std::string token);
+  std::vector<Context> &getContext(std::string token, bool searchTree = false);
   std::map<std::string, std::vector<Context> > &getContexts();
 
   void setParent(Context *parent);

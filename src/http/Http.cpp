@@ -107,6 +107,10 @@ Response &Http::processRequest() {
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.2
   if (_request.getMethod() == "OPTIONS") return processOptions();
 
+  // Check if the request should be redirected
+  if (_context->exists("redirect"))
+    return processRedirect(_context->getDirective("redirect")[0][0]);
+
   // Process alias
   if (_context->exists("alias"))
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
@@ -121,10 +125,6 @@ Response &Http::processRequest() {
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
-  // Check if the request should be redirected
-  if (_context->exists("redirect"))
-    return processRedirect(_context->getDirective("redirect")[0][0]);
-
   return processFile(_uri);
 }
 
@@ -138,11 +138,11 @@ Response &Http::processFile(std::string uri) {
     std::string index;
     for (size_t i = 0; i < indexes.size(); i++) {
       index = indexes[i];
-      if (index[0] == '/') index = index.substr(1);
       file = File(path + index);
       if (file.exists() && file.file() && file.readable()) break;
     }
   }
+  std::cout << file.getPath() << std::endl;
 
   if (!file.exists()) {
     // Redirect to directory if file does not exist
@@ -159,15 +159,17 @@ Response &Http::processFile(std::string uri) {
   } else if (!file.readable())
     return processError("403", "Forbidden");
 
+  // TODO: Handle CGI file requests
+
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
-  std::ifstream *body = new std::ifstream(path.c_str());
+  std::ifstream *body = new std::ifstream(file.getPath().c_str());
   if (body->is_open() == false) {
     delete body;
     return processError("500", "Internal Server Error");
   }
-  if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Content-Length", toString(file.size()));
+  if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Last-modified",
                       file.lastModified("%a, %d %b %Y %H:%M:%S"));
 
@@ -180,6 +182,9 @@ Response &Http::processFile(std::string uri) {
 }
 
 Response &Http::processUploadHead() {
+  if (_request.getHeader("Content-Range") != "")
+    return processError("501", "Not Implemented");
+
   // Check if body size is specified
   std::string bodySizeStr = _request.getHeader("Content-Length");
   if (bodySizeStr.empty()) return processError("411", "Length Required");
@@ -293,7 +298,7 @@ Response &Http::processAutoindex(std::string uri) {
     *body << f.lastModified("%d-%m-%Y %H:%M") + "          " +
                  (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
-  *body << "</pre><hr></body>\r\n</html>\r\n";
+  *body << "</pre><hr></body>\r\n</html>";
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   _responseReady = true;
@@ -303,7 +308,6 @@ Response &Http::processAutoindex(std::string uri) {
 Response &Http::processRedirect(std::string uri) {
   _response = Response("HTTP/1.1", "301", "Moved Permanently");
   _response.setHeader("Location", getAbsoluteUri(uri));
-  _response.setHeader("Content-Length", toString(0));
   _responseReady = true;
   return _response;
 }
@@ -364,6 +368,8 @@ void Http::sendResponse() {
   }
 
   // Set default header values
+  if (_response.getHeader("Content-Length") == "")
+    _response.setHeader("Content-Length", toString(0));
   _response.setHeader("Server", "webserv");
   // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
@@ -421,6 +427,14 @@ bool Http::isMethodValid() {
   if (_response.getStatus() == "405")
     _response.setHeader("Allow", concatenate(allowedMethods, ", "));
   _responseReady = true;
+  return false;
+}
+
+bool Http::isCgiExtension(std::string extension) const {
+  if (!_context->exists("cgi", true)) return false;
+  std::vector<Context> &cgis = _context->getContext("cgi", true);
+  for (size_t i = 0; i < cgis.size(); i++)
+    if (cgis[i].getArgs()[0] == extension) return true;
   return false;
 }
 

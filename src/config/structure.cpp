@@ -61,7 +61,9 @@ std::string isExtension(std::string const &value, size_t index) {
   (void)index;
   if (value.length() == 0) return "Extension cannot be empty";
   for (size_t i = 0; i < value.length(); i++)
-    if (value[i] == '.') return "'.' not allowed in extension";
+    if (value[i] == '.')
+      return "'.' not allowed in extension, only use the part after '.' as "
+             "extension";
   return "";
 }
 
