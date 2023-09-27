@@ -1,7 +1,5 @@
 #include "Http.hpp"
 
-Cache Http::_cache;
-
 #define INDENT "\r\n                          "
 
 Http::Http(Address const &client, Address const &host) {
@@ -24,10 +22,6 @@ Http::~Http() {
       toString<Address &>(host) + " -> delete: " + toString<Address &>(client),
       DEBUG);
 }
-
-bool Http::updateCache() { return _cache.update(); }
-
-const Cache &Http::getCache() { return _cache; }
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();

@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "AConnection.hpp"
-#include "Cache.hpp"
 #include "File.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
@@ -12,8 +11,6 @@
 #include "VirtualHost.hpp"
 
 class Http : public AConnection {
-  static Cache _cache;
-
   Request _request;
   Response _response;
   VirtualHost* _virtualHost;
@@ -30,9 +27,6 @@ class Http : public AConnection {
  public:
   Http(Address const& client, Address const& host);
   ~Http();
-
-  static bool updateCache();
-  static const Cache& getCache();
 
   void OnHeadRecv(std::string msg);
   void OnBodyRecv(std::string msg);
