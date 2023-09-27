@@ -49,6 +49,9 @@ void Init::initMimeTypes(Context& context) {
 
 void Init::initLogDefaults(Context& context) {
   Context& http = context.getContext("http")[0];
+  // Init log to stdout
+  if (http.exists("log_to_stdout"))
+    Log::setLogToStdout(http.getDirective("log_to_stdout")[0][0] == "on");
   // Init log level
   if (http.exists("log_level")) {
     std::string level = http.getDirective("log_level")[0][0];

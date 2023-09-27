@@ -70,6 +70,7 @@ http {
     }
 
     include PATH;
+    log_to_stdout [on|off];
     log_level LEVEL;
     access_log PATH;
     error_log PATH;
@@ -80,7 +81,7 @@ http {
 }
 ```
 Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [types](#types) / [include](#include) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [server](#server)
+**Allowed tokens:** [types](#types) / [include](#include) / [log_to_stdout](#log_to_stdout) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [server](#server)
 
 ### Types
 ```nginx
@@ -156,6 +157,14 @@ include PATH;
 ```
 Include another configuration file.  
 **Allowed contexts:** [Http](#http) / [Server](#server) / [Location](#location) / [Cgi](#cgi)
+
+### log_to_stdout
+```nginx
+log_to_stdout [on|off];
+```
+Sets whether logs should also be displayed on the standard output.  
+Default: `info`  
+**Allowed contexts:** [Http](#http)
 
 ### log_level
 ```nginx

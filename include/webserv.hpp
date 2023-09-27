@@ -11,6 +11,7 @@
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
 
 // Default values for log class
+#define LOG_TO_STDOUT true
 #define LOG_LEVEL INFO
 #define LOG_PATH "/var/log/webserv/access.log"
 #define ERROR_LOG_PATH "/var/log/webserv/error.log"
@@ -39,8 +40,9 @@
 
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[30] = {
+const t_token tokens[31] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
+    {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
     {"error_log", "http", false, 0, 1, 1, 1, NULL},

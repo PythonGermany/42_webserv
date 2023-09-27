@@ -129,20 +129,17 @@ Response &Http::processRequest() {
 }
 
 Response &Http::processFile(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0][0] + uri;
-  File file(path);
+  File file(_context->getDirective("root", true)[0][0] + uri);
 
   // Add index file if needed
   if (endsWith(uri, "/") && _context->exists("index", true)) {
+    std::string path = file.getPath();
     std::vector<std::string> indexes = _context->getDirective("index", true)[0];
-    std::string index;
     for (size_t i = 0; i < indexes.size(); i++) {
-      index = indexes[i];
-      file = File(path + index);
+      file = File(path + indexes[i]);
       if (file.exists() && file.file() && file.readable()) break;
     }
   }
-  std::cout << file.getPath() << std::endl;
 
   if (!file.exists()) {
     // Redirect to directory if file does not exist

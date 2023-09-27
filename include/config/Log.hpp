@@ -11,6 +11,7 @@
 
 class Log {
  private:
+  static bool _log_to_stdout;
   static t_log_level _log_level;
   static File _log_file;
   static File _error_log_file;
@@ -23,6 +24,7 @@ class Log {
   ~Log();
 
   // Setters
+  static void setLogToStdout(bool log);
   static void setLevel(t_log_level level);
   static void setLogFile(File path);
   static void setErrorLogFile(File path);

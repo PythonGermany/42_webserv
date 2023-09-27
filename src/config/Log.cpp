@@ -1,5 +1,6 @@
 #include "Log.hpp"
 
+bool Log::_log_to_stdout = LOG_TO_STDOUT;
 t_log_level Log::_log_level = LOG_LEVEL;
 File Log::_log_file = File(LOG_PATH);
 File Log::_error_log_file = File(ERROR_LOG_PATH);
@@ -9,6 +10,8 @@ std::string Log::_dateFormat = LOG_DATE_FORMAT;
 Log::Log() {}
 
 Log::~Log() {}
+
+void Log::setLogToStdout(bool log) { _log_to_stdout = log; }
 
 void Log::setLevel(t_log_level level) { _log_level = level; }
 
@@ -62,8 +65,9 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
   if (level <= _log_level) {
     std::string timeStamp =
         "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-    std::cout << timeStamp << color << highlight(msg, BRIGHT_BLUE) << RESET
-              << std::endl;
+    if (_log_to_stdout)
+      std::cout << timeStamp << color << highlight(msg, BRIGHT_BLUE) << RESET
+                << std::endl;
     try {
       if (_log_file.isOpen()) _log_file.write(timeStamp + msg + "\n");
     } catch (const std::exception& e) {
