@@ -163,7 +163,7 @@ Include another configuration file.
 log_to_stdout [on|off];
 ```
 Sets whether logs should also be displayed on the standard output.  
-Default: `info`  
+Default: `off`  
 **Allowed contexts:** [Http](#http)
 
 ### log_level
@@ -289,6 +289,7 @@ types {
 http {
   include /example/mime.types;
 
+  log_to_stdout on;
   log_level info;
   access_log /var/log/webserv/access.log;
   error_log /var/log/webserv/error.log;
