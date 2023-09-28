@@ -12,7 +12,6 @@ Http::Http(Address const &client, Address const &host) {
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_responseReady = false;
-  this->_writeBufferPos = 0;  // TODO: Pythongermany code
   Log::write(toString<Address &>(this->host) +
                  " -> add: " + toString<Address &>(this->client),
              DEBUG);
@@ -30,7 +29,6 @@ const Cache &Http::getCache() { return _cache; }
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
-  _writeBufferPos = 0;  // TODO: Pythongermany code
 
   // Parse request
   _request.parseHead(msg);
@@ -67,7 +65,12 @@ void Http::OnCgiRecv(std::string msg) {
   std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
 }
 
-void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
+void Http::OnCgiError() {
+  _response = processError("500", "Internal Server Error");
+  _responseReady = true;
+  sendResponse();
+  _responseReady = false;
+}
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
@@ -159,6 +162,21 @@ Response &Http::processFile(std::string uri) {
     return processError("403", "Forbidden");
   } else if (!file.readable())
     return processError("403", "Forbidden");
+
+  std::vector<Context> &cgiContext = _context->getContext("cgi");
+  if (cgiContext.size() != 0 &&
+      cgiContext[0].getArgs()[0] == file.getExtension()) {
+    runCGI(cgiContext[0].getDirective("cgi_path")[0][0],
+           std::vector<std::string>(), std::vector<std::string>());
+    _response = Response();
+    _responseReady = false;
+    return _response;
+  }
+
+  // if (file.getExtension() == _context->getDirective("cgi")[0][0]) {
+  //   std::cout << "CGI" << std::endl;
+  // } else
+  //   std::cout << "NO CGI" << std::endl;
 
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");

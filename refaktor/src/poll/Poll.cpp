@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Log.hpp"
+#include "webserv.hpp"
 
 /**
  * @brief Add callback object with corresponding pollfd struct
@@ -16,7 +16,7 @@
  * @param src Poll takes ownersip of the allocated callback object and ensures
  * proper cleanup
  */
-void Poll::add(IFileDescriptor *src, struct pollfd const &pollfd) try {
+void Poll::add(CallbackPointer const &src, struct pollfd const &pollfd) try {
   getInstance().callbackObjects.push_back(src);
   try {
     getInstance().pollfds.push_back(pollfd);
@@ -25,34 +25,29 @@ void Poll::add(IFileDescriptor *src, struct pollfd const &pollfd) try {
     throw;
   }
 } catch (...) {
-  delete src;
+  if (src.link == false) delete src.ptr;
   close(pollfd.fd);
+  throw;
 }
 
-void Poll::remove(size_type pos) {
-  Poll &poll = getInstance();
+// void Poll::remove(size_type pos) {
+//   Poll &poll = getInstance();
 
-  delete poll.callbackObjects[pos];
-  close(poll.pollfds[pos].fd);
-  poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
-  poll.pollfds.erase(poll.pollfds.begin() + pos);
-  if (pos <= poll.pos) --poll.pos;
-  std::cout << "Poll delete: " << pos << std::endl;
-}
+//   delete poll.callbackObjects[pos];
+//   close(poll.pollfds[pos].fd);
+//   poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
+//   poll.pollfds.erase(poll.pollfds.begin() + pos);
+//   if (pos <= poll.pos) --poll.pos;
+//   std::cout << "Poll delete: " << pos << std::endl;
+// }
 
 void Poll::remove(IFileDescriptor *src) {
-  Poll &poll = getInstance();
-  size_t size = poll.callbackObjects.size();
-
-  for (size_t i = 0; i < size; ++i) {
-    if (poll.callbackObjects[i] == src) {
-      delete src;
-      close(poll.pollfds[i].fd);
-      poll.callbackObjects.erase(poll.callbackObjects.begin() + i);
-      poll.pollfds.erase(poll.pollfds.begin() + i);
-      if (i <= poll.pos) --poll.pos;
-      std::cout << "Poll delete: " << i << std::endl;
-      return;
+  for (size_t i = 0; i < callbackObjects.size(); ++i) {
+    if (callbackObjects[i].ptr == src) {
+      if (callbackObjects[i].link == false) delete callbackObjects[i].ptr;
+      close(pollfds[i].fd);
+      callbackObjects.erase(callbackObjects.begin() + i);
+      pollfds.erase(pollfds.begin() + i);
     }
   }
 }
@@ -99,11 +94,11 @@ void Poll::lastForkPid(pid_t src) { getInstance().pid = src; }
 void Poll::cleanUp() {
   Poll &poll = getInstance();
 
-  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
       poll.callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = poll.pollfds.begin();
   while (callbackObjectsIt != poll.callbackObjects.end()) {
-    delete *callbackObjectsIt;
+    if (callbackObjectsIt->link == false) delete callbackObjectsIt->ptr;
     close(pollfdIt->fd);
     ++callbackObjectsIt;
     ++pollfdIt;
@@ -115,27 +110,57 @@ void Poll::cleanUp() {
 
 Poll::~Poll() { cleanUp(); }
 
-Poll &Poll::operator=(Poll const &) { return *this; }
-
-/**
- * TODO: find better solution for pos = 0 and remove
- */
 void Poll::iterate() {
-  pos = 1;
-  while (pos <= callbackObjects.size()) {
+  for (size_t i = 0; i < callbackObjects.size();) {
+    struct pollfd newPollfd[2];
+    CallbackPointer newCallbackObject[2];
+    bool elementRemoved;
+
+    for (size_t j = 0; j < sizeof(newPollfd) / sizeof(*newPollfd); ++j)
+      newPollfd[j].fd = -1;
+    elementRemoved = false;
     try {
-      std::cout << "Poll call: " << pos - 1 << " with size: " << pollfds.size()
-                << std::endl;
-      callbackObjects[pos - 1]->onPollEvent(pollfds[pos - 1]);
-    } catch (const std::exception &e) {
-      Log::write(e.what() + std::string(" while iterating"), WARNING,
-                 BRIGHT_YELLOW);
-      pollfds[pos - 1].events = 0;
+      if (callbackObjects[i].link)
+        std::cerr << "try to call link: " << pollfds[i].fd << std::endl;
+      else
+        std::cerr << "try to call no link" << pollfds[i].fd << std::endl;
+      callbackObjects[i].ptr->onPollEvent(pollfds[i], newCallbackObject,
+                                          newPollfd);
+
+      for (size_t j = 0;
+           j < sizeof(newCallbackObject) / sizeof(*newCallbackObject); ++j)
+        if (newCallbackObject[j].ptr != NULL) {
+          callbackObjects.push_back(newCallbackObject[j]);
+          try {
+            pollfds.push_back(newPollfd[j]);
+          } catch (...) {
+            callbackObjects.pop_back();
+            throw;
+          }
+          if (newCallbackObject[j].link)
+            std::cerr << "link created" << std::endl;
+        }
+      if (pollfds[i].events == 0) {
+        close(pollfds[i].fd);
+        if (callbackObjects[i].link == false) delete callbackObjects[i].ptr;
+        callbackObjects.erase(callbackObjects.begin() + i);
+        pollfds.erase(pollfds.begin() + i);
+        elementRemoved = true;
+      }
+    } catch (std::exception const &e) {
+      std::cerr << e.what() << '\n';
+      remove(callbackObjects[i].ptr);
+      i = 0;
+      elementRemoved = true;
+      for (size_t j = 0;
+           j < sizeof(newCallbackObject) / sizeof(*newCallbackObject); ++j) {
+        if (newCallbackObject[j].ptr != NULL &&
+            newCallbackObject[j].link == false)
+          delete newCallbackObject[j].ptr;
+        if (newPollfd[j].fd != -1) close(newPollfd[j].fd);
+      }
     }
-    if (pollfds[pos - 1].events == 0) {
-      remove(pos - 1);
-    }
-    ++pos;
+    if (elementRemoved == false) ++i;
   }
 }
 
@@ -146,11 +171,11 @@ void Poll::setTimeout(int src) {
 }
 
 void Poll::addPollEvent(short event, IFileDescriptor *src) {
-  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
       getInstance().callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
   while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (*callbackObjectsIt == src) {
+    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
       pollfdIt->events |= event;
       return;
     }
@@ -161,11 +186,11 @@ void Poll::addPollEvent(short event, IFileDescriptor *src) {
 }
 
 void Poll::clearPollEvent(short event, IFileDescriptor *src) {
-  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
       getInstance().callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
   while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (*callbackObjectsIt == src) {
+    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
       pollfdIt->events &= ~event;
       return;
     }
@@ -176,11 +201,11 @@ void Poll::clearPollEvent(short event, IFileDescriptor *src) {
 }
 
 void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
-  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
       getInstance().callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
   while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (*callbackObjectsIt == src) {
+    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
       pollfdIt->events &= ~POLLINACTIVE;
       pollfdIt->events |= oldEvents;
       return;
@@ -192,11 +217,11 @@ void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
 }
 
 short Poll::setPollInactive(IFileDescriptor *src) {
-  std::vector<IFileDescriptor *>::iterator callbackObjectsIt =
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
       getInstance().callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
   while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (*callbackObjectsIt == src) {
+    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
       short tmp = pollfdIt->events;
       pollfdIt->events &= ~POLLIN;
       pollfdIt->events |= POLLINACTIVE;

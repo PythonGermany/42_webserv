@@ -14,6 +14,10 @@
 
 #define WAIT_FOR_HEAD std::string::npos
 
+class RequestPipe;
+
+class ResponsePipe;
+
 class AConnection : public IFileDescriptor {
  public:
   AConnection();
@@ -22,8 +26,11 @@ class AConnection : public IFileDescriptor {
   AConnection &operator=(AConnection const &other);
 
   virtual void OnCgiRecv(std::string msg) = 0;
-  virtual void OnCgiTimeout() = 0;
+  virtual void OnCgiError() = 0;
   void onPipePollOut(struct pollfd &pollfd);
+
+  RequestPipe *RequestPipe;
+  ResponsePipe *ResponsePipe;
 
  protected:
   Address client;
@@ -38,8 +45,8 @@ class AConnection : public IFileDescriptor {
   virtual void OnBodyRecv(std::string msg) = 0;
   void send(std::istream *msg);
   void cgiSend(std::string msg);
-  void runCGI(std::string program, std::vector<std::string> &arg,
-              std::vector<std::string> &env);
+  void runCGI(std::string program, std::vector<std::string> const &arg,
+              std::vector<std::string> const &env);
   void closeConnection();
 
  private:

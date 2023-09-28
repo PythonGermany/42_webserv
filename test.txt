@@ -1,0 +1,32 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <unistd.h> // for the write system call
+#include <cstring>  // for strerror
+
+int main() {
+    // Open the file 'test.txt'
+    std::ifstream file("test.txt");
+
+    // Check if the file is opened successfully
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open the file 'test.txt'" << std::endl;
+        return 1;
+    }
+
+    // Create a stringstream to read from the file
+    std::stringstream buffer;
+    buffer << file.rdbuf(); // Read the file into the stringstream's buffer
+
+    // Access the buffer of the stringstream
+    std::string content = buffer.str();
+
+    // Print the content to stdout using the write system call
+    if (write(STDOUT_FILENO, content.c_str(), content.size()) == -1) {
+        std::cerr << "Error writing to stdout: " << strerror(errno) << std::endl;
+        return 1;
+    }
+
+    return 0;
+}

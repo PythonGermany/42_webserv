@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "Log.hpp"
 #include "Poll.hpp"
 #include "RequestPipe.hpp"
 #include "ResponsePipe.hpp"
@@ -13,31 +14,18 @@ AConnection::AConnection() {
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
   _writeBufferPos = std::string::npos;
+  RequestPipe = NULL;
+  ResponsePipe = NULL;
 }
 
-AConnection::AConnection(AConnection const &other) { *this = other; }
-
 AConnection::~AConnection() {
+  std::cerr << BRIGHT_RED << "~AConnection" << RESET << std::endl;
   while (_writeStreams.empty() == false) {
     delete _writeStreams.front();
     _writeStreams.pop();
   }
-}
-
-AConnection &AConnection::operator=(AConnection const &other) {
-  if (this != &other) {
-    client = other.client;
-    host = other.host;
-    headSizeLimit = other.headSizeLimit;
-    bodySize = other.bodySize;
-    headDelimiter = other.headDelimiter;
-    _writeBufferPos = other._writeBufferPos;
-    _writeBufferSize = other._writeBufferSize;
-    _writeStreams = other._writeStreams;
-    _readBuffer = other._readBuffer;
-    lastTimeActive = other.lastTimeActive;
-  }
-  return *this;
+  if (ResponsePipe != NULL) Poll::remove(ResponsePipe);
+  if (RequestPipe != NULL) Poll::remove(RequestPipe);
 }
 
 void AConnection::send(std::istream *msg) {
@@ -116,6 +104,7 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
 void AConnection::passReadBuffer(struct pollfd &pollfd) {
   std::string::size_type pos;
 
+  std::cerr << "Address: " << &pollfd.events << std::endl;
   while (pollfd.events & POLLIN) {
     if (bodySize == WAIT_FOR_HEAD) {
       pos = _readBuffer.find(headDelimiter);
@@ -140,10 +129,11 @@ void AConnection::onNoPollEvent(struct pollfd &pollfd) {
   if (pollfd.events & POLLINACTIVE) return;
   gettimeofday(&currentTime, NULL);
   delta = currentTime - lastTimeActive;
-  timeout = TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
+  timeout = CONNECTION_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
   if (timeout <= 0) {
-    pollfd.events = 0;
-    return;
+    std::ostringstream oss;
+    oss << client;
+    throw std::runtime_error(oss.str() + ": Connection Timed Out");
   }
   Poll::setTimeout(timeout);
 }
@@ -151,8 +141,9 @@ void AConnection::onNoPollEvent(struct pollfd &pollfd) {
 /**
  * CGI
  */
-void AConnection::runCGI(std::string program, std::vector<std::string> &arg,
-                         std::vector<std::string> &env) {
+void AConnection::runCGI(std::string program,
+                         std::vector<std::string> const &arg,
+                         std::vector<std::string> const &env) {
   int pid;
   int ResponsePipeFd[2];
   int RequestPipeFd[2];
@@ -166,9 +157,12 @@ void AConnection::runCGI(std::string program, std::vector<std::string> &arg,
   pid = fork();
   if (pid == -1)
     throw std::runtime_error(std::string("AConnection::runCGI(): ") +
-                             std::strerror(errno));
+                             std::strerror(errno));  // TODO: close pipes
+
+  Poll::lastForkPid(pid);
   if (pid == 0) {
     Poll::cleanUp();
+    Log::close();
     if (dup2(ResponsePipeFd[1], STDOUT_FILENO) == -1) {
       std::cerr << "webserv: error: dup2(): " << std::strerror(errno)
                 << std::endl;
@@ -186,12 +180,12 @@ void AConnection::runCGI(std::string program, std::vector<std::string> &arg,
     std::vector<char *> c_arg;
     std::vector<char *> c_env;
     c_arg.push_back(const_cast<char *>(program.c_str()));
-    for (std::vector<std::string>::iterator it = arg.begin(); it != arg.end();
-         ++it)
+    for (std::vector<std::string>::const_iterator it = arg.begin();
+         it != arg.end(); ++it)
       c_arg.push_back(const_cast<char *>(it->c_str()));
     c_arg.push_back(NULL);
-    for (std::vector<std::string>::iterator it = env.begin(); it != env.end();
-         ++it)
+    for (std::vector<std::string>::const_iterator it = env.begin();
+         it != env.end(); ++it)
       c_env.push_back(const_cast<char *>(it->c_str()));
     c_env.push_back(NULL);
     execve(program.c_str(), c_arg.data(), c_env.data());
@@ -206,14 +200,14 @@ void AConnection::runCGI(std::string program, std::vector<std::string> &arg,
   pollfd.fd = ResponsePipeFd[0];
   pollfd.events = POLLIN;
   pollfd.revents = 0;
-  Poll::add(new ResponsePipe(this, pid));
-  Poll::add(pollfd);
+  ResponsePipe = new class ResponsePipe(this, pid);
+  Poll::add(ResponsePipe, pollfd);
 
   pollfd.fd = RequestPipeFd[1];
   pollfd.events = POLLOUT;
   pollfd.revents = 0;
-  Poll::add(new RequestPipe(this));
-  Poll::add(pollfd);
+  RequestPipe = new class RequestPipe(this);
+  Poll::add(RequestPipe, pollfd);
 }
 
 void AConnection::cgiSend(std::string msg) { _cgiWriteBuffer += msg; }

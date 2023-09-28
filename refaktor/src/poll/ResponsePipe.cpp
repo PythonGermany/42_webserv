@@ -7,13 +7,28 @@
 
 #include <iostream>
 
+#include "AConnection.hpp"
 #include "Poll.hpp"
 
-ResponsePipe::ResponsePipe(AConnection *callbackObject, int cgiPid)
-    : _callbackObject(callbackObject), _cgiPid(cgiPid) {
+ResponsePipe::ResponsePipe() : _callbackObject(NULL), _cgiPid(-1), _fd(-1) {}
+
+ResponsePipe::ResponsePipe(AConnection *callbackObject, int cgiPid, int fd)
+    : _callbackObject(callbackObject), _cgiPid(cgiPid), _fd(fd) {
   gettimeofday(&lastTimeActive, NULL);
   _callbackObjectFlags = Poll::setPollInactive(_callbackObject);
-  std::cout << BRIGHT_RED << "ResponsePipe()" << RESET << std::endl;
+  std::cout << "ResponsePipe()" << std::endl;
+}
+
+ResponsePipe::ResponsePipe(ResponsePipe const &other) { *this = other; }
+
+ResponsePipe &ResponsePipe::operator=(ResponsePipe const &other) {
+  _callbackObject = other._callbackObject;
+  _callbackObjectFlags = other._callbackObjectFlags;
+  _readBuffer = other._readBuffer;
+  lastTimeActive = other.lastTimeActive;
+  _cgiPid = other._cgiPid;
+  _fd = other._fd;
+  return *this;
 }
 
 /**
@@ -22,19 +37,21 @@ ResponsePipe::ResponsePipe(AConnection *callbackObject, int cgiPid)
 ResponsePipe::~ResponsePipe() {
   int status;
 
-  std::cout << BRIGHT_RED << "~ResponsePipe()" << RESET << std::endl;
-  Poll::setPollActive(_callbackObjectFlags & POLLIN, _callbackObject);
-  _callbackObject->ResponsePipe = NULL;
+  std::cout << "~ResponsePipe()" << std::endl;
   if (_cgiPid == -1 || Poll::lastForkPid() == 0) return;
   kill(_cgiPid, SIGKILL);
   waitpid(_cgiPid, &status, 0);
   _cgiPid = -1;
 }
 
-void ResponsePipe::onPollEvent(struct pollfd &pollfd) {
+void ResponsePipe::onPollEvent(struct pollfd &pollfd,
+                               CallbackPointer *newCallbackObject,
+                               struct pollfd *newPollfd) {
   char tmpbuffer[BUFFER_SIZE];
   int status;
 
+  (void)newCallbackObject;
+  (void)newPollfd;
   if ((pollfd.revents & (POLLIN | POLLHUP)) == false) {
     onNoPollEvent(pollfd);
     return;
@@ -46,18 +63,13 @@ void ResponsePipe::onPollEvent(struct pollfd &pollfd) {
                              std::strerror(errno));
   if (msglen == 0) {
     pollfd.events &= ~POLLIN;
-    _callbackObject->ResponsePipe = NULL;
     waitpid(_cgiPid, &status, 0);
     _cgiPid = -1;
-    try {
-      if (WEXITSTATUS(status) != 0)
-        _callbackObject->OnCgiError();
-      else
-        _callbackObject->OnCgiRecv(_readBuffer);
-    } catch (...) {
-      Poll::remove(_callbackObject);
-      throw;
-    }
+    if (WEXITSTATUS(status) != 0)
+      _callbackObject->OnCgiError();
+    else
+      _callbackObject->OnCgiRecv(_readBuffer);
+    Poll::setPollActive(_callbackObjectFlags, _callbackObject);
     return;
   }
   _readBuffer += std::string(tmpbuffer, tmpbuffer + msglen);
@@ -84,12 +96,11 @@ void ResponsePipe::onNoPollEvent(struct pollfd &pollfd) {
   kill(_cgiPid, SIGKILL);
   waitpid(_cgiPid, &status, 0);
   _cgiPid = -1;
-  try {
-    _callbackObject->OnCgiError();
-  } catch (...) {
-    _callbackObject->ResponsePipe = NULL;
-    Poll::remove(_callbackObject);
-    throw;
-  }
+  _callbackObject->OnCgiError();
+  Poll::setPollActive(_callbackObjectFlags, _callbackObject);
   return;
 }
+
+int ResponsePipe::getFd() const { return _fd; }
+
+short ResponsePipe::getFlags() const { return _callbackObjectFlags; }

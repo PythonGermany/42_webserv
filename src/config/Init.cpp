@@ -83,13 +83,15 @@ void Init::initPoll() {  // TODO: Implement correct socket creation
   std::set<Address> allAddresses;
 
   for (size_t i = 0; i < virtualHosts.size(); i++) {
-    std::set<Address> const &toadd = virtualHosts[i].getResolvedAddress();
+    std::set<Address> const& toadd = virtualHosts[i].getResolvedAddress();
     allAddresses.insert(toadd.begin(), toadd.end());
   }
-  for (std::set<Address>::const_iterator it = allAddresses.begin(); it != allAddresses.end(); ++it) {
-    std::set<Address>::const_iterator addr_any = allAddresses.find(Address(it->family(), it->port()));
-    if (addr_any == allAddresses.end() || addr_any == it) {
-      Poll::add(new ListenSocket(*it));
+  for (std::set<Address>::const_iterator addr = allAddresses.begin();
+       addr != allAddresses.end(); ++addr) {
+    std::set<Address>::const_iterator addr_any =
+        allAddresses.find(Address(addr->family(), addr->port()));
+    if (addr_any == allAddresses.end() || addr_any == addr) {
+      ListenSocket::create(*addr);
       ++sockets;
     }
   }

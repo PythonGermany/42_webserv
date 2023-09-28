@@ -19,10 +19,6 @@ Context loadConfig(std::string path) {
 }
 
 int main(int argc, char** argv) {
-  struct sigaction pollSignalHandler = {};
-
-  pollSignalHandler.sa_handler = Poll::signalHandler;
-  sigaction(SIGINT, &pollSignalHandler, NULL);
   try {
     Context context = loadConfig(argc > 1 ? argv[1] : CONFIG_PATH);
     Init::init(context);
