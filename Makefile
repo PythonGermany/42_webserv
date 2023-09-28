@@ -110,7 +110,7 @@ jmeter:
 	./tests/jmeter/bin/jmeter
 
 lines:
-	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp
+	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 
 transformer:
 	c++ tools/transformer.cpp -o tools/transformer

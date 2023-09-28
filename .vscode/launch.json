@@ -6,7 +6,22 @@
   "configurations": [
     // C++ Debug configuration first running "make debug" and then executing the executable
     {
-      "name": "C++ webserv",
+      "name": "debug webserv",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/webserv",
+      "args": [
+        "conf/project.conf"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb"
+    },
+    {
+      "name": "webserv",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/webserv",

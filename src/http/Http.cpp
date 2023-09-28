@@ -1,7 +1,5 @@
 #include "Http.hpp"
 
-#define INDENT "\r\n                          "
-
 Http::Http(Address const &client, Address const &host) {
   this->client = client;
   this->host = host;
@@ -209,7 +207,7 @@ Response &Http::processPutData(std::string uri, std::string &data) {
       return processError("404", "Not found");
 
     _file.open(path.c_str(), std::ios::out | std::ios::binary);
-    if (_file.is_open() == false)
+    if (_file.good() == false)
       return processError("500", "Internal Server Error");
   }
   _file.write(data.c_str(), data.size());

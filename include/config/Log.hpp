@@ -12,7 +12,7 @@
 
 class Log {
  private:
-  static Log instance;
+  static Log _instance;
 
   static bool _log_to_stdout;
   static t_log_level _log_level;
@@ -22,7 +22,7 @@ class Log {
   static std::string _timeFormat;
   static std::string _dateFormat;
 
-  bool _customized;
+  bool _allowError;
 
   Log();
 
@@ -32,8 +32,9 @@ class Log {
   // Setters
   static void setLogToStdout(bool log, bool overwrite = false);
   static void setLevel(t_log_level level, bool overwrite = false);
-  static void setLogFile(std::string path);
-  static void setErrorLogFile(std::string path);
+  static void setLogFile(std::string path, bool overwrite = false);
+  static void setErrorLogFile(std::string path, bool overwrite = false);
+  static void setAllowError(bool allow);
 
   // Getters
   static t_log_level getLevel();

@@ -200,8 +200,6 @@ std::string Config::validate(Context &context, bool recursive) {
          it++)
       for (size_t i = 0; i < it->second.size(); i++) validate(context, true);
   }
-  Log::write("Context: '" + context.getName() + "' -> Sucessfully validated",
-             DEBUG);
   return "";
 }
 

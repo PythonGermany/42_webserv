@@ -14,10 +14,10 @@ class Init {
   ~Init();
 
  public:
-  static void init(Context& context);
-  static void initVirtualHosts(Context& context);
-  static void initMimeTypes(Context& context);
+  static void init(Context context);
   static void initLogDefaults(Context& context);
+  static void initMimeTypes(Context& context);
+  static void initVirtualHosts(Context& context);
   static void initPoll();
 };
 

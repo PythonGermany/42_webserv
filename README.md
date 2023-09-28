@@ -22,6 +22,7 @@
     - [Requirements](#requirements)
     - [Compilation](#compilation)
   - [Usage](#usage)
+    - [Flags](#flags)
   - [Configuration](#configuration)
     - [Contexts](#contexts)
     - [Directives](#directives)
@@ -54,12 +55,20 @@ make [debug]
 ```
 
 # Usage
-
+```
+./webserv [configuration_file] [ [-s|-l|-a|-e FLAG_ARG] ...]
+```
 Default configuration file: `/etc/webserv/webserv.conf`
-```
-./webserv [configuration_file]
-```
 
+## Flags
+Flags overwrite the default settings and the ones that are configured in the config file. They can be utilized to enable options directly from the start of the program and not only after the configuration was parsed and loaded
+
+| Flag | Description | Allowed values
+| --- | --- | --- |
+| s | Controls wether the server should print to stdout | on/off |
+| l | Controls the debug level | 0/1/2/3 -> for error/warning/info/debug
+| a | Sets the access log path | -
+| e | Sets the error log file path | -
 
 # Configuration
 

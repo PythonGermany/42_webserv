@@ -27,6 +27,8 @@
 #define HTTP_DEFAULT_METHODS \
   { "GET", "HEAD", "OPTIONS" }
 #define MAX_CLIENT_BODY_SIZE 1048576
+// Indent size for http multiline log output
+#define INDENT "\r\n                          "
 
 // Default values for poll class
 /**
