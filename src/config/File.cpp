@@ -88,7 +88,7 @@ bool File::writable() const {
   return buf.st_mode & S_IWUSR;
 }
 
-size_t File::size() const {  // TODO: Check for errors when used
+size_t File::size() const {
   struct stat buf;
   if (stat(_path.c_str(), &buf) == -1) return -1;
   return buf.st_size;

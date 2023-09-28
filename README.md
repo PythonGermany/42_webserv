@@ -3,9 +3,11 @@
 
 # TODO
 
-- [ ] Fix log class
 - [ ] Fix file uploading
-- [ ] Implement chunked transfer encoding
+- [ ] maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary
+- [ ] Figure out why resolving symlinks doesnt work
+- [ ] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
+                                          && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
 - [ ] Implement cgi support
 
 - [ ] Remove unwanted submodules once ready for evaluation

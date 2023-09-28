@@ -87,12 +87,13 @@ Response &Http::processRequest() {
 
   std::string contextUri = getContextArgs();
   if (Log::getLevel() >= DEBUG)
-    _log += std::string(INDENT) + "Context URI: " + contextUri;
+    _log += std::string(INDENT) + "Context URI: '" + contextUri + "'";
 
   // Check if method is allowed
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
   if (!isMethodValid()) {
-    _responseReady = true;
+    _response = processError("405", "Method Not Allowed");
+    _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
     return _response;
   }
 
@@ -106,9 +107,9 @@ Response &Http::processRequest() {
 
   // Process alias
   if (_context->exists("alias"))
-    _uri = getContextPath("alias") + _uri.substr(contextUri.size());
+    _uri = getContextPath("alias") + _uri.substr(contextUri.size() + 1);
   if (Log::getLevel() >= DEBUG)
-    _log += std::string(INDENT) + "Resource URI: " + _uri;
+    _log += std::string(INDENT) + "Resource URI: '" + _uri + "'";
 
   // Handle PUT request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
@@ -125,7 +126,8 @@ Response &Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
   // Add index file if needed
-  if (getContextArgs() == uri && _context->exists("index", true)) {
+  if (getContextArgs() + "/" == _request.getUri().getPath() &&
+      _context->exists("index")) {
     std::string path = file.getPath();
     std::vector<std::string> indexes = _context->getDirective("index", true)[0];
     for (size_t i = 0; i < indexes.size(); i++) {
@@ -154,11 +156,12 @@ Response &Http::processFile(std::string uri) {
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
   std::ifstream *body = new std::ifstream(file.getPath().c_str());
-  if (body->is_open() == false) {
+  int bodySize = file.size();
+  if (body->is_open() == false || bodySize == -1) {
     delete body;
     return processError("500", "Internal Server Error");
   }
-  _response.setHeader("Content-Length", toString(file.size()));
+  _response.setHeader("Content-Length", toString(bodySize));
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Last-modified",
                       file.lastModified("%a, %d %b %Y %H:%M:%S"));
@@ -203,15 +206,7 @@ Response &Http::processUploadData(std::string uri, std::string &data) {
     if (!File(File(path).getDir()).exists())
       return processError("404", "Not found");
 
-    std::ofstream outputFile("tests/pythongermany_websites/config_test/");
-    if (!outputFile.is_open())
-      std::cerr << "Failed to open the file." << std::endl;
-    outputFile << "Hello, World!" << std::endl;
-    int num = 42;
-    outputFile << "The answer is: " << num << std::endl;
-
-    outputFile.close();
-    _file.open(path.c_str());
+    _file.open(path.c_str(), std::ios_base::binary);
     if (_file.is_open() == false)
       return processError("500", "Internal Server Error");
   }
@@ -415,10 +410,6 @@ bool Http::isMethodValid() {
   std::vector<std::string> allowedMethods = getAllowedMethods();
   for (size_t i = 0; i < allowedMethods.size(); i++)
     if (allowedMethods[i] == _request.getMethod()) return true;
-  _response = processError("405", "Method Not Allowed");
-  if (_response.getStatus() == "405")
-    _response.setHeader("Allow", concatenate(allowedMethods, ", "));
-  _responseReady = true;
   return false;
 }
 
@@ -446,13 +437,19 @@ std::vector<std::string> Http::getAllowedMethods(bool forUri) const {
 }
 
 std::string Http::getContextPath(std::string token, bool searchTree) const {
-  if (_context->exists(token, searchTree) &&
-      _context->getDirective(token)[0][0] != "/")
-    return _context->getDirective(token, searchTree)[0][0];
-  return "";
+  std::string ret;
+  if (_context->exists(token, searchTree)) {
+    ret = _context->getDirective(token, searchTree)[0][0];
+    if (endsWith(ret, "/")) ret = ret.substr(ret.size() - 1);
+  }
+  return ret;
 }
 
 std::string Http::getContextArgs() const {
-  if (_context->getArgs().size() > 0) return _context->getArgs()[0];
-  return "/";
+  std::string ret;
+  if (_context->getArgs().size() > 0) {
+    ret = _context->getArgs()[0];
+    if (endsWith(ret, "/")) ret = ret.substr(ret.size() - 1);
+  }
+  return ret;
 }

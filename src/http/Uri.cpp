@@ -87,7 +87,7 @@ std::string Uri::getPath() const { return _path; }
 
 std::string Uri::getQuery() const { return _query; }
 
-size_t Uri::decode() {
+int Uri::decode() {
   try {
     _scheme = percentDecode(_scheme);
     _host = percentDecode(_host);
@@ -95,7 +95,7 @@ size_t Uri::decode() {
     _path = percentDecode(_path);
     _query = percentDecode(_query);
   } catch (const std::exception &e) {
-    return 1;
+    return -1;
   }
   return 0;
 }

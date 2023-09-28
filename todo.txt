@@ -1,11 +1,3 @@
-Needed from rfc 2616: -----------------------------------------------------------
-- URL Decode/Encode (https://datatracker.ietf.org/doc/html/rfc2616#section-2.2)
-- URL Parsing (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.2) -> Uri.cpp:24
-- URL Comparison (https://datatracker.ietf.org/doc/html/rfc2616#section-3.2.3) -> Uri.cpp:73
-
-- Transfer-Encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
-                    && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
-
 Request processing flow (incomplete): -----------------------------------------
 1. Parse request line
   - if not valid, return 400
