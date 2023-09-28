@@ -11,6 +11,8 @@
 class Poll {
  public:
   static void add(CallbackPointer const &src, struct pollfd const &pollfd);
+  void tryToAddNewElements(CallbackPointer const *callback,
+                           struct pollfd const *pollfd, size_t size);
   static bool poll();
   static void signalHandler(int);
   static void setTimeout(int src);
@@ -26,7 +28,7 @@ class Poll {
   bool stop;
   int timeout;
   pid_t pid;
-  size_t pos;
+  // size_t pos;
   struct sigaction originalSigAction;
   std::vector<CallbackPointer> callbackObjects;
   std::vector<struct pollfd> pollfds;
@@ -39,6 +41,10 @@ class Poll {
   static Poll &getInstance();
   void iterate();
   void remove(IFileDescriptor *src);
+  void remove(size_t pos);
+  void release(CallbackPointer const *callback, struct pollfd const *pollfd,
+               size_t size);
+  void handleAddingAttempts();
 };
 
 #endif  // POLL_HPP

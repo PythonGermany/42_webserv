@@ -15,6 +15,7 @@
  * proper closure.
  * @param src Poll takes ownersip of the allocated callback object and ensures
  * proper cleanup
+ * @throw std::vector::push_back() might throw std::bad_alloc()
  */
 void Poll::add(CallbackPointer const &src, struct pollfd const &pollfd) try {
   getInstance().callbackObjects.push_back(src);
@@ -30,25 +31,37 @@ void Poll::add(CallbackPointer const &src, struct pollfd const &pollfd) try {
   throw;
 }
 
-// void Poll::remove(size_type pos) {
-//   Poll &poll = getInstance();
+/**
+ * @brief removed callback object and pollfd struct by index
+ * @throw noexcept
+ */
+void Poll::remove(size_t pos) {
+  if (callbackObjects[pos].link == false) delete callbackObjects[pos].ptr;
+  close(pollfds[pos].fd);
+  callbackObjects.erase(callbackObjects.begin() + pos);
+  pollfds.erase(pollfds.begin() + pos);
+}
 
-//   delete poll.callbackObjects[pos];
-//   close(poll.pollfds[pos].fd);
-//   poll.callbackObjects.erase(poll.callbackObjects.begin() + pos);
-//   poll.pollfds.erase(poll.pollfds.begin() + pos);
-//   if (pos <= poll.pos) --poll.pos;
-//   std::cout << "Poll delete: " << pos << std::endl;
-// }
-
+/**
+ * @param src all occurences with this value will be removed
+ * @throw noexcept
+ */
 void Poll::remove(IFileDescriptor *src) {
-  for (size_t i = 0; i < callbackObjects.size(); ++i) {
+  std::cerr << "remove: " << src << std::endl;
+  for (size_t i = 0; i < callbackObjects.size();) {
     if (callbackObjects[i].ptr == src) {
-      if (callbackObjects[i].link == false) delete callbackObjects[i].ptr;
-      close(pollfds[i].fd);
-      callbackObjects.erase(callbackObjects.begin() + i);
-      pollfds.erase(pollfds.begin() + i);
-    }
+      remove(i);
+    } else
+      ++i;
+  }
+}
+
+void Poll::release(CallbackPointer const *callback, struct pollfd const *pollfd,
+                   size_t size) {
+  for (size_t i = 0; i < size; ++i) {
+    if (callback[i].ptr != NULL && callback[i].link == false)
+      delete callback[i].ptr;
+    if (pollfd[i].fd != -1) close(pollfd[i].fd);
   }
 }
 
@@ -62,6 +75,8 @@ bool Poll::poll() {
   if (ready == -1)
     throw std::runtime_error(std::string("Poll::poll(): ") +
                              std::strerror(errno));
+
+  if (ready == 0) std::cerr << "Poll: no revents" << std::endl;
   poll.timeout = -1;
   poll.iterate();
   if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
@@ -91,6 +106,10 @@ pid_t Poll::lastForkPid() { return getInstance().pid; }
 
 void Poll::lastForkPid(pid_t src) { getInstance().pid = src; }
 
+/**
+ * @brief is used to release resources in child processes
+ * @throw noexcept
+ */
 void Poll::cleanUp() {
   Poll &poll = getInstance();
 
@@ -110,57 +129,60 @@ void Poll::cleanUp() {
 
 Poll::~Poll() { cleanUp(); }
 
+/**
+ * @brief
+ * Tries to add array.
+ * Only guarantees that either both callback object and pollfd struct are added
+ * or neither. Does not close fds or delete allocated memory.
+ * @throw std::vector::push_back() might throw std::bad_alloc()
+ */
+void Poll::tryToAddNewElements(CallbackPointer const *callback,
+                               struct pollfd const *pollfd, size_t size) {
+  for (size_t i = 0; i < size; ++i)
+    if (callback[i].ptr != NULL) {
+      callbackObjects.push_back(callback[i]);
+      try {
+        pollfds.push_back(pollfd[i]);
+      } catch (...) {
+        callbackObjects.pop_back();
+        throw;
+      }
+      if (callback[i].link) std::cerr << "link created" << std::endl;
+    }
+}
+
 void Poll::iterate() {
   for (size_t i = 0; i < callbackObjects.size();) {
     struct pollfd newPollfd[2];
     CallbackPointer newCallbackObject[2];
-    bool elementRemoved;
 
     for (size_t j = 0; j < sizeof(newPollfd) / sizeof(*newPollfd); ++j)
       newPollfd[j].fd = -1;
-    elementRemoved = false;
     try {
       if (callbackObjects[i].link)
-        std::cerr << "try to call link: " << pollfds[i].fd << std::endl;
+        std::cerr << "try to call link: " << pollfds[i].fd << ": "
+                  << callbackObjects[i].ptr << std::endl;
       else
-        std::cerr << "try to call no link" << pollfds[i].fd << std::endl;
+        std::cerr << "try to call no link: " << pollfds[i].fd << ": "
+                  << callbackObjects[i].ptr << std::endl;
+
       callbackObjects[i].ptr->onPollEvent(pollfds[i], newCallbackObject,
                                           newPollfd);
+      tryToAddNewElements(newCallbackObject, newPollfd,
+                          sizeof(newPollfd) / sizeof(*newPollfd));
 
-      for (size_t j = 0;
-           j < sizeof(newCallbackObject) / sizeof(*newCallbackObject); ++j)
-        if (newCallbackObject[j].ptr != NULL) {
-          callbackObjects.push_back(newCallbackObject[j]);
-          try {
-            pollfds.push_back(newPollfd[j]);
-          } catch (...) {
-            callbackObjects.pop_back();
-            throw;
-          }
-          if (newCallbackObject[j].link)
-            std::cerr << "link created" << std::endl;
-        }
       if (pollfds[i].events == 0) {
-        close(pollfds[i].fd);
-        if (callbackObjects[i].link == false) delete callbackObjects[i].ptr;
-        callbackObjects.erase(callbackObjects.begin() + i);
-        pollfds.erase(pollfds.begin() + i);
-        elementRemoved = true;
+        remove(i);
+      } else {
+        ++i;
       }
     } catch (std::exception const &e) {
       std::cerr << e.what() << '\n';
       remove(callbackObjects[i].ptr);
+      release(newCallbackObject, newPollfd,
+              sizeof(newPollfd) / sizeof(*newPollfd));
       i = 0;
-      elementRemoved = true;
-      for (size_t j = 0;
-           j < sizeof(newCallbackObject) / sizeof(*newCallbackObject); ++j) {
-        if (newCallbackObject[j].ptr != NULL &&
-            newCallbackObject[j].link == false)
-          delete newCallbackObject[j].ptr;
-        if (newPollfd[j].fd != -1) close(newPollfd[j].fd);
-      }
     }
-    if (elementRemoved == false) ++i;
   }
 }
 

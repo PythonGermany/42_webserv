@@ -76,9 +76,14 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
       pipeOut = -1;
       _cgiWriteBuffer.clear();
     }
+    return;
   }
   std::cerr << "i am not a link" << std::endl;
-  if (!(pollfd.revents & POLLIN || pollfd.revents & POLLOUT)) {
+  if (pollfd.revents & ~(POLLIN | POLLOUT)) {
+    std::cerr << "onNoPollEvent" << std::endl;
+    if (pollfd.revents & POLLHUP) {
+      throw std::runtime_error("Exception: ERROR: POLLHUP");
+    }
     onNoPollEvent(pollfd);
     return;
   }
@@ -102,7 +107,7 @@ void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
   pollfd.revents = 0;
   ssize_t lenSent =
       ::write(pipeOut, _cgiWriteBuffer.data(), _cgiWriteBuffer.size());
-  if (lenSent != -1) {
+  if (lenSent == -1) {
     pollfd.events = 0;
     KillCgi();
     return;
