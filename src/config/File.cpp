@@ -36,14 +36,14 @@ std::string File::getExtension() const {
 
 void File::setPath(std::string path) { _path = path; }
 
-std::vector<std::string> File::list(std::string path) {
-  std::vector<std::string> files;
+std::set<std::string> File::list(std::string path) {
+  std::set<std::string> files;
   DIR *dir = opendir(path.c_str());
   struct dirent *ent;
   if (dir != NULL) {
     ent = readdir(dir);
     while (ent != NULL) {
-      files.push_back(ent->d_name);
+      files.insert(ent->d_name);
       ent = readdir(dir);
     }
     closedir(dir);

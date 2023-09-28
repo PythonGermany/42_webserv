@@ -64,12 +64,10 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  if (Log::getLevel() >= DEBUG) {
-    _log += std::string(INDENT) + "VirtualHost: " + _virtualHost->getAddress();
-    if (_virtualHost->getContext().exists("server_name", true))
-      _log += " Name: " + _virtualHost->getContext().getDirective("server_name",
-                                                                  true)[0][0];
-  }
+  if (Log::getLevel() >= DEBUG &&
+      _virtualHost->getContext().exists("server_name", true))
+    _log += std::string(INDENT) + "VirtualHost: " +
+            _virtualHost->getContext().getDirective("server_name", true)[0][0];
 
   // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
@@ -256,7 +254,7 @@ Response &Http::processDelete(std::string uri) {
 
 Response &Http::processAutoindex(std::string uri) {
   std::string path = _context->getDirective("root", true)[0][0] + uri;
-  std::vector<std::string> files;
+  std::set<std::string> files;
   _response = Response("HTTP/1.1", "200", "OK");
   std::stringstream *body = new std::stringstream(
       "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>");
@@ -271,21 +269,23 @@ Response &Http::processAutoindex(std::string uri) {
   }
   // Find end of longest file name to align columns
   size_t maxWidth = 50;
-  for (size_t i = 0; i < files.size(); i++) {
-    if (files[i] == "." && files[i] == "..") continue;
-    if (File(path + files[i]).dir() && !endsWith(files[i], "/"))
-      files[i] += "/";
-    if (files[i].size() > maxWidth) maxWidth = files[i].size();
+  std::set<std::string>::iterator itr = files.begin();
+  for (; itr != files.end(); itr++) {
+    if (*itr == "." && *itr == "..") continue;
+    size_t size = itr->size();
+    if (File(path + *itr).dir() && !endsWith(*itr, "/")) size++;
+    if (size > maxWidth) maxWidth = size;
   }
 
-  for (size_t i = 0; i < files.size(); i++) {
-    std::string file = files[i];
-    if (file == "./" || file == "../") continue;
-    *body << "<a href=\"" + percentEncode(files[i], "/.") + "\">" + file +
-                 "</a>";
+  itr = files.begin();
+  for (; itr != files.end(); itr++) {
+    std::string file = *itr;
+    if (file == "." || file == "..") continue;
+    if (File(path + *itr).dir() && !endsWith(*itr, "/")) file += "/";
+    *body << "<a href=\"" + percentEncode(file, "/.") + "\">" + file + "</a>";
     size_t spaceCount = maxWidth - file.size() + 5;
     for (size_t j = 0; j < spaceCount; j++) *body << " ";
-    File f(path + files[i]);
+    File f(path + file);
     *body << f.lastModified("%d-%m-%Y %H:%M") + "          " +
                  (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }

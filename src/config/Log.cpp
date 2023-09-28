@@ -59,7 +59,7 @@ void Log::writeError(std::string msg, std::string color) {
   instance._error_log_file << timeStamp << msg << std::endl;
   if (instance._customized && !instance._error_log_file.good() &&
       error == false) {
-    std::cerr << BRIGHT_RED << "ERROR: " << RESET
+    std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
               << "Unable to write to error log file" << std::endl;
   }
   std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << color << msg << RESET

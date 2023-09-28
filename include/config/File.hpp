@@ -9,9 +9,9 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
+#include <set>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 #include "utils.hpp"
 
@@ -39,7 +39,7 @@ class File {
 
   // Lists the files in the directory
   // @exception std::runtime_error if the directory cannot be opened
-  static std::vector<std::string> list(std::string path);
+  static std::set<std::string> list(std::string path);
 
   // Checks if the file exists
   // @exception No custom exceptions
