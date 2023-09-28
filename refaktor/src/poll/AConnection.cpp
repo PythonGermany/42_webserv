@@ -385,4 +385,4 @@ void AConnection::runCGI(std::string const &program,
 //   }
 // }
 
-// void AConnection::closeConnection() { Poll::clearPollEvent(POLLIN, this); }
+void AConnection::stopReceiving() { Poll::clearPollEvent(POLLIN, this); }

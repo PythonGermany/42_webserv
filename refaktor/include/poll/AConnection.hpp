@@ -1,7 +1,7 @@
 #ifndef ACONNECTION_HPP
 #define ACONNECTION_HPP
 
-#define BUFFER_SIZE 65536
+#define BUFFER_SIZE 1
 
 #include <wait.h>
 
@@ -28,9 +28,17 @@ class AConnection : public IFileDescriptor {
   AConnection &operator=(AConnection const &other);
 
   virtual void OnCgiRecv(std::string msg) {
-    std::cout << "OnCgiRecv: " << msg << std::endl;
+    std::stringstream *ss = new std::stringstream();
+    *ss << "cgi recv: " << std::endl;
+    *ss << msg;
+    if (msg.empty() || *(msg.end() - 1) != '\n')
+      *ss << "\nno newline at the end" << std::endl;
+    send(ss);
   };
-  virtual void OnCgiError() { std::cout << "OnCgiError" << std::endl; };
+  virtual void OnCgiError() {
+    std::cerr << "log: cgi error" << std::endl;
+    send(new std::stringstream("CGI ERROR"));
+  };
 
  protected:
   Address client;
@@ -42,10 +50,16 @@ class AConnection : public IFileDescriptor {
   size_t _writeBufferPos;  // TODO: Pythongermany code
 
   virtual void OnHeadRecv(std::string msg) {
-    std::cout << "OnHeadRecv(): " << msg << std::endl;
-    send(new std::stringstream("hello world\n"));
-    cgiSend("HELLO CGI\n");
-    runCGI("cgi", std::vector<std::string>(), std::vector<std::string>());
+    std::cout << "recv: " << std::endl;
+    std::cout << msg;
+    if (msg.empty() || *(msg.end() - 1) != '\n')
+      std::cout << "\nno newline at the end" << std::endl;
+    if (msg == "cgi\r\n\r\n") {
+      cgiSend("HELLO CGI\n");
+      runCGI("cgi", std::vector<std::string>(), std::vector<std::string>());
+    } else {
+      send(new std::stringstream("enter 'cgi' to make a cgi request\n"));
+    }
   };
   virtual void OnBodyRecv(std::string msg) {
     std::cout << "OnBodyRecv(): " << msg << std::endl;
@@ -54,7 +68,7 @@ class AConnection : public IFileDescriptor {
   void cgiSend(std::string const &msg);
   void runCGI(std::string const &program, std::vector<std::string> const &arg,
               std::vector<std::string> const &env);
-  // void closeConnection();
+  void stopReceiving();
 
  private:
   std::queue<std::istream *> _writeStreams;
