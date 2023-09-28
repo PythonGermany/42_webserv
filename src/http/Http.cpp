@@ -107,7 +107,7 @@ Response &Http::processRequest() {
 
   // Process alias
   if (_context->exists("alias"))
-    _uri = getContextPath("alias") + _uri.substr(contextUri.size() + 1);
+    _uri = getContextPath("alias") + _uri.substr(contextUri.size());
   if (Log::getLevel() >= DEBUG)
     _log += std::string(INDENT) + "Resource URI: '" + _uri + "'";
 

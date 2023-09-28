@@ -24,12 +24,14 @@ void Log::setLevel(t_log_level level) { _log_level = level; }
 void Log::setLogFile(std::string path) {
   File(path).createDirPath();
   instance._log_file.open(path.c_str(), std::ios_base::app);
+  if (instance._log_file.fail()) instance._log_file.close();
   instance._customized = true;
 }
 
 void Log::setErrorLogFile(std::string path) {
   File(path).createDirPath();
   instance._error_log_file.open(path.c_str(), std::ios_base::app);
+  if (instance._error_log_file.fail()) instance._error_log_file.close();
   instance._customized = true;
 }
 
