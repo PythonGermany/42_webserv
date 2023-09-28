@@ -1,8 +1,6 @@
 #ifndef ACONNECTION_HPP
 #define ACONNECTION_HPP
 
-#define BUFFER_SIZE 65536
-
 #include <istream>
 #include <queue>
 #include <string>
@@ -11,6 +9,7 @@
 #include "Address.hpp"
 #include "IFileDescriptor.hpp"
 #include "timeval.hpp"
+#include "webserv.hpp"
 
 #define WAIT_FOR_HEAD std::string::npos
 

@@ -36,6 +36,10 @@
  */
 #define TIMEOUT 30000
 
+// Default buffer size for various different classes
+// like AConnection  Http and ResponsePipe
+#define BUFFER_SIZE 65536
+
 // Token structure in the format: {name, parent, isContext, minOccurence,
 // maxOccurence, minArgs, maxArgs, validationFunction}
 const t_token tokens[31] = {
