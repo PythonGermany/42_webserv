@@ -45,8 +45,7 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
     instance._log_file << timeStamp << msg << std::endl;
     if (instance._customized && !instance._log_file.good() && error == false) {
       error = true;
-      std::cerr << BRIGHT_RED << "ERROR: " << RESET
-                << "Unable to write to log file" << std::endl;
+      writeError("Unable to write to log file", BRIGHT_YELLOW);
     }
     if (instance._log_to_stdout)
       std::cout << timeStamp << color << highlight(msg, BRIGHT_BLUE) << RESET

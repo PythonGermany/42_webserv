@@ -39,7 +39,7 @@ class Http : public AConnection {
   Response& processRequest();
   Response& processFile(std::string uri);
   Response& processUploadHead();
-  Response& processUploadData(std::string uri, std::string& data);
+  Response& processPutData(std::string uri, std::string& data);
   Response& processOptions();
   Response& processDelete(std::string uri);
   Response& processAutoindex(std::string uri);

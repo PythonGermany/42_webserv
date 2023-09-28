@@ -50,7 +50,7 @@ void Http::OnHeadRecv(std::string msg) {
 }
 
 void Http::OnBodyRecv(std::string msg) {
-  _response = processUploadData(_uri, msg);
+  _response = processPutData(_uri, msg);
   if (_responseReady) sendResponse();
 }
 
@@ -64,8 +64,12 @@ void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  if (Log::getLevel() >= DEBUG)
+  if (Log::getLevel() >= DEBUG) {
     _log += std::string(INDENT) + "VirtualHost: " + _virtualHost->getAddress();
+    if (_virtualHost->getContext().exists("server_name", true))
+      _log += " Name: " + _virtualHost->getContext().getDirective("server_name",
+                                                                  true)[0][0];
+  }
 
   // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
@@ -197,7 +201,7 @@ Response &Http::processUploadHead() {
   return _response;
 }
 
-Response &Http::processUploadData(std::string uri, std::string &data) {
+Response &Http::processPutData(std::string uri, std::string &data) {
   // Create and write file
   if (_currBodySize == 0) {
     std::string path = _context->getDirective("root", true)[0][0] + uri;
@@ -206,11 +210,11 @@ Response &Http::processUploadData(std::string uri, std::string &data) {
     if (!File(File(path).getDir()).exists())
       return processError("404", "Not found");
 
-    _file.open(path.c_str(), std::ios_base::binary);
+    _file.open(path.c_str(), std::ios::out | std::ios::binary);
     if (_file.is_open() == false)
       return processError("500", "Internal Server Error");
   }
-  _file << data;
+  _file.write(data.c_str(), data.size());
   if (_file.good() == false)
     return processError("500", "Internal Server Error");
   _currBodySize += data.size();
