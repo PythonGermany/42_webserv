@@ -358,9 +358,11 @@ void Http::sendResponse() {
   }
 
   // Set default header values
-  if (_response.getHeader("Content-Length") == "")
-    _response.setHeader("Content-Length", toString(0));
   _response.setHeader("Server", "webserv");
+  if (_response.getHeader("Content-Length").empty())
+    _response.setHeader("Content-Length", toString(0));
+  if (_response.getHeader("Content-type").empty())
+    _response.setHeader("Content-type", HTTP_DEFAULT_MIME);
   // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
 
