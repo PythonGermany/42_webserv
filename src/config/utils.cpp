@@ -75,13 +75,17 @@ std::string highlight(std::string str, std::string color, std::string delim) {
   return str;
 }
 
-std::list<std::string> processWildcard(std::string path) {
+std::set<std::string> processWildcard(std::string path) {
   std::list<std::string> fs(1, path);
+  std::set<std::string> ret;
 
   std::list<std::string>::iterator itr = fs.begin();
   for (; itr != fs.end(); itr++) {
     size_t wildcard = itr->find('*');
-    if (wildcard == std::string::npos) continue;
+    if (wildcard == std::string::npos) {
+      ret.insert(*itr);
+      continue;
+    }
 
     // Find pattern delimiters
     size_t patternStart = itr->rfind('/', wildcard);
@@ -126,7 +130,7 @@ std::list<std::string> processWildcard(std::string path) {
     if (closedir(dir) == -1)
       throw std::runtime_error("closedir: " + std::string(strerror(errno)));
   }
-  return fs;
+  return ret;
 }
 
 std::string percentDecode(std::string str) {

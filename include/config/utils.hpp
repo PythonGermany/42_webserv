@@ -10,6 +10,7 @@
 #include <cstring>
 #include <ctime>
 #include <list>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -100,12 +101,12 @@ std::string toHexString(unsigned char c);
 std::string highlight(std::string str, std::string color,
                       std::string delim = "'");
 
-// Expands all the wildcards in a path into a list of fully expanded paths
+// Expands all the wildcards in a path into a set of expanded paths
 // matching the wildcard patterns of the path
 // @param path The full path with wildcard patterns
-// @return A list of paths matching the wildcard path
+// @return A set of paths matching the wildcard path
 // @exception std::runtime_error if a function call fails
-std::list<std::string> processWildcard(std::string path);
+std::set<std::string> processWildcard(std::string path);
 
 // Decodes percent encoding
 // @param str The string to decode

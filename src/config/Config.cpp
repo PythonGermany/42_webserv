@@ -131,8 +131,8 @@ void Config::processInclude(Context &context, std::string path) {
     includePath = File(_path).getDir() + path;
 
   // Get file list
-  std::list<std::string> files = processWildcard(includePath);
-  std::list<std::string>::iterator itr = files.begin();
+  std::set<std::string> files = processWildcard(includePath);
+  std::set<std::string>::iterator itr = files.begin();
   for (; itr != files.end(); itr++) {
     Log::write("Context: '" + context.getName() + "' -> Include '" + *itr + "'",
                DEBUG);

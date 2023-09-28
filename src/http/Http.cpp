@@ -253,15 +253,13 @@ Response &Http::processDelete(std::string uri) {
 }
 
 Response &Http::processAutoindex(std::string uri) {
-  std::string path = _context->getDirective("root", true)[0][0] + uri;
-  std::set<std::string> files;
-  _response = Response("HTTP/1.1", "200", "OK");
   std::stringstream *body = new std::stringstream(
       "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>");
-
   *body << "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
 
   // Get list of files in directory
+  std::string path = _context->getDirective("root", true)[0][0] + uri;
+  std::set<std::string> files;
   try {
     files = File::list(path);
   } catch (const std::exception &e) {
@@ -290,6 +288,9 @@ Response &Http::processAutoindex(std::string uri) {
                  (f.dir() ? "-" : toString(f.size())) + "\r\n";
   }
   *body << "</pre><hr></body>\r\n</html>";
+
+  // Set response and needed header fields
+  _response = Response("HTTP/1.1", "200", "OK");
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   _responseReady = true;
@@ -304,7 +305,6 @@ Response &Http::processRedirect(std::string uri) {
 }
 
 Response &Http::processError(std::string code, std::string reason) {
-  _response = Response("HTTP/1.1", code, reason);
   std::istream *body = NULL;
   if (_virtualHost->getContext().exists("error_page")) {
     std::vector<std::vector<std::string> > &pages =
@@ -333,6 +333,7 @@ Response &Http::processError(std::string code, std::string reason) {
     }
   }
 
+  _response = Response("HTTP/1.1", code, reason);
   // If no custom error page was found, use default
   if (body == NULL) {
     body = new std::stringstream(getDefaultBody(code, reason));
