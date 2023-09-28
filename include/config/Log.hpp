@@ -30,8 +30,8 @@ class Log {
   ~Log();
 
   // Setters
-  static void setLogToStdout(bool log);
-  static void setLevel(t_log_level level);
+  static void setLogToStdout(bool log, bool overwrite = false);
+  static void setLevel(t_log_level level, bool overwrite = false);
   static void setLogFile(std::string path);
   static void setErrorLogFile(std::string path);
 

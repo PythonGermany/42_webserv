@@ -41,7 +41,6 @@ void Config::removeComments() {
     _config.erase(i, j - i);
     i = _config.find_first_of("#");
   }
-  Log::write(_path + " Comments removed", DEBUG);
 }
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
@@ -84,8 +83,6 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
     } else
       checkError(line, "Invalid token '" + token + "'");
   }
-  Log::write("Context: '" + context.getName() + "' -> Sucessfully parsed",
-             DEBUG);
   // Validate parsed context
   if (validateResult) checkError(startLine, validate(context, false));
   return context;

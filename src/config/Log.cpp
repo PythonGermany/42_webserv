@@ -17,9 +17,21 @@ Log::Log() {
 
 Log::~Log() {}
 
-void Log::setLogToStdout(bool log) { _log_to_stdout = log; }
+void Log::setLogToStdout(bool log, bool overwrite) {
+  static bool initialized = false;
+  if (overwrite || !initialized) {
+    _log_to_stdout = log;
+    initialized = true;
+  }
+}
 
-void Log::setLevel(t_log_level level) { _log_level = level; }
+void Log::setLevel(t_log_level level, bool overwrite) {
+  static bool initialized = false;
+  if (overwrite || !initialized) {
+    _log_level = level;
+    initialized = true;
+  }
+}
 
 void Log::setLogFile(std::string path) {
   File(path).createDirPath();
