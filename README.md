@@ -3,8 +3,12 @@
 
 # TODO
 
+- [ ] Fix log class
+- [ ] Fix file uploading
 - [ ] Implement chunked transfer encoding
 - [ ] Implement cgi support
+
+- [ ] Remove unwanted submodules once ready for evaluation
 
 # Contents
 

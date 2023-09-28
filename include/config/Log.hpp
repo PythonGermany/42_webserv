@@ -5,9 +5,10 @@
 #include <iostream>
 #include <string>
 
-#include "../webserv.hpp"
+#include "File.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
+#include "webserv.hpp"
 
 class Log {
  private:
@@ -20,6 +21,8 @@ class Log {
 
   static std::string _timeFormat;
   static std::string _dateFormat;
+
+  bool _customized;
 
   Log();
 

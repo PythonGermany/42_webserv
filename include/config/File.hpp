@@ -70,6 +70,8 @@ class File {
   std::string lastModified(std::string format) const;
 
   int resolveSymlink();
+
+  int createDirPath();
 };
 
 #endif

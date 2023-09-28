@@ -111,3 +111,14 @@ int File::resolveSymlink() {
   _path = std::string(resolvedPath);
   return 0;
 }
+
+int File::createDirPath() {
+  size_t pos = _path.find_first_of('/');
+  while (pos != std::string::npos) {
+    std::string dir = _path.substr(0, pos);
+    if (dir != "" && !File(dir).exists())
+      if (mkdir(dir.c_str(), 0755) != 0) return -1;
+    pos = _path.find_first_of('/', pos + 1);
+  }
+  return 0;
+}

@@ -199,6 +199,18 @@ Response &Http::processUploadData(std::string uri, std::string &data) {
   if (_currBodySize == 0) {
     std::string path = _context->getDirective("root", true)[0][0] + uri;
     _newFile = !File(path).exists();
+
+    if (!File(File(path).getDir()).exists())
+      return processError("404", "Not found");
+
+    std::ofstream outputFile("tests/pythongermany_websites/config_test/");
+    if (!outputFile.is_open())
+      std::cerr << "Failed to open the file." << std::endl;
+    outputFile << "Hello, World!" << std::endl;
+    int num = 42;
+    outputFile << "The answer is: " << num << std::endl;
+
+    outputFile.close();
     _file.open(path.c_str());
     if (_file.is_open() == false)
       return processError("500", "Internal Server Error");

@@ -1,6 +1,7 @@
 #ifndef HTTP_HPP
 #define HTTP_HPP
 
+#include <fstream>
 #include <sstream>
 
 #include "AConnection.hpp"

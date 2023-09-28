@@ -7,9 +7,12 @@ t_log_level Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
 std::string Log::_dateFormat = LOG_DATE_FORMAT;
 
-Log::Log() : _log_file(LOG_PATH), _error_log_file(LOG_ERROR_PATH) {
-  std::cout << "Default constructor called" << std::endl;  // TODO: remove
-  std::cout << _log_file.is_open() << std::endl;           // TODO: remove
+Log::Log() {
+  File(LOG_PATH).createDirPath();
+  File(LOG_ERROR_PATH).createDirPath();
+  _log_file.open(LOG_PATH, std::ios_base::app);
+  _error_log_file.open(LOG_ERROR_PATH, std::ios_base::app);
+  _customized = false;
 }
 
 Log::~Log() {}
@@ -19,11 +22,15 @@ void Log::setLogToStdout(bool log) { _log_to_stdout = log; }
 void Log::setLevel(t_log_level level) { _log_level = level; }
 
 void Log::setLogFile(std::string path) {
-  instance._log_file.open(path.c_str());
+  File(path).createDirPath();
+  instance._log_file.open(path.c_str(), std::ios_base::app);
+  instance._customized = true;
 }
 
 void Log::setErrorLogFile(std::string path) {
-  instance._error_log_file.open(path.c_str());
+  File(path).createDirPath();
+  instance._error_log_file.open(path.c_str(), std::ios_base::app);
+  instance._customized = true;
 }
 
 t_log_level Log::getLevel() { return instance._log_level; }
@@ -33,9 +40,8 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
   if (level <= instance._log_level) {
     std::string timeStamp =
         "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-    if (instance._log_file.is_open())
-      instance._log_file << timeStamp << msg << std::endl;
-    else if (error == false) {
+    instance._log_file << timeStamp << msg << std::endl;
+    if (instance._customized && !instance._log_file.good() && error == false) {
       error = true;
       std::cerr << BRIGHT_RED << "ERROR: " << RESET
                 << "Unable to write to log file" << std::endl;
@@ -49,9 +55,9 @@ void Log::write(std::string msg, t_log_level level, std::string color) {
 void Log::writeError(std::string msg, std::string color) {
   static bool error = false;
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-  if (instance._error_log_file.is_open())
-    instance._error_log_file << timeStamp << msg << std::endl;
-  else if (error == false) {
+  instance._error_log_file << timeStamp << msg << std::endl;
+  if (instance._customized && !instance._error_log_file.good() &&
+      error == false) {
     std::cerr << BRIGHT_RED << "ERROR: " << RESET
               << "Unable to write to error log file" << std::endl;
   }
