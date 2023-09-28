@@ -18,7 +18,6 @@ int parseArgument(char flag, char* value) {
       Log::setLevel((t_log_level)(in[0] - '0'));
       return in != "0" && in != "1" && in != "2" && in != "3";
     case 'a':
-      std::cout << in << std::endl;
       Log::setLogFile(in);
       return 0;
     case 'e':
