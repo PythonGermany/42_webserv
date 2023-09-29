@@ -1,6 +1,7 @@
 #ifndef STRUCTURE_HPP
 #define STRUCTURE_HPP
 
+#include <list>
 #include <string>
 
 // ------------------------- LOG STRUCTURE -------------------------
@@ -18,16 +19,26 @@ typedef enum arg_state_e {
 
 typedef struct arg_s {
   char flag;
-  arg_state_t (*func)(std::string);
+  int argCount;
+  arg_state_t (*func)(const std::list<std::string> &);
 } arg_t;
+
+// Information functions which can be set through arguments. They need to be
+// called one with set = true in order to print out any text should they be
+// called again with set = false
+
+void printInfo(bool set = false);
+int printHelp(bool set = false);
 
 // Validation functions return either SUCCESS or another value fron the enum to
 // indicate an error
 
-arg_state_t setLogToStdout(std::string value);
-arg_state_t setLogLevel(std::string value);
-arg_state_t setAccessLog(std::string value);
-arg_state_t setErrorLog(std::string value);
+arg_state_e setInfo(const std::list<std::string> &values);
+arg_state_e setHelp(const std::list<std::string> &values);
+arg_state_t setLogToStdout(const std::list<std::string> &values);
+arg_state_t setLogLevel(const std::list<std::string> &values);
+arg_state_t setAccessLog(const std::list<std::string> &values);
+arg_state_t setErrorLog(const std::list<std::string> &values);
 
 // ----------------------- CONFIG STRUCTURE ------------------------
 

@@ -71,7 +71,7 @@ void Init::initVirtualHosts(Context& context) {
     VirtualHost::add(VirtualHost(serverContexts[i]));
   }
   size_t size = VirtualHost::getVirtualHosts().size();
-  accessLog_g.write(toString(size) + " virtual hosts created", INFO);
+  accessLog_g.write(toString(size) + " virtual hosts loaded", INFO);
   accessLog_g.write("------- Virtual Hosts loaded --------", INFO,
                     BRIGHT_GREEN);
 }

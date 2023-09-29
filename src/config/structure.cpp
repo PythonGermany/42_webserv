@@ -2,36 +2,95 @@
 
 #include "global.hpp"
 
-arg_state_t setLogToStdout(std::string value) {
+void printInfo(bool set) {
+  static bool isSet = false;
+  if (!set && isSet) {
+    std::cout
+        << BRIGHT_GREEN
+        << "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\r\n"
+           "██ ▄ ██ ▄ ███ ███ █ ▄▄█ ▄▄▀█ ▄▄█ ▄▄█ ▄▄▀█ ███ █\r\n"
+           "█ ▀▀ ▀██▀▄███▄▀ ▀▄█ ▄▄█ ▄▄▀█▄▄▀█ ▄▄█ ▀▀▄██ ▀ ██\r\n"
+           "████ ██ ▀▀████▄█▄██▄▄▄█▄▄▄▄█▄▄▄█▄▄▄█▄█▄▄███▄███\r\n"
+           "\e[102m█ - An HTTP server with basic functionality - █\e[49m\r\n"
+           "\e[102m█ https://github.com/PythonGermany/42_webserv █\e[49m\r\n"
+           "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
+        << RESET << std::endl;
+  } else if (set)
+    isSet = true;
+}
+
+int printHelp(bool set) {
+  static bool isSet = false;
+  if (!set && isSet) {
+    std::cout << BRIGHT_RED << "Usage: " << BRIGHT_GREEN
+              << "./webserv [configuration_file] [-i|-h] [ [-FLAG "
+                 "ARGUMENT] ...]\r\n"
+              << BRIGHT_RED << "Options:\r\n"
+              << BRIGHT_GREEN
+              << "  -i Prints out a info block when starting the server\r\n"
+                 "  -h Prints this help message\r\n"
+                 "  -s Turn stdout 'on' or 'off'\r\n"
+                 "  -l set the log level using '0/1/2/3' for "
+                 "error/warning/info/debug\r\n"
+                 "  -a Sets the path for the access log file\r\n"
+                 "  -e Sets the path for the error log file"
+              << RESET << std::endl;
+    return 1;
+  } else if (set)
+    isSet = true;
+  return 0;
+}
+
+arg_state_t setInfo(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printInfo(true);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setHelp(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printHelp(true);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setLogToStdout(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
+  std::string value = values.front();
   Log::setLogToStdout(value == "on");
   set = true;
   if (value == "on" || value == "off") return SUCCESS;
   return ARG_INVALID;
 }
 
-arg_state_t setLogLevel(std::string value) {
+arg_state_t setLogLevel(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
+  std::string value = values.front();
   Log::setLevel((log_level_t)(value[0] - '0'));
   set = true;
-  if (value >= "0" && value <= "3") return SUCCESS;
+  if (value.size() == 1 && value >= "0" && value <= "3") return SUCCESS;
   return ARG_INVALID;
 }
 
-arg_state_t setAccessLog(std::string value) {
+arg_state_t setAccessLog(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
-  accessLog_g.setFile(value);
+  accessLog_g.setFile(values.front());
   set = true;
   return SUCCESS;
 }
 
-arg_state_t setErrorLog(std::string value) {
+arg_state_t setErrorLog(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
-  errorLog_g.setFile(value);
+  errorLog_g.setFile(values.front());
   set = true;
   return SUCCESS;
 }

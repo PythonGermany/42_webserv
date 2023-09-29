@@ -57,7 +57,7 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [ [-FLAG ARGUMENT] ...]
+./webserv [configuration_file] [-i|-h] [ [-FLAG ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 
@@ -66,10 +66,12 @@ Flags overwrite the default settings and the ones that are configured in the con
 
 | Flag | Description | Allowed values
 | --- | --- | --- |
+| i | Prints out some information before starting the server | NONE |
+| h | Prints out some help before starting the server | NONE |
 | s | Controls [log_to_stdout](#log_to_stdout) | on/off |
 | l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 for `error` / `warning` / `info` / `debug`
-| a | Controls [access_log](#access_log) | -
-| e | Controls [error_log](#error_log) | -
+| a | Controls [access_log](#access_log) | PATH
+| e | Controls [error_log](#error_log) | PATH
 
 # Configuration
 

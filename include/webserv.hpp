@@ -9,12 +9,11 @@
 
 // -------------------------- ARG VALUES ---------------------------
 
-// Allowd argument input structure in the format: {flag,
+// Allowd argument input structure in the format: {flag, argCount,
 // validation-/initializationFunction}
-const arg_t args_g[4] = {{'s', setLogToStdout},
-                         {'l', setLogLevel},
-                         {'a', setAccessLog},
-                         {'e', setErrorLog}};
+const arg_t args_g[6] = {{'i', 0, setInfo},        {'h', 0, setHelp},
+                         {'s', 1, setLogToStdout}, {'l', 1, setLogLevel},
+                         {'a', 1, setAccessLog},   {'e', 1, setErrorLog}};
 
 // ------------------------- CONFIG VALUES -------------------------
 
@@ -65,7 +64,7 @@ const token_t tokens[31] = {
 
 #define LOG_TO_STDOUT false
 #define LOG_LEVEL INFO
-#define LOG_STDOUT_OVERRIDE_LEVEL WARNING
+#define LOG_STDOUT_OVERRIDE_LEVEL ERROR
 #define LOG_PATH "/var/log/webserv/access.log"
 #define LOG_ERROR_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"

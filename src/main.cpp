@@ -25,6 +25,8 @@ int main(int argc, char** argv) {
   sigaction(SIGINT, &pollSignalHandler, NULL);
   try {
     std::string path = loadArguments(argc, argv);
+    printInfo();
+    if (printHelp()) return 0;
     Init::init(loadConfig(path));
     while (true) {
       if (!Poll::poll()) break;
