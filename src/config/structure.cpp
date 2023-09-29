@@ -1,5 +1,41 @@
 #include "structure.hpp"
 
+#include "Log.hpp"
+
+arg_state_t setLogToStdout(std::string value) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  Log::setLogToStdout(value == "on");
+  set = true;
+  if (value == "on" || value == "off") return SUCCESS;
+  return ARG_INVALID;
+}
+
+arg_state_t setLogLevel(std::string value) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  Log::setLevel((t_log_level)(value[0] - '0'));
+  set = true;
+  if (value >= "0" && value <= "3") return SUCCESS;
+  return ARG_INVALID;
+}
+
+arg_state_t setAccessLog(std::string value) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  Log::setLogFile(value);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setErrorLog(std::string value) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  Log::setErrorLogFile(value);
+  set = true;
+  return SUCCESS;
+}
+
 std::string isMimeType(std::string const &value, size_t index) {
   if (value.length() == 0) return "Mime type cannot be empty";
   if (index == 0) {

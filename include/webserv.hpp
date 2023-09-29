@@ -7,42 +7,21 @@
 #include "config/structure.hpp"
 #include "config/utils.hpp"
 
-// Default values for program
+// -------------------------- ARG VALUES ---------------------------
+
+// Allowd argument input structure in the format: {flag,
+// validation-/initializationFunction}
+const arg_t args_g[4] = {{'s', setLogToStdout},
+                         {'l', setLogLevel},
+                         {'a', setAccessLog},
+                         {'e', setErrorLog}};
+
+// ------------------------- CONFIG VALUES -------------------------
+
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
 
-// Default values for log class
-#define LOG_TO_STDOUT false
-#define LOG_LEVEL INFO
-#define LOG_PATH "/var/log/webserv/access.log"
-#define LOG_ERROR_PATH "/var/log/webserv/error.log"
-#define LOG_TIME_FORMAT "%H:%M:%S GMT"
-#define LOG_DATE_FORMAT "%d-%m-%Y"
-
-// Default values for http class
-#define HTTP_VERSION "HTTP/1.1"
-#define HTTP_METHOD_COUNT 6
-#define HTTP_METHODS \
-  { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
-#define HTTP_DEFAULT_METHOD_COUNT 3
-#define HTTP_DEFAULT_METHODS \
-  { "GET", "HEAD", "OPTIONS" }
-#define HTTP_DEFAULT_MIME "application/octet-stream"
-#define MAX_CLIENT_BODY_SIZE 1048576
-// Indent size for http multiline log output
-#define INDENT "\r\n                          "
-
-// Default values for poll class
-/**
- * close connections if they are TIMEOUT milliseconds inactive
- */
-#define TIMEOUT 30000
-
-// Default buffer size for various different classes
-// like AConnection  Http and ResponsePipe
-#define BUFFER_SIZE 65536
-
-// Token structure in the format: {name, parent, isContext, minOccurence,
-// maxOccurence, minArgs, maxArgs, validationFunction}
+// Allowed token input structure in the format: {name, parent, isContext,
+// minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
 const t_token tokens[31] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
@@ -81,5 +60,41 @@ const t_token tokens[31] = {
     // CGI context
     {"cgi", "location", true, 0, 1, 1, 1, isExtension},
     {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};
+
+// -------------------------- LOG VALUES ---------------------------
+
+#define LOG_TO_STDOUT false
+#define LOG_LEVEL INFO
+#define LOG_PATH "/var/log/webserv/access.log"
+#define LOG_ERROR_PATH "/var/log/webserv/error.log"
+#define LOG_TIME_FORMAT "%H:%M:%S GMT"
+#define LOG_DATE_FORMAT "%d-%m-%Y"
+
+// -------------------------- HTTP VALUES --------------------------
+
+#define HTTP_VERSION "HTTP/1.1"
+#define HTTP_METHOD_COUNT 6
+#define HTTP_METHODS \
+  { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
+#define HTTP_DEFAULT_METHOD_COUNT 3
+#define HTTP_DEFAULT_METHODS \
+  { "GET", "HEAD", "OPTIONS" }
+#define HTTP_DEFAULT_MIME "application/octet-stream"
+#define MAX_CLIENT_BODY_SIZE 1048576
+// Indent size for http multiline log output
+#define INDENT "\r\n                          "
+
+// -------------------------- POLL VALUES ---------------------------
+
+/**
+ * close connections if they are TIMEOUT milliseconds inactive
+ */
+#define TIMEOUT 30000
+
+// ----------------------- ADDITIONAL VALUES -----------------------
+
+// Default buffer size for various different classes
+// like AConnection  Http and ResponsePipe
+#define BUFFER_SIZE 65536
 
 #endif
