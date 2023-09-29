@@ -157,7 +157,7 @@ Response &Http::processFile(std::string uri) {
   _response = Response("HTTP/1.1", "200", "OK");
   std::ifstream *body = new std::ifstream(file.getPath().c_str());
   int bodySize = file.size();
-  if (body->is_open() == false || bodySize == -1) {
+  if (body->good() == false || bodySize == -1) {
     delete body;
     return processError("500", "Internal Server Error");
   }
@@ -206,6 +206,7 @@ Response &Http::processPutData(std::string uri, std::string &data) {
     if (!File(File(path).getDir()).exists())
       return processError("404", "Not found");
 
+    if (_file.is_open()) _file.close();
     _file.open(path.c_str(), std::ios::out | std::ios::binary);
     if (_file.good() == false)
       return processError("500", "Internal Server Error");
@@ -317,7 +318,7 @@ Response &Http::processError(std::string code, std::string reason) {
       File file(path);
       if (file.exists() && file.file() && file.readable()) {
         body = new std::ifstream(path.c_str());
-        if (((std::ifstream *)body)->is_open() == false) {
+        if (body->good() == false) {
           delete body;
           return processError("505", "Internal Server Error");
         }

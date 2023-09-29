@@ -3,6 +3,7 @@
 
 # TODO
 
+- [ ] Investigate random closing of program without any notice after sending a first request
 - [ ] Maybe implement configurable default mime
 - [ ] Fix file uploading
 - [ ] Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary
@@ -65,10 +66,10 @@ Flags overwrite the default settings and the ones that are configured in the con
 
 | Flag | Description | Allowed values
 | --- | --- | --- |
-| s | Controls wether the server should print to stdout | on/off |
-| l | Controls the debug level | 0/1/2/3 -> for error/warning/info/debug
-| a | Sets the access log path | -
-| e | Sets the error log file path | -
+| s | Controls [log_to_stdout](#log_to_stdout) | on/off |
+| l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 for `error` / `warning` / `info` / `debug`
+| a | Controls [access_log](#access_log) | -
+| e | Controls [error_log](#error_log) | -
 
 # Configuration
 
@@ -184,7 +185,7 @@ Default: `off`
 ```nginx
 log_level LEVEL;
 ```
-Set the log level. The log level can be `debug`, `info`, `warning` or `error`.  
+Set the log level. Allowed log levels are `debug`, `info`, `warning` and `error`.  
 Default: `info`  
 **Allowed contexts:** [Http](#http)
 
@@ -192,7 +193,7 @@ Default: `info`
 ```nginx
 access_log PATH;
 ```
-Set the path of the access log file.  
+Sets the path of the access log file.  
 Default: `/var/log/webserv/access.log`  
 **Allowed contexts:** [Http](#http)
 
@@ -200,7 +201,7 @@ Default: `/var/log/webserv/access.log`
 ```nginx
 error_log PATH;
 ```
-Set the path of the error log file.  
+Sets the path of the error log file.  
 Default: `/var/log/webserv/error.log`  
 **Allowed contexts:** [Http](#http)
 
@@ -208,35 +209,35 @@ Default: `/var/log/webserv/error.log`
 ```nginx
 listen HOST:PORT;
 ```
-Set the host and port of the server.  
+Sets the host and port of the server.  
 **Allowed contexts:** [Server](#server)
 
 ### server_name
 ```nginx
 server_name NAME [NAME ...];
 ```
-Set the server names.  
+Sets the server names.  
 **Allowed contexts:** [Server](#server)
 
 ### root
 ```nginx
 root PATH;
 ```
-Set the root path of the server.  
+Sets the root path for a context.  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### index
 ```nginx
 index FILE [FILE ...];
 ```
-Set the index files.  
+Sets the index files for a context  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### autoindex
 ```nginx
 autoindex [on|off];
 ```
-Enable or disable the directory listing.  
+Enables or disables the directory listing for a context  
 Default: `off`  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
@@ -244,7 +245,7 @@ Default: `off`
 ```nginx
 max_client_body_size SIZE;
 ```
-Set the maximum size of the body of a request.  
+Sets the maximum body size for a client request message.  
 Default: `1048576`  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
@@ -252,7 +253,7 @@ Default: `1048576`
 ```nginx
 allow METHOD [METHOD ...];
 ```
-Set the allowed methods.  
+Sets the allowed methods for a context.  
 Default: `GET` / `HEAD` / `OPTIONS`  
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
@@ -260,28 +261,28 @@ Default: `GET` / `HEAD` / `OPTIONS`
 ```nginx
 error_page CODE PATH;
 ```
-Set a custom error page for the given status code.  
+Sets a custom error page for the given status code.  
 **Allowed contexts:** [Server](#server)
 
 ### alias
 ```nginx
 alias PATH;
 ```
-Set an alias path. Example request: `GET /alias/file` -> `root/PATH/file`  
+Set an alias path. Example request for alias PATH: `GET /alias/file` -> `root/PATH/file`  
 **Allowed contexts:** [Location](#location)
 
 ### redirect
 ```nginx
 redirect URL;
 ```
-Redirects the request of the location to the given url.   
+Redirects the request of the context to the given url.   
 **Allowed contexts:** [Server](#server) / [Location](#location)
 
 ### cgi_path
 ```nginx
 cgi_path PATH;
 ```
-Set the path of the cgi executable.  
+Sets the executable for the cgi context.    
 **Allowed contexts:** [Cgi](#cgi)
 
 ## Example
@@ -303,7 +304,7 @@ types {
 http {
   include /example/mime.types;
 
-  log_to_stdout on;
+  log_to_stdout off;
   log_level info;
   access_log /var/log/webserv/access.log;
   error_log /var/log/webserv/error.log;
