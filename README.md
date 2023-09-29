@@ -56,7 +56,7 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [ [-s|-l|-a|-e FLAG_ARG] ...]
+./webserv [configuration_file] [ [-FLAG ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 

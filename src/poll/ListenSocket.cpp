@@ -14,7 +14,7 @@ ListenSocket::ListenSocket(Address const &addr, int backlog) : _addr(addr) {
 ListenSocket::ListenSocket(ListenSocket const &other) : _addr(other._addr) {}
 
 ListenSocket::~ListenSocket() {
-  Log::write("Stop listening: " + toString<Address &>(_addr), DEBUG);
+  accessLog_g.write("Stop listening: " + toString<Address &>(_addr), DEBUG);
 }
 
 void ListenSocket::init(int backlog) {
@@ -50,7 +50,7 @@ void ListenSocket::init(int backlog) {
   pollfd.events = POLLIN;
   pollfd.revents = 0;
   Poll::add(pollfd);
-  Log::write("Listen: " + toString<Address &>(_addr), DEBUG);
+  accessLog_g.write("Listen: " + toString<Address &>(_addr), DEBUG);
 }
 
 ListenSocket &ListenSocket::operator=(ListenSocket const &other) {
@@ -77,7 +77,9 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd) {
     throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
                              std::strerror(errno));
   if (fcntl(newPollfd.fd, F_SETFL, flags | O_NONBLOCK) == -1)
-    throw std::runtime_error(std::string("ListenSocket(): onPollIn(): fcntl(): ") + std::strerror(errno));
+    throw std::runtime_error(
+        std::string("ListenSocket(): onPollIn(): fcntl(): ") +
+        std::strerror(errno));
   remoteAddress.size(len);
   newPollfd.events = POLLIN;
   newPollfd.revents = 0;

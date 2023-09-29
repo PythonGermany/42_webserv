@@ -5,7 +5,7 @@
 
 // ------------------------- LOG STRUCTURE -------------------------
 
-typedef enum e_log_level { ERROR, WARNING, INFO, DEBUG } t_log_level;
+typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG } log_level_t;
 
 // ------------------------- ARG STRUCTURE -------------------------
 
@@ -31,7 +31,7 @@ arg_state_t setErrorLog(std::string value);
 
 // ----------------------- CONFIG STRUCTURE ------------------------
 
-typedef struct s_token {
+typedef struct token_s {
   std::string name;
   std::string parent;
   bool isContext;
@@ -40,7 +40,7 @@ typedef struct s_token {
   size_t minArgs;
   size_t maxArgs;
   std::string (*func)(std::string const &value, size_t index);
-} t_token;
+} token_t;
 
 // Validation functions are return a non-empty string if value is invalid
 

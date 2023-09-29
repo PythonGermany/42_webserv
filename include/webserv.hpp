@@ -4,8 +4,8 @@
 // Holds the default values and the
 // general structure of the config file
 
-#include "config/structure.hpp"
 #include "config/utils.hpp"
+#include "structure.hpp"
 
 // -------------------------- ARG VALUES ---------------------------
 
@@ -22,7 +22,7 @@ const arg_t args_g[4] = {{'s', setLogToStdout},
 
 // Allowed token input structure in the format: {name, parent, isContext,
 // minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
-const t_token tokens[31] = {
+const token_t tokens[31] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},

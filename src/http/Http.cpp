@@ -10,13 +10,13 @@ Http::Http(Address const &client, Address const &host) {
   this->_expectedBodySize = 0;
   this->_currBodySize = 0;
   this->_responseReady = false;
-  Log::write(toString<Address &>(this->host) +
-                 " -> add: " + toString<Address &>(this->client),
-             DEBUG);
+  accessLog_g.write(toString<Address &>(this->host) +
+                        " -> add: " + toString<Address &>(this->client),
+                    DEBUG);
 }
 
 Http::~Http() {
-  Log::write(
+  accessLog_g.write(
       toString<Address &>(host) + " -> delete: " + toString<Address &>(client),
       DEBUG);
 }
@@ -352,8 +352,8 @@ std::string Http::getDefaultBody(std::string code, std::string reason) const {
 
 void Http::sendResponse() {
   if (_responseReady == false) {
-    Log::write("WARNING: Trying to send response before it is ready", WARNING,
-               BRIGHT_YELLOW);
+    accessLog_g.write("WARNING: Trying to send response before it is ready",
+                      WARNING, BRIGHT_YELLOW);
     return;
   }
 
@@ -383,10 +383,11 @@ void Http::sendResponse() {
       _request.getHeader("Connection") == "close")
     closeConnection();
 
-  Log::write(_log + std::string(INDENT) + "'" + _response.getVersion() + " " +
-                 _response.getStatus() + " " + _response.getReason() + "' " +
-                 _request.getHeader("User-Agent"),
-             INFO);
+  accessLog_g.write(_log + std::string(INDENT) + "'" + _response.getVersion() +
+                        " " + _response.getStatus() + " " +
+                        _response.getReason() + "' " +
+                        _request.getHeader("User-Agent"),
+                    INFO);
 }
 
 std::string Http::getAbsoluteUri(std::string uri) const {

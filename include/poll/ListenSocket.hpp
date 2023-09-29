@@ -6,6 +6,7 @@
 
 #include "Address.hpp"
 #include "IFileDescriptor.hpp"
+#include "global.hpp"
 
 class ListenSocket : public IFileDescriptor {
  public:

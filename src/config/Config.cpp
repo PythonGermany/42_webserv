@@ -33,7 +33,7 @@ Config::~Config() {}
 std::string Config::getConfig() const { return _config; }
 
 void Config::removeComments() {
-  Log::write(_path + " Removing comments", DEBUG);
+  accessLog_g.write(_path + " Removing comments", DEBUG);
   size_t i = _config.find_first_of("#");
   while (i != std::string::npos) {
     size_t j = _config.find_first_of("\n", i);
@@ -45,7 +45,7 @@ void Config::removeComments() {
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
                               bool validateResult) {
-  Log::write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
+  accessLog_g.write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
   size_t startLine = line;
   while (true) {
     // Trim leading whitespace
@@ -131,8 +131,9 @@ void Config::processInclude(Context &context, std::string path) {
   std::set<std::string> files = processWildcard(includePath);
   std::set<std::string>::iterator itr = files.begin();
   for (; itr != files.end(); itr++) {
-    Log::write("Context: '" + context.getName() + "' -> Include '" + *itr + "'",
-               DEBUG);
+    accessLog_g.write(
+        "Context: '" + context.getName() + "' -> Include '" + *itr + "'",
+        DEBUG);
     // Recursively parse included config files
     Config config(*itr);
     config.removeComments();
@@ -141,7 +142,7 @@ void Config::processInclude(Context &context, std::string path) {
 }
 
 bool Config::isValidContext(Context &context, std::string token) const {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
     if (tokens[i].name == token && tokens[i].parent == context.getName() &&
         tokens[i].isContext)
       return true;
@@ -149,7 +150,7 @@ bool Config::isValidContext(Context &context, std::string token) const {
 }
 
 bool Config::isValidDirective(Context &context, std::string token) const {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
     if (tokens[i].name == token && tokens[i].parent == context.getName() &&
         !tokens[i].isContext)
       return true;
@@ -157,7 +158,7 @@ bool Config::isValidDirective(Context &context, std::string token) const {
 }
 
 std::string Config::validToAdd(Context &context, std::string token) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++)
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
     if (tokens[i].name == token && tokens[i].parent == context.getName())
       return context.getTokenOccurence(token) < tokens[i].maxOccurence
                  ? ""
@@ -167,7 +168,7 @@ std::string Config::validToAdd(Context &context, std::string token) {
 
 std::string Config::validArguments(Context &context, std::string token,
                                    std::vector<std::string> args) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++) {
     if (tokens[i].name == token && tokens[i].parent == context.getName()) {
       if (tokens[i].func != NULL) {
         for (size_t j = 0; j < args.size(); j++) {
@@ -185,8 +186,9 @@ std::string Config::validArguments(Context &context, std::string token,
 }
 
 std::string Config::validate(Context &context, bool recursive) {
-  Log::write("Context: '" + context.getName() + "' -> Validating", DEBUG);
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(t_token); i++) {
+  accessLog_g.write("Context: '" + context.getName() + "' -> Validating",
+                    DEBUG);
+  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++) {
     if (tokens[i].parent == context.getName() &&
         context.getTokenOccurence(tokens[i].name) < tokens[i].minOccurence) {
       if (tokens[i].isContext)

@@ -12,40 +12,34 @@
 
 class Log {
  private:
-  static Log _instance;
-
   static bool _log_to_stdout;
-  static t_log_level _log_level;
-  std::ofstream _log_file;
-  std::ofstream _error_log_file;
+  static log_level_t _log_level;
+
+  std::string _path;
+  std::ofstream _file;
 
   static std::string _timeFormat;
   static std::string _dateFormat;
 
-  bool _allowError;
-
-  Log();
+  bool _initialized;
+  static bool _allowError;
 
  public:
+  Log(std::string path);
   ~Log();
 
   // Setters
   static void setLogToStdout(bool log, bool overwrite = false);
-  static void setLevel(t_log_level level, bool overwrite = false);
-  static void setLogFile(std::string path, bool overwrite = false);
-  static void setErrorLogFile(std::string path, bool overwrite = false);
+  static void setLevel(log_level_t level, bool overwrite = false);
+  void setFile(std::string path, bool overwrite = false);
   static void setAllowError(bool allow);
 
   // Getters
-  static t_log_level getLevel();
+  static log_level_t getLevel();
 
   // Writes a message to the log file and if enabled also to the standard output
   // @exception No custom exceptions
-  static void write(std::string msg, t_log_level level,
-                    std::string color = RESET);
-  // Writes a message to the error log file and to the standard error output
-  // @exception No custom exceptions
-  static void writeError(std::string msg, std::string color = RESET);
+  void write(std::string msg, log_level_t level, std::string color = RESET);
 };
 
 #endif

@@ -1,17 +1,15 @@
 #include "Log.hpp"
 
-Log Log::_instance;
-
 bool Log::_log_to_stdout = LOG_TO_STDOUT;
-t_log_level Log::_log_level = LOG_LEVEL;
+log_level_t Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
 std::string Log::_dateFormat = LOG_DATE_FORMAT;
+bool Log::_allowError = false;
 
-Log::Log() {
-  File(LOG_PATH).createDirPath();
-  File(LOG_ERROR_PATH).createDirPath();
-  _log_file.open(LOG_PATH, std::ios_base::app);
-  _error_log_file.open(LOG_ERROR_PATH, std::ios_base::app);
+Log::Log(std::string path) {
+  File(path).createDirPath();
+  _path = path;
+  _file.open(path.c_str(), std::ios_base::app);
 }
 
 Log::~Log() {}
@@ -24,7 +22,7 @@ void Log::setLogToStdout(bool log, bool overwrite) {
   }
 }
 
-void Log::setLevel(t_log_level level, bool overwrite) {
+void Log::setLevel(log_level_t level, bool overwrite) {
   static bool initialized = false;
   if (overwrite || !initialized) {
     _log_level = level;
@@ -32,57 +30,33 @@ void Log::setLevel(t_log_level level, bool overwrite) {
   }
 }
 
-void Log::setLogFile(std::string path, bool overwrite) {
-  static bool initialized = false;
-  if (overwrite || !initialized) {
+void Log::setFile(std::string path, bool overwrite) {
+  if (overwrite || !_initialized) {
     File(path).createDirPath();
-    if (_instance._log_file.is_open()) _instance._log_file.close();
-    _instance._log_file.open(path.c_str(), std::ios_base::app);
-    initialized = true;
+    _path = path;
+    if (_file.is_open()) _file.close();
+    _file.open(path.c_str(), std::ios_base::app);
+    _initialized = true;
   }
 }
 
-void Log::setErrorLogFile(std::string path, bool overwrite) {
-  static bool initialized = false;
-  if (overwrite || !initialized) {
-    File(path).createDirPath();
-    if (_instance._error_log_file.is_open()) _instance._error_log_file.close();
-    _instance._error_log_file.open(path.c_str(), std::ios_base::app);
-    initialized = true;
-  }
-}
+void Log::setAllowError(bool allow) { _allowError = allow; }
 
-void Log::setAllowError(bool allow) { _instance._allowError = allow; }
+log_level_t Log::getLevel() { return _log_level; }
 
-t_log_level Log::getLevel() { return _instance._log_level; }
-
-void Log::write(std::string msg, t_log_level level, std::string color) {
+void Log::write(std::string msg, log_level_t level, std::string color) {
   static bool firstError = true;
-  if (level <= _instance._log_level) {
+  if (level <= _log_level) {
     std::string timeStamp =
         "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-    if (_instance._log_to_stdout)
+    if (_log_to_stdout || level == ERROR)
       std::cout << timeStamp << color << highlight(msg, BRIGHT_BLUE) << RESET
                 << std::endl;
-    _instance._log_file << timeStamp << msg << std::endl;
-    if (!_instance._log_file.good() && _instance._allowError && firstError) {
+    _file << timeStamp << msg << std::endl;
+    if (!_file.good() && _allowError && firstError) {
       std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
-                << "Unable to write to log file" << std::endl;
+                << "Unable to write to log file: " << _path << std::endl;
       firstError = false;
     }
-  }
-}
-
-void Log::writeError(std::string msg, std::string color) {
-  static bool firstError = true;
-  std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-  std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << color << msg << RESET
-            << std::endl;
-  _instance._error_log_file << timeStamp << msg << std::endl;
-  if (!_instance._error_log_file.good() && _instance._allowError &&
-      firstError) {
-    std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
-              << "Unable to write to error log file" << std::endl;
-    firstError = false;
   }
 }

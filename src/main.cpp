@@ -6,7 +6,7 @@
 #include "ListenSocket.hpp"
 #include "Poll.hpp"
 #include "argument.hpp"
-#include "webserv.hpp"
+#include "global.hpp"
 
 // Loads the config file into a Context object
 Context loadConfig(std::string path) {
@@ -24,12 +24,13 @@ int main(int argc, char** argv) {
   pollSignalHandler.sa_handler = Poll::signalHandler;
   sigaction(SIGINT, &pollSignalHandler, NULL);
   try {
-    Init::init(loadConfig(loadArguments(argc, argv)));
+    std::string path = loadArguments(argc, argv);
+    Init::init(loadConfig(path));
     while (true) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
-    Log::writeError(e.what(), BRIGHT_YELLOW);
+    errorLog_g.write(e.what(), ERROR, BRIGHT_YELLOW);
   }
   return 0;
 }

@@ -6,10 +6,10 @@
 
 #include "AConnection.hpp"
 #include "File.hpp"
-#include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "VirtualHost.hpp"
+#include "global.hpp"
 
 class Http : public AConnection {
   Request _request;

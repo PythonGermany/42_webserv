@@ -1,6 +1,6 @@
 #include "structure.hpp"
 
-#include "Log.hpp"
+#include "global.hpp"
 
 arg_state_t setLogToStdout(std::string value) {
   static bool set = false;
@@ -14,7 +14,7 @@ arg_state_t setLogToStdout(std::string value) {
 arg_state_t setLogLevel(std::string value) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
-  Log::setLevel((t_log_level)(value[0] - '0'));
+  Log::setLevel((log_level_t)(value[0] - '0'));
   set = true;
   if (value >= "0" && value <= "3") return SUCCESS;
   return ARG_INVALID;
@@ -23,7 +23,7 @@ arg_state_t setLogLevel(std::string value) {
 arg_state_t setAccessLog(std::string value) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
-  Log::setLogFile(value);
+  accessLog_g.setFile(value);
   set = true;
   return SUCCESS;
 }
@@ -31,7 +31,7 @@ arg_state_t setAccessLog(std::string value) {
 arg_state_t setErrorLog(std::string value) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
-  Log::setErrorLogFile(value);
+  errorLog_g.setFile(value);
   set = true;
   return SUCCESS;
 }
@@ -110,7 +110,6 @@ std::string isBoolean(std::string const &value, size_t index) {
 }
 
 std::string isListen(std::string const &value, size_t index) {
-  (void)index;
   if (value.empty()) return "Invalid listen format (empty)";
   if (value.size() <= 5) return "";
 
