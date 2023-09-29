@@ -62,7 +62,7 @@ make [debug]
 Default configuration file: `/etc/webserv/webserv.conf`
 
 ## Flags
-A flag overwrites the default setting as well as the one that is configured in the config file. It can be utilized to configure an option directly from the start of the program instead of only after the configuration has been read and parsed.
+A flag overwrites the default setting as well as one that may be configured in the config file. It can be utilized to configure an option directly from the start of the program instead of only after the configuration has been read and parsed.
 
 | Flag | Description | Allowed values
 | --- | --- | --- |
