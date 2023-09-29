@@ -23,8 +23,8 @@ typedef struct arg_s {
   arg_state_t (*func)(const std::list<std::string> &);
 } arg_t;
 
-// Information functions which can be set through arguments. They need to be
-// called one with set = true in order to print out any text should they be
+// Information functions which can be set through flags. They need to be
+// called once with set = true in order to print out any text should they be
 // called again with set = false
 
 void printInfo(bool set = false);

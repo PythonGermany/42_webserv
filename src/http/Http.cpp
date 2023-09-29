@@ -304,6 +304,8 @@ Response &Http::processRedirect(std::string uri) {
 }
 
 Response &Http::processError(std::string code, std::string reason) {
+  _response = Response("HTTP/1.1", code, reason);
+
   std::istream *body = NULL;
   if (_virtualHost->getContext().exists("error_page")) {
     std::vector<std::vector<std::string> > &pages =
@@ -332,7 +334,6 @@ Response &Http::processError(std::string code, std::string reason) {
     }
   }
 
-  _response = Response("HTTP/1.1", code, reason);
   // If no custom error page was found, use default
   if (body == NULL) {
     body = new std::stringstream(getDefaultBody(code, reason));
