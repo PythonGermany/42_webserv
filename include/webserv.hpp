@@ -65,6 +65,7 @@ const token_t tokens[31] = {
 
 #define LOG_TO_STDOUT false
 #define LOG_LEVEL INFO
+#define LOG_STDOUT_OVERRIDE_LEVEL WARNING
 #define LOG_PATH "/var/log/webserv/access.log"
 #define LOG_ERROR_PATH "/var/log/webserv/error.log"
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
