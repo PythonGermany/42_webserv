@@ -69,11 +69,11 @@ void Request::parseHead(std::string msg) {
   _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
 
-  // Parse header
-  parseHeader(msg.substr(pos + 2));
+  // Parse header fields
+  parseHeaderFields(msg.substr(pos + 2));
 }
 
-void Request::parseHeader(std::string fields) {
+void Request::parseHeaderFields(std::string fields) {
   size_t end = fields.find("\r\n");
 
   while (end != std::string::npos) {

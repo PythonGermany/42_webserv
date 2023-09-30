@@ -1,8 +1,12 @@
 #include "output.hpp"
 
-void printInfo(bool set) {
+void printInfo(output_t command) {
   static bool isSet = false;
-  if (!set && isSet) {
+  if (command == SET)
+    isSet = true;
+  else if (command == UNSET)
+    isSet = false;
+  if (command == PRINT || (command == PRINT_IF_SET && isSet)) {
     std::cout
         << BRIGHT_GREEN
         << "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\r\n"
@@ -13,13 +17,16 @@ void printInfo(bool set) {
            "\e[102m█ https://github.com/PythonGermany/42_webserv █\e[49m\r\n"
            "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
         << RESET << std::endl;
-  } else if (set)
-    isSet = true;
+  }
 }
 
-int printHelp(bool set) {
+int printHelp(output_t command) {
   static bool isSet = false;
-  if (!set && isSet) {
+  if (command == SET)
+    isSet = true;
+  else if (command == UNSET)
+    isSet = false;
+  if (command == PRINT || (command == PRINT_IF_SET && isSet)) {
     std::cout << BRIGHT_RED << "Usage: " << BRIGHT_GREEN
               << "./webserv [configuration_file] [-i|-h] [ [-FLAG "
                  "ARGUMENT] ...]\r\n"
@@ -34,7 +41,6 @@ int printHelp(bool set) {
                  "  -e Sets the path for the error log file"
               << RESET << std::endl;
     return 1;
-  } else if (set)
-    isSet = true;
+  }
   return 0;
 }

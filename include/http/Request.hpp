@@ -34,7 +34,7 @@ class Request {
   void deleteHeaderField(std::string key, std::string value);
 
   void parseHead(std::string msg);
-  void parseHeader(std::string fields);
+  void parseHeaderFields(std::string fields);
   bool isValid() const;
 };
 

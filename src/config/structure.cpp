@@ -6,7 +6,7 @@ arg_state_t setInfo(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;
   if (set) return FLAG_DUPLICATE;
-  printInfo(true);
+  printInfo(SET);
   set = true;
   return SUCCESS;
 }
@@ -15,7 +15,7 @@ arg_state_t setHelp(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;
   if (set) return FLAG_DUPLICATE;
-  printHelp(true);
+  printHelp(SET);
   set = true;
   return SUCCESS;
 }
