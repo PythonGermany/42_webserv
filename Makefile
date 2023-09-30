@@ -15,6 +15,7 @@ SRC			+= poll/RequestPipe.cpp
 SRC			+= poll/timeval.cpp
 
 SRC			+= config/global.cpp
+SRC			+= config/output.cpp
 SRC			+= config/argument.cpp
 SRC			+= config/Config.cpp
 SRC			+= config/Context.cpp
@@ -33,6 +34,7 @@ SRC			+= http/Uri.cpp
 HEADERS		+= webserv.hpp
 
 HEADERS		+= config/global.hpp
+HEADERS		+= config/output.hpp
 HEADERS		+= config/argument.hpp
 HEADERS		+= config/colors.hpp
 HEADERS		+= config/Config.hpp

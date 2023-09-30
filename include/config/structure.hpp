@@ -10,6 +10,8 @@ typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG } log_level_t;
 
 // ------------------------- ARG STRUCTURE -------------------------
 
+#include "output.hpp"
+
 typedef enum arg_state_e {
   SUCCESS,
   FLAG_UNKNOWN,
@@ -22,13 +24,6 @@ typedef struct arg_s {
   int argCount;
   arg_state_t (*func)(const std::list<std::string> &);
 } arg_t;
-
-// Information functions which can be set through flags. They need to be
-// called once with set = true in order to print out any text should they be
-// called again with set = false
-
-void printInfo(bool set = false);
-int printHelp(bool set = false);
 
 // Validation functions return either SUCCESS or another value fron the enum to
 // indicate an error

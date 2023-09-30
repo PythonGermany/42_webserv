@@ -60,7 +60,8 @@ std::string toHexString(unsigned char c) {
   return hex;
 }
 
-std::string highlight(std::string str, std::string color, std::string delim) {
+std::string highlight(std::string str, std::string currColor, std::string color,
+                      std::string delim) {
   bool first = true;
   size_t i = str.find_first_of(delim);
   while (i != std::string::npos) {
@@ -68,7 +69,7 @@ std::string highlight(std::string str, std::string color, std::string delim) {
       str.insert(i, color);
       i += color.length();
     } else
-      str.insert(i + delim.length(), RESET);
+      str.insert(i + delim.length(), currColor);
     first = !first;
     i = str.find_first_of(delim, i + delim.length());
   }

@@ -50,8 +50,8 @@ void Log::write(std::string msg, log_level_t level, std::string color) {
     std::string timeStamp =
         "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
     if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL)
-      std::cout << timeStamp << color << highlight(msg, BRIGHT_BLUE) << RESET
-                << std::endl;
+      std::cout << timeStamp << color << highlight(msg, color, BRIGHT_YELLOW)
+                << RESET << std::endl;
     _file << timeStamp << msg << std::endl;
     if (!_file.good() && _allowError && firstError) {
       std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET

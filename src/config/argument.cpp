@@ -4,7 +4,8 @@
 arg_t findArgument(char flag) {
   for (size_t i = 0; i < sizeof(args_g) / sizeof(arg_t); i++)
     if (args_g[i].flag == flag) return args_g[i];
-  throw std::runtime_error("Unknown flag '" + toString(flag) + "'");
+  throw std::runtime_error("Unknown flag '" + toString(flag) +
+                           "'. See 'webserv -h'");
 }
 
 // Loads provided arguments
