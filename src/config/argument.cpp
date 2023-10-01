@@ -4,8 +4,7 @@
 arg_t findArgument(char flag) {
   for (size_t i = 0; i < sizeof(args_g) / sizeof(arg_t); i++)
     if (args_g[i].flag == flag) return args_g[i];
-  printInfo(PRINT);
-  printHelp(PRINT);
+  printHelp(SET);
   throw std::runtime_error("Unknown flag '" + toString(flag));
 }
 

@@ -1,12 +1,11 @@
 #include "output.hpp"
 
-void printInfo(output_t command) {
+int getBit(output_flag_t flag, int value) { return value & flag; }
+
+void printInfo(int flags) {
   static bool isSet = false;
-  if (command == SET)
-    isSet = true;
-  else if (command == UNSET)
-    isSet = false;
-  if (command == PRINT || (command == PRINT_IF_SET && isSet)) {
+  if (getBit(SET, flags)) isSet = true;
+  if (isSet && getBit(PRINT, flags)) {
     std::cout
         << BRIGHT_GREEN
         << "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\r\n"
@@ -18,15 +17,14 @@ void printInfo(output_t command) {
            "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
         << RESET << std::endl;
   }
+  if (getBit(UNSET, flags)) isSet = false;
 }
 
-int printHelp(output_t command) {
+int printHelp(int flags) {
   static bool isSet = false;
-  if (command == SET)
-    isSet = true;
-  else if (command == UNSET)
-    isSet = false;
-  if (command == PRINT || (command == PRINT_IF_SET && isSet)) {
+  int ret = 0;
+  if (getBit(SET, flags)) isSet = true;
+  if (isSet && getBit(PRINT, flags)) {
     std::cout << BRIGHT_RED << "Usage: " << BRIGHT_GREEN
               << "./webserv [configuration_file] [-i|-h] [ [-FLAG "
                  "ARGUMENT] ...]\r\n"
@@ -40,7 +38,8 @@ int printHelp(output_t command) {
                  "  -a Sets the path for the access log file\r\n"
                  "  -e Sets the path for the error log file"
               << RESET << std::endl;
-    return 1;
+    ret = 1;
   }
-  return 0;
+  if (getBit(UNSET, flags)) isSet = false;
+  return ret;
 }

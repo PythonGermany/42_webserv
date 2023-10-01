@@ -4,12 +4,11 @@
 // Holds the default values and the
 // general structure of the config file
 
-#include "config/utils.hpp"
 #include "structure.hpp"
 
 // -------------------------- ARG VALUES ---------------------------
 
-// Allowd argument input structure in the format: {flag, argCount,
+// Allowed argument input structure in the format: {flag, argCount,
 // validation-/initializationFunction}
 const arg_t args_g[6] = {{'i', 0, setInfo},        {'h', 0, setHelp},
                          {'s', 1, setLogToStdout}, {'l', 1, setLogLevel},

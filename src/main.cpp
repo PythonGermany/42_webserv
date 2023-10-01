@@ -25,14 +25,15 @@ int main(int argc, char** argv) {
   sigaction(SIGINT, &pollSignalHandler, NULL);
   try {
     std::string path = loadArguments(argc, argv);
-    printInfo(PRINT_IF_SET);
-    if (printHelp(PRINT_IF_SET)) return 0;
+    printInfo(PRINT | UNSET);
+    if (printHelp(PRINT | UNSET)) return 0;
     Init::init(loadConfig(path));
     while (true) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
     errorLog_g.write(e.what(), ERROR, BRIGHT_RED);
+    printHelp(PRINT);
   }
   return 0;
 }
