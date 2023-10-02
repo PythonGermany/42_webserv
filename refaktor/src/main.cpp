@@ -25,6 +25,5 @@ int main() {
     if (Poll::poll() == false) break;
   }
   Poll::cleanUp();
-  std::cout << "no open files: " << (3 == open("Makefile", O_RDONLY))
-            << std::endl;
+  if (open("Makefile", O_RDONLY) != 3) throw std::runtime_error("fd leak");
 }

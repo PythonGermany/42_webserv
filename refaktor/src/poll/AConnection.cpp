@@ -47,6 +47,9 @@ void AConnection::send(std::istream *msg) {
   }
 }
 
+/**
+ * TODO: callback function for POLLERR and POLLHUP?
+ */
 void AConnection::onPollEvent(struct pollfd &pollfd,
                               CallbackPointer *newCallbackObject,
                               struct pollfd *newPollfd) {
@@ -54,11 +57,10 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
   _newPollfd = newPollfd;
   if (pollfd.fd == pipeIn) {
     std::cerr << "i am a link" << std::endl;
-    if (_cgiPid == -1) {  // was stop by other pipe
+    if (_cgiPid == -1)  // was stop by other pipe
       pollfd.events = 0;
-      pollfd.revents = 0;
-    }
-    onPipeInPollEvent(pollfd);
+    else
+      onPipeInPollEvent(pollfd);
     if (pollfd.events == 0) {
       pipeIn = -1;
       _cgiReadBuffer.clear();
@@ -67,11 +69,10 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
     return;
   }
   if (pollfd.fd == pipeOut) {
-    if (_cgiPid == -1) {  // was stop by other pipe
+    if (_cgiPid == -1)  // was stop by other pipe
       pollfd.events = 0;
-      pollfd.revents = 0;
-    }
-    onPipeOutPollEvent(pollfd);
+    else
+      onPipeOutPollEvent(pollfd);
     if (pollfd.events == 0) {
       pipeOut = -1;
       _cgiWriteBuffer.clear();
@@ -79,11 +80,9 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
     return;
   }
   std::cerr << "i am not a link" << std::endl;
-  if (pollfd.revents & ~(POLLIN | POLLOUT)) {
-    std::cerr << "onNoPollEvent" << std::endl;
-    if (pollfd.revents & POLLHUP) {
-      throw std::runtime_error("Exception: ERROR: POLLHUP");
-    }
+  if (pollfd.revents & POLLERR) throw std::runtime_error("ERROR: POLLERR");
+  if (pollfd.revents & POLLHUP) throw std::runtime_error("ERROR: POLLHUP");
+  if ((pollfd.revents & (POLLIN | POLLOUT)) == false) {
     onNoPollEvent(pollfd);
     return;
   }
@@ -268,8 +267,8 @@ void AConnection::onNoPollEvent(struct pollfd &pollfd) {
   timeout = CONNECTION_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
   if (timeout <= 0) {
     std::ostringstream oss;
-    oss << client;
-    throw std::runtime_error(oss.str() + ": Connection Timed Out");
+    oss << client << ": Connection Timed Out";
+    throw std::runtime_error(oss.str());
   }
   Poll::setTimeout(timeout);
 }
