@@ -22,7 +22,6 @@ class Log {
   static std::string _dateFormat;
 
   bool _initialized;
-  static bool _allowError;
 
  public:
   Log(std::string path);
@@ -32,7 +31,7 @@ class Log {
   static void setLogToStdout(bool log, bool overwrite = false);
   static void setLevel(log_level_t level, bool overwrite = false);
   void setFile(std::string path, bool overwrite = false);
-  static void setAllowError(bool allow);
+  void setInitialized(bool intialized);
 
   // Getters
   static log_level_t getLevel();

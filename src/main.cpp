@@ -25,6 +25,8 @@ int main(int argc, char** argv) {
   sigaction(SIGINT, &pollSignalHandler, NULL);
   try {
     std::string path = loadArguments(argc, argv);
+    accessLog_g.setInitialized(true);
+    errorLog_g.setInitialized(true);
     printInfo(PRINT | UNSET);
     if (printHelp(PRINT | UNSET)) return 0;
     Init::init(loadConfig(path));
