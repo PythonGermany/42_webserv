@@ -5,7 +5,7 @@
 
 - [ ] Investigate random closing of program without any notice after sending a first request
 - [ ] Maybe implement configurable default mime
-- [ ] Fix file uploading
+- [x] Fix file uploading
 - [ ] Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary
 - [ ] Figure out why resolving symlinks doesnt work
 - [ ] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 

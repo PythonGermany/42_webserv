@@ -263,8 +263,9 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
       _readBuffer.erase(0, pos);
     } else {
       if (_readBuffer.size() < bodySize) break;
-      OnBodyRecv(_readBuffer.substr(0, bodySize));
-      _readBuffer.erase(0, bodySize);
+      pos = bodySize;
+      OnBodyRecv(_readBuffer.substr(0, pos));
+      _readBuffer.erase(0, pos);
       // bodySize = WAIT_FOR_HEAD;
     }
   }
