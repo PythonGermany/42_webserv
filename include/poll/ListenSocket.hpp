@@ -4,23 +4,26 @@
 
 #include <string>
 
+#include "AConnection.hpp"
 #include "Address.hpp"
-#include "IFileDescriptor.hpp"
+#include "CallbackPointer.hpp"
 #include "global.hpp"
 
 class ListenSocket : public IFileDescriptor {
  public:
-  ListenSocket(Address const &addr, int backlog = SOMAXCONN);
-  ListenSocket(ListenSocket const &other);
   ~ListenSocket();
-  ListenSocket &operator=(ListenSocket const &other);
-  void onPollEvent(struct pollfd &pollfd);
+  void onPollEvent(struct pollfd &pollfd, CallbackPointer *newCallbackObject,
+                   struct pollfd *newPollfd);
+  static void create(Address const &addr, int backlog = SOMAXCONN);
 
  private:
   Address _addr;
+  size_t acceptAttempts;
 
   ListenSocket();
-  void init(int backlog);
+  ListenSocket(Address const &addr);
+  ListenSocket(ListenSocket const &);
+  ListenSocket &operator=(ListenSocket const &);
 };
 
 #endif  // LISTENSOCKET_HPP

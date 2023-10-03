@@ -56,7 +56,7 @@ const token_t tokens[31] = {
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
     // CGI context
-    {"cgi", "location", true, 0, 1, 1, 1, isExtension},
+    {"cgi", "server", true, 0, 1, 1, 1, isExtension},
     {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};
 
 // -------------------------- LOG VALUES ---------------------------
@@ -88,7 +88,8 @@ const token_t tokens[31] = {
 /**
  * close connections if they are TIMEOUT milliseconds inactive
  */
-#define TIMEOUT 30000
+#define CONNECTION_TIMEOUT 30000
+#define CGI_TIMEOUT 3000
 
 // ----------------------- ADDITIONAL VALUES -----------------------
 

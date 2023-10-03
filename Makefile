@@ -10,8 +10,7 @@ SRC			+= poll/Address.cpp
 SRC			+= poll/AConnection.cpp
 SRC			+= poll/ListenSocket.cpp
 SRC			+= poll/Poll.cpp
-SRC			+= poll/ResponsePipe.cpp
-SRC			+= poll/RequestPipe.cpp
+SRC			+= poll/CallbackPointer.cpp
 SRC			+= poll/timeval.cpp
 
 SRC			+= config/global.cpp
@@ -51,8 +50,7 @@ HEADERS		+= poll/AConnection.hpp
 HEADERS		+= poll/ListenSocket.hpp
 HEADERS		+= poll/Poll.hpp
 HEADERS		+= poll/IFileDescriptor.hpp
-HEADERS		+= poll/ResponsePipe.hpp
-HEADERS		+= poll/RequestPipe.hpp
+HEADERS		+= poll/CallbackPointer.hpp
 HEADERS		+= poll/timeval.hpp
 
 HEADERS		+= http/testconn.hpp
@@ -64,7 +62,7 @@ OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http -fsanitize=address
 
 all: $(NAME)
 

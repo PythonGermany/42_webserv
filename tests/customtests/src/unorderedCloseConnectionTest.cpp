@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cerrno>
 #include <arpa/inet.h>
+#include <sys/wait.h>
 
 #define NUM_OF_SOCKETS 10
 

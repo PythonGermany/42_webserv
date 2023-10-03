@@ -3,19 +3,16 @@
 
 #include <sys/time.h>
 
+#include <csignal>
 #include <vector>
 
-#include "AConnection.hpp"
-#include "IFileDescriptor.hpp"
-#include "webserv.hpp"
+#include "CallbackPointer.hpp"
 
 class Poll {
  public:
-  typedef std::vector<IFileDescriptor *>::size_type size_type;
-
-  static void add(IFileDescriptor *src);
-  static void add(struct pollfd &src);
-  static void remove(size_type pos);
+  static void add(CallbackPointer const &src, struct pollfd const &pollfd);
+  void tryToAddNewElements(CallbackPointer const *callback,
+                           struct pollfd const *pollfd, size_t size);
   static bool poll();
   static void signalHandler(int);
   static void setTimeout(int src);
@@ -24,11 +21,16 @@ class Poll {
   static void clearPollEvent(short event, IFileDescriptor *src);
   static short setPollInactive(IFileDescriptor *src);
   static void cleanUp();
+  static pid_t lastForkPid();
+  static void lastForkPid(pid_t src);
 
  private:
   bool stop;
   int timeout;
-  std::vector<IFileDescriptor *> callbackObjects;
+  pid_t pid;
+  // size_t pos;
+  struct sigaction originalSigAction;
+  std::vector<CallbackPointer> callbackObjects;
   std::vector<struct pollfd> pollfds;
 
   Poll();
@@ -38,6 +40,11 @@ class Poll {
 
   static Poll &getInstance();
   void iterate();
+  void remove(IFileDescriptor *src);
+  void remove(size_t pos);
+  void release(CallbackPointer const *callback, struct pollfd const *pollfd,
+               size_t size);
+  void handleAddingAttempts();
 };
 
 #endif  // POLL_HPP

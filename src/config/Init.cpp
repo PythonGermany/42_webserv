@@ -92,7 +92,7 @@ void Init::initPoll() {
     std::set<Address>::const_iterator addr_any =
         allAddresses.find(Address(it->family(), it->port()));
     if (addr_any == allAddresses.end() || addr_any == it) {
-      Poll::add(new ListenSocket(*it));
+      ListenSocket::create(*it);
       ++sockets;
     }
   }

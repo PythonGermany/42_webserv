@@ -1,8 +1,7 @@
 #include "Http.hpp"
 
-Http::Http(Address const &client, Address const &host) {
-  this->client = client;
-  this->host = host;
+Http::Http(Address const &client, Address const &host)
+    : AConnection(host, client) {
   this->headDelimiter = "\r\n\r\n";
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
@@ -58,7 +57,12 @@ void Http::OnCgiRecv(std::string msg) {
   std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
 }
 
-void Http::OnCgiTimeout() { std::cout << "CGI TIMEOUT" << std::endl; }
+void Http::OnCgiError() {
+  _response = processError("500", "Internal Server Error");
+  _responseReady = true;
+  sendResponse();
+  _responseReady = false;
+}
 
 Response &Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
@@ -151,7 +155,20 @@ Response &Http::processFile(std::string uri) {
   } else if (!file.readable())
     return processError("403", "Forbidden");
 
-  // TODO: Handle CGI file requests
+  std::vector<Context> &cgiContext = _context->getContext("cgi");
+  if (cgiContext.size() != 0 &&
+      cgiContext[0].getArgs()[0] == file.getExtension()) {
+    runCGI(cgiContext[0].getDirective("cgi_path")[0][0],
+           std::vector<std::string>(), std::vector<std::string>());
+    _response = Response();
+    _responseReady = false;
+    return _response;
+  }
+
+  // if (file.getExtension() == _context->getDirective("cgi")[0][0]) {
+  //   std::cout << "CGI" << std::endl;
+  // } else
+  //   std::cout << "NO CGI" << std::endl;
 
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
@@ -307,7 +324,7 @@ Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
 
   std::istream *body = NULL;
-  if (_virtualHost->getContext().exists("error_page")) {
+  if (_virtualHost && _virtualHost->getContext().exists("error_page")) {
     std::vector<std::vector<std::string> > &pages =
         _virtualHost->getContext().getDirective("error_page");
 
@@ -383,7 +400,7 @@ void Http::sendResponse() {
   // that everythign is sent before closing
   if (_response.getHeader("Connection") == "close" ||
       _request.getHeader("Connection") == "close")
-    closeConnection();
+    stopReceiving();
 
   accessLog_g.write(_log + std::string(INDENT) + "'" + _response.getVersion() +
                         " " + _response.getStatus() + " " +

@@ -73,9 +73,7 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
           (*it)->getContext().getDirective("server_name")[0];
       for (std::vector<std::string>::const_iterator itSn = serverNames.begin();
            itSn != serverNames.end(); ++itSn) {
-        if (*itSn == host)
-          return *it;  // TODO: I dont know if an incoming host is allowd to be
-                       // localhost:80
+        if (*itSn == host) return *it;
       }
     }
   }
