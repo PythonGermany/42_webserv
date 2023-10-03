@@ -4,9 +4,8 @@ Cache Http::_cache;
 
 #define INDENT "\r\n                          "
 
-Http::Http(Address const &client, Address const &host) {
-  this->client = client;
-  this->host = host;
+Http::Http(Address const &client, Address const &host)
+    : AConnection(host, client) {
   this->headDelimiter = "\r\n\r\n";
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
@@ -328,7 +327,7 @@ Response &Http::processRedirect(std::string uri) {
 Response &Http::processError(std::string code, std::string reason) {
   _response = Response("HTTP/1.1", code, reason);
   std::string body;
-  if (_virtualHost->getContext().exists("error_page", true)) {
+  if (_virtualHost && _virtualHost->getContext().exists("error_page", true)) {
     std::vector<std::vector<std::string> > &pages =
         _virtualHost->getContext().getDirective("error_page", true);
 
@@ -402,7 +401,7 @@ void Http::sendResponse() {
   // that everythign is sent before closing
   if (_response.getHeader("Connection") == "close" ||
       _request.getHeader("Connection") == "close")
-    closeConnection();
+    stopReceiving();
 
   Log::write(_log + std::string(INDENT) + "'" + _response.getVersion() + " " +
                  _response.getStatus() + " " + _response.getReason() + "' " +

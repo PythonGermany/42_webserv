@@ -6,17 +6,13 @@
 #include <csignal>
 #include <vector>
 
-#include "AConnection.hpp"
-#include "IFileDescriptor.hpp"
-#include "webserv.hpp"
+#include "CallbackPointer.hpp"
 
 class Poll {
  public:
-  typedef std::vector<IFileDescriptor *>::size_type size_type;
-
-  static void add(IFileDescriptor *src, struct pollfd const &pollfd);
-  static void remove(size_type pos);
-  static void remove(IFileDescriptor *src);
+  static void add(CallbackPointer const &src, struct pollfd const &pollfd);
+  void tryToAddNewElements(CallbackPointer const *callback,
+                           struct pollfd const *pollfd, size_t size);
   static bool poll();
   static void signalHandler(int);
   static void setTimeout(int src);
@@ -32,9 +28,9 @@ class Poll {
   bool stop;
   int timeout;
   pid_t pid;
-  size_t pos;
+  // size_t pos;
   struct sigaction originalSigAction;
-  std::vector<IFileDescriptor *> callbackObjects;
+  std::vector<CallbackPointer> callbackObjects;
   std::vector<struct pollfd> pollfds;
 
   Poll();
@@ -44,6 +40,11 @@ class Poll {
 
   static Poll &getInstance();
   void iterate();
+  void remove(IFileDescriptor *src);
+  void remove(size_t pos);
+  void release(CallbackPointer const *callback, struct pollfd const *pollfd,
+               size_t size);
+  void handleAddingAttempts();
 };
 
 #endif  // POLL_HPP

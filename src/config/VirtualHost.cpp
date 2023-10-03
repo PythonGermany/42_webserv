@@ -8,7 +8,8 @@ VirtualHost::VirtualHost() {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
-  _resolvedListenDirective = Address::resolveHost(_context.getDirective("listen")[0][0]);
+  _resolvedListenDirective =
+      Address::resolveHost(_context.getDirective("listen")[0][0]);
 }
 
 VirtualHost::VirtualHost(const VirtualHost &rhs) { *this = rhs; }
@@ -41,40 +42,42 @@ std::string VirtualHost::getMimeType(std::string extension) {
   if (it != _mimeTypes.end()) return it->second;
   return "";
 }
-std::string const &VirtualHost::getAddress() { return _context.getDirective("listen")[0][0]; }
+std::string const &VirtualHost::getAddress() {
+  return _context.getDirective("listen")[0][0];
+}
 
-std::set<Address> const &VirtualHost::getResolvedAddress() const { return _resolvedListenDirective; }
+std::set<Address> const &VirtualHost::getResolvedAddress() const {
+  return _resolvedListenDirective;
+}
 
 Context &VirtualHost::getContext() { return _context; }
 
 VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   std::vector<VirtualHost *> possibleHosts;
 
-  for (std::vector<VirtualHost>::iterator it = _virtualHosts.begin(); it != _virtualHosts.end(); ++it)
-  {
+  for (std::vector<VirtualHost>::iterator it = _virtualHosts.begin();
+       it != _virtualHosts.end(); ++it) {
     std::set<Address> const &listenDirective = it->getResolvedAddress();
-    for (std::set<Address>::const_iterator itLd = listenDirective.begin(); itLd != listenDirective.end(); ++itLd)
-    {
+    for (std::set<Address>::const_iterator itLd = listenDirective.begin();
+         itLd != listenDirective.end(); ++itLd) {
       if (*itLd == address)
         possibleHosts.push_back(&(*it));
       else if (*itLd == Address(address.family(), address.port()))
         possibleHosts.push_back(&(*it));
     }
   }
-  for (std::vector<VirtualHost *>::iterator it = possibleHosts.begin(); it != possibleHosts.end(); ++it)
-  {
-    if ((*it)->getContext().exists("server_name"))
-    {
-      std::vector<std::string> serverNames = (*it)->getContext().getDirective("server_name")[0];
-      for (std::vector<std::string>::const_iterator itSn = serverNames.begin(); itSn != serverNames.end(); ++itSn)
-      {
-        if (*itSn == host)
-          return *it;
+  for (std::vector<VirtualHost *>::iterator it = possibleHosts.begin();
+       it != possibleHosts.end(); ++it) {
+    if ((*it)->getContext().exists("server_name")) {
+      std::vector<std::string> serverNames =
+          (*it)->getContext().getDirective("server_name")[0];
+      for (std::vector<std::string>::const_iterator itSn = serverNames.begin();
+           itSn != serverNames.end(); ++itSn) {
+        if (*itSn == host) return *it;
       }
     }
   }
-  if (possibleHosts.empty())
-    return NULL;
+  if (possibleHosts.empty()) return NULL;
   return *possibleHosts.begin();
 }
 
