@@ -35,7 +35,7 @@
 /**
  * close connections if they are TIMEOUT milliseconds inactive
  */
-#define CONNECTION_TIMEOUT 3000
+#define CONNECTION_TIMEOUT 30000
 #define CGI_TIMEOUT 3000
 
 // Token structure in the format: {name, parent, isContext, minOccurence,

@@ -67,9 +67,8 @@ void Poll::release(CallbackPointer const *callback, struct pollfd const *pollfd,
 
 bool Poll::poll() {
   Poll &poll = getInstance();
-  static size_t numListenSockets = poll.callbackObjects.size();
 
-  // std::cout << "poll.timeout: " << poll.timeout << std::endl;
+  std::cout << "poll.timeout: " << poll.timeout << std::endl;
   int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
   if (poll.stop) return false;
   if (ready == -1)
@@ -79,8 +78,6 @@ bool Poll::poll() {
   if (ready == 0) std::cerr << "Poll: no revents" << std::endl;
   poll.timeout = -1;
   poll.iterate();
-  if (poll.timeout == -1 && numListenSockets != poll.callbackObjects.size())
-    poll.timeout = CONNECTION_TIMEOUT;
   return true;
 }
 
@@ -159,13 +156,6 @@ void Poll::iterate() {
     for (size_t j = 0; j < sizeof(newPollfd) / sizeof(*newPollfd); ++j)
       newPollfd[j].fd = -1;
     try {
-      if (callbackObjects[i].link)
-        std::cerr << "try to call link: " << pollfds[i].fd << ": "
-                  << callbackObjects[i].ptr << std::endl;
-      else
-        std::cerr << "try to call no link: " << pollfds[i].fd << ": "
-                  << callbackObjects[i].ptr << std::endl;
-
       callbackObjects[i].ptr->onPollEvent(pollfds[i], newCallbackObject,
                                           newPollfd);
       tryToAddNewElements(newCallbackObject, newPollfd,

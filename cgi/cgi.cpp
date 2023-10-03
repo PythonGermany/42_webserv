@@ -3,7 +3,6 @@
 #include <iostream>
 
 int main(int, char **argv, char **env) {
-  sleep(10);
   if (isatty(0) == false) {
     std::cout << "cin: " << std::endl;
     while (std::cin.eof() == false) {

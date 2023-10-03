@@ -37,7 +37,7 @@ class AConnection : public IFileDescriptor {
   };
   virtual void OnCgiError() {
     std::cerr << "log: cgi error" << std::endl;
-    send(new std::stringstream("CGI ERROR"));
+    send(new std::stringstream("CGI ERROR\n"));
   };
 
  protected:
@@ -86,12 +86,16 @@ class AConnection : public IFileDescriptor {
   std::string _cgiWriteBuffer;
   pid_t _cgiPid;
   short _isListening;
+  struct timeval pipeInLastTimeActive;
   void KillCgi();
 
   void onPollEvent(struct pollfd &pollfd, CallbackPointer *newCallbackObject,
                    struct pollfd *newPollfd);
   void onPipeInPollEvent(struct pollfd &pollfd);
+  void onPipeInPollIn(struct pollfd &pollfd);
+  void onPipeInNoPollEvent(struct pollfd &pollfd);
   void onPipeOutPollEvent(struct pollfd &pollfd);
+  void onPipeOutPollOut(struct pollfd &pollfd);
   void onPollOut(struct pollfd &pollfd);
   void onPollIn(struct pollfd &pollfd);
   void onNoPollEvent(struct pollfd &pollfd);

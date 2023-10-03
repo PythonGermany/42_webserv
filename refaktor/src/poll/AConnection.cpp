@@ -19,6 +19,8 @@ AConnection::AConnection(Address const &serverAddress,
   pipeIn = -1;
   pipeOut = -1;
   _cgiPid = -1;
+  Poll::setTimeout(CONNECTION_TIMEOUT);
+  headSizeLimit = std::string::npos;  // TODO: tmp
 }
 
 AConnection::~AConnection() {
@@ -31,10 +33,7 @@ AConnection::~AConnection() {
     if (kill(_cgiPid, SIGKILL) == -1) std::cerr << "ERROR: kill()" << std::endl;
     waitpid(_cgiPid, &status, 0);
     std::cerr << "waitpid()" << std::endl;
-    _cgiPid = -1;
   }
-  // if (ResponsePipe != NULL) Poll::remove(ResponsePipe);
-  // if (RequestPipe != NULL) Poll::remove(RequestPipe);
 }
 
 void AConnection::send(std::istream *msg) {
@@ -56,30 +55,13 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
   _newCallbackObject = newCallbackObject;
   _newPollfd = newPollfd;
   if (pollfd.fd == pipeIn) {
-    std::cerr << "i am a link" << std::endl;
-    if (_cgiPid == -1)  // was stop by other pipe
-      pollfd.events = 0;
-    else
-      onPipeInPollEvent(pollfd);
-    if (pollfd.events == 0) {
-      pipeIn = -1;
-      _cgiReadBuffer.clear();
-      Poll::setPollActive(_isListening & POLLIN, this);
-    }
+    onPipeInPollEvent(pollfd);
     return;
   }
   if (pollfd.fd == pipeOut) {
-    if (_cgiPid == -1)  // was stop by other pipe
-      pollfd.events = 0;
-    else
-      onPipeOutPollEvent(pollfd);
-    if (pollfd.events == 0) {
-      pipeOut = -1;
-      _cgiWriteBuffer.clear();
-    }
+    onPipeOutPollEvent(pollfd);
     return;
   }
-  std::cerr << "i am not a link" << std::endl;
   if (pollfd.revents & POLLERR) throw std::runtime_error("ERROR: POLLERR");
   if (pollfd.revents & POLLHUP) throw std::runtime_error("ERROR: POLLHUP");
   if ((pollfd.revents & (POLLIN | POLLOUT)) == false) {
@@ -89,21 +71,32 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
   if (pollfd.revents & POLLIN) onPollIn(pollfd);
   if (pollfd.revents & POLLOUT) onPollOut(pollfd);
   gettimeofday(&lastTimeActive, NULL);
+  if (pollfd.events) Poll::setTimeout(CONNECTION_TIMEOUT);
 }
 
 void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
+  if (_cgiPid == -1)
+    pollfd.events = 0;
+  else {
+    if (pollfd.revents & ~POLLOUT) {
+      pollfd.events = 0;
+      KillCgi();
+    } else if (pollfd.revents & POLLOUT) {
+      onPipeOutPollOut(pollfd);
+    }
+  }
+  if (pollfd.events == 0) {
+    pipeOut = -1;
+    _cgiWriteBuffer.clear();  // TODO: unecessary?
+  }
+}
+
+void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
   if (_cgiWriteBuffer.empty()) {
     pollfd.events = 0;
     return;
   }
-  if (pollfd.revents == false) return;
-  if (pollfd.revents & ~(POLLOUT)) {
-    pollfd.revents = 0;
-    pollfd.events = 0;
-    KillCgi();
-    return;
-  }
-  pollfd.revents = 0;
+  pollfd.revents &= ~POLLOUT;
   ssize_t lenSent =
       ::write(pipeOut, _cgiWriteBuffer.data(), _cgiWriteBuffer.size());
   if (lenSent == -1) {
@@ -111,13 +104,7 @@ void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
     KillCgi();
     return;
   }
-  try {
-    _cgiWriteBuffer.erase(0, lenSent);
-  } catch (std::bad_alloc const &e) {
-    pollfd.events = 0;
-    KillCgi();
-    return;
-  }
+  _cgiWriteBuffer.erase(0, lenSent);
   if (_cgiWriteBuffer.empty()) {
     pollfd.events = 0;
   }
@@ -126,17 +113,46 @@ void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
 void AConnection::cgiSend(std::string const &src) { _cgiWriteBuffer += src; }
 
 void AConnection::onPipeInPollEvent(struct pollfd &pollfd) {
-  char tmp[BUFFER_SIZE];
+  std::cerr << "i am a link" << std::endl;
+  if (_cgiPid == -1)
+    pollfd.events = 0;
+  else {
+    if (pollfd.revents & ~(POLLIN | POLLHUP)) {
+      pollfd.events = 0;
+      KillCgi();
+    } else if (pollfd.revents & (POLLIN | POLLHUP)) {
+      onPipeInPollIn(pollfd);
+    } else {
+      onPipeInNoPollEvent(pollfd);
+    }
+  }
+  if (pollfd.events == 0) {
+    pipeIn = -1;
+    _cgiReadBuffer.clear();
+    Poll::setPollActive(_isListening & POLLIN, this);
+  }
+}
 
-  if (pollfd.revents == false) return;
-  std::cerr << "check pipe" << std::endl;
-  if (pollfd.revents & ~(POLLHUP | POLLIN)) {
-    pollfd.revents = 0;
+void AConnection::onPipeInNoPollEvent(struct pollfd &pollfd) {
+  struct timeval currentTime;
+  struct timeval delta;
+  int timeout;
+
+  gettimeofday(&currentTime, NULL);
+  delta = currentTime - lastTimeActive;
+  timeout = CGI_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
+  if (timeout <= 0) {
     pollfd.events = 0;
     KillCgi();
     return;
   }
-  pollfd.revents = 0;
+  Poll::setTimeout(timeout);
+}
+
+void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
+  char tmp[BUFFER_SIZE];
+
+  pollfd.revents &= ~POLLIN;
   ssize_t ret = ::read(pollfd.fd, tmp, BUFFER_SIZE);
   if (ret > 0) {
     try {
@@ -165,7 +181,6 @@ void AConnection::onPipeInPollEvent(struct pollfd &pollfd) {
     } else {
       OnCgiRecv(_cgiReadBuffer);
     }
-    // waitforchild normal
   }
 }
 
@@ -227,7 +242,7 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   }
   _readBuffer += std::string(tmpbuffer, tmpbuffer + msglen);
   passReadBuffer(pollfd);
-  if (bodySize == std::string::npos && _readBuffer.size() > headSizeLimit) {
+  if (bodySize == WAIT_FOR_HEAD && _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;
     return;
@@ -256,12 +271,11 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
   }
 }
 
-void AConnection::onNoPollEvent(struct pollfd &pollfd) {
+void AConnection::onNoPollEvent(struct pollfd &) {
   struct timeval currentTime;
   struct timeval delta;
   int timeout;
 
-  if (pollfd.events & POLLINACTIVE) return;
   gettimeofday(&currentTime, NULL);
   delta = currentTime - lastTimeActive;
   timeout = CONNECTION_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
@@ -288,10 +302,10 @@ void AConnection::runCGI(std::string const &program,
     return;
   }
 
-  if (pipe(pipeOutArray) == -1) {
+  if (pipe(pipeOutArray)) {
     std::cerr << "ERROR: pipe()" << std::endl;
     close(pipeInArray[0]);
-    close(pipeInArray[0]);
+    close(pipeInArray[1]);
     OnCgiError();
     return;
   }
@@ -358,30 +372,5 @@ void AConnection::runCGI(std::string const &program,
   _isListening = Poll::setPollInactive(this);
   std::cerr << "create link" << std::endl;
 }
-
-// void AConnection::cgiSend(std::string msg) { _cgiWriteBuffer += msg; }
-
-// void AConnection::onPipePollOut(struct pollfd &pollfd) {
-//   size_t lenToSend;
-//   ssize_t lenSent;
-
-//   if (pollfd.revents & POLLHUP) {
-//     pollfd.events = 0;
-//     return;
-//   }
-//   pollfd.revents &= ~POLLOUT;
-//   if (_cgiWriteBuffer.size() > BUFFER_SIZE)
-//     lenToSend = BUFFER_SIZE;
-//   else
-//     lenToSend = _cgiWriteBuffer.size();
-//   lenSent = ::write(pollfd.fd, _cgiWriteBuffer.data(), lenToSend);
-//   if (lenSent == -1)
-//     std::runtime_error(std::string("AConnection::onPipePollOut(): ") +
-//                        std::strerror(errno));
-//   _cgiWriteBuffer.erase(0, lenSent);
-//   if (_cgiWriteBuffer.empty()) {
-//     pollfd.events &= ~POLLOUT;
-//   }
-// }
 
 void AConnection::stopReceiving() { Poll::clearPollEvent(POLLIN, this); }

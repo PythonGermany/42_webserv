@@ -95,6 +95,7 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd,
   } catch (std::bad_alloc const &e) {
     close(newPollfd->fd);
     newPollfd->fd = -1;
-    std::cerr << "Failed to accept client: ENOMEM" << '\n';
+    std::cerr << "Failed to accept client: ENOMEM"
+              << '\n';  // TODO: implement counter
   }
 }
