@@ -52,7 +52,7 @@ void Log::write(std::string msg, log_level_t level, std::string color) {
               << RESET << std::endl;
   if (!_initialized) return;
   _file << timeStamp << msg << std::endl;
-  if (_file.good() || _error || !_initialized) return;
+  if (_file.good() || _error) return;
   std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
             << "Unable to write to log file: " << _path << std::endl;
   _error = true;
