@@ -288,9 +288,11 @@ Sets the executable for the cgi context.
 **Allowed contexts:** [Cgi](#cgi)
 
 ## Example
-
+```
+./webserv -i
+```
 ```nginx
-# File -> /example/mime.types
+# File -> /etc/webserv/mime.types
 types {
   type text/html html htm;
   type text/css css;
@@ -302,24 +304,24 @@ types {
 }
 ```
 ```nginx
-# File -> /example/webserv.conf
+# File -> /etc/webserv/webserv.conf
 http {
-  include /example/mime.types;
+  include /etc/webserv/mime.types;
 
   log_to_stdout off;
   log_level info;
   access_log /var/log/webserv/access.log;
   error_log /var/log/webserv/error.log;
 
-  include /example/server.conf;
+  include /etc/webserv/sites-enabled/*;
 }
 ```
 ```nginx
-# File -> /example/server.conf
+# File -> /etc/webserv/sites-enabled/server.conf
 server {
   listen localhost:8080;
   server_name localhost:8080;
-  root /example/www;
+  root /var/www/html;
   index index.html index.htm;
   autoindex on;
   max_client_body_size 1048576;
@@ -328,7 +330,7 @@ server {
   error_page 404 /404.html;
 
   location /example {
-    alias /example/www; # Request: GET /example/file -> root/www/file
+    alias /www; # Request: GET /example/file -> root/www/file
     index example.html;
     allow GET HEAD OPTIONS PUT DELETE;
     autoindex off;
