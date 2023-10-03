@@ -288,9 +288,6 @@ Sets the executable for the cgi context.
 **Allowed contexts:** [Cgi](#cgi)
 
 ## Example
-```
-./webserv -i
-```
 ```nginx
 # File -> /etc/webserv/mime.types
 types {
@@ -344,4 +341,7 @@ server {
     }
   }
 }
+```
+```
+./webserv -i
 ```
