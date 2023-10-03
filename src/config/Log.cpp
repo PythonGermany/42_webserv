@@ -30,12 +30,13 @@ void Log::setLevel(log_level_t level, bool overwrite) {
 }
 
 void Log::setFile(std::string path, bool overwrite) {
-  if (overwrite || !_initialized) {
+  if (overwrite || !_fileSet) {
     File(path).createDirPath();
     _path = path;
     if (_file.is_open()) _file.close();
     _file.open(path.c_str(), std::ios_base::app);
-    _initialized = true;
+    if (_file.good()) _error = false;
+    _fileSet = true;
   }
 }
 
@@ -44,20 +45,15 @@ void Log::setInitialized(bool initialized) { _initialized = initialized; }
 log_level_t Log::getLevel() { return _log_level; }
 
 void Log::write(std::string msg, log_level_t level, std::string color) {
-  static bool firstError = true;
-  if (level <= _log_level) {
-    std::string timeStamp =
-        "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-    if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL)
-      std::cout << timeStamp << color << highlight(msg, color, BRIGHT_YELLOW)
-                << RESET << std::endl;
-    if (_initialized) {
-      _file << timeStamp << msg << std::endl;
-      if (!_file.good() && firstError) {
-        std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
-                  << "Unable to write to log file: " << _path << std::endl;
-        firstError = false;
-      }
-    }
-  }
+  if (level > _log_level) return;
+  std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
+  if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL)
+    std::cout << timeStamp << color << highlight(msg, color, BRIGHT_YELLOW)
+              << RESET << std::endl;
+  if (!_initialized) return;
+  _file << timeStamp << msg << std::endl;
+  if (_file.good() || _error || !_initialized) return;
+  std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
+            << "Unable to write to log file: " << _path << std::endl;
+  _error = true;
 }

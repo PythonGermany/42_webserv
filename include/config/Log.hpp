@@ -21,7 +21,10 @@ class Log {
   static std::string _timeFormat;
   static std::string _dateFormat;
 
+  bool _fileSet;
   bool _initialized;
+
+  bool _error;
 
  public:
   Log(std::string path);
