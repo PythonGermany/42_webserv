@@ -30,12 +30,13 @@ void Http::OnHeadRecv(std::string msg) {
          _request.getUri().generate() + " " + _request.getVersion() + "' -> " +
          toString<Address &>(host);
 
-  // If possible use host from absolute uri otherwise use host from header
+  // If possible use host of absolute uri otherwise use host of header
   // https://datatracker.ietf.org/doc/html/rfc2616#section-5.2
   std::string requestHost = _request.getHeader("Host");
-  if (!_request.getUri().getHost().empty()) {
+  if (_request.getUri().getHost().size() > 0) {
     requestHost = _request.getUri().getHost();
-    if (!_request.getUri().getPort().empty())
+    std::string port = _request.getUri().getPort();
+    if (port.size() > 0 && port != "80")
       requestHost += ":" + _request.getUri().getPort();
   }
 
