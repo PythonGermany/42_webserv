@@ -292,6 +292,7 @@ Response &Http::processAutoindex(std::string uri) {
   _response = Response("HTTP/1.1", "200", "OK");
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
+  _response.setHeader("Content-Type", "text/html");
   _responseReady = true;
   return _response;
 }
