@@ -12,7 +12,7 @@
                                           && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
 - [ ] Implement cgi support
 
-- [ ] Remove unwanted submodules once ready for evaluation
+- [ ] Remove unwanted submodules and config once ready for evaluation
 
 # Contents
 
