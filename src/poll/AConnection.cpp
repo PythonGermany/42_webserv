@@ -310,6 +310,28 @@ void AConnection::runCGI(std::string const &program,
     return;
   }
 
+  try {
+    int flags;
+
+    flags = fcntl(pipeInArray[0], F_GETFL);
+    if (flags == -1) throw std::runtime_error(std::strerror(errno));
+    if (fcntl(pipeInArray[0], F_SETFL, flags | O_NONBLOCK) == -1)
+      throw std::runtime_error(std::strerror(errno));
+    flags = fcntl(pipeOutArray[1], F_GETFL);
+    if (flags == -1) throw std::runtime_error(std::strerror(errno));
+    if (fcntl(pipeOutArray[1], F_SETFL, flags | O_NONBLOCK) == -1)
+      throw std::runtime_error(std::strerror(errno));
+  } catch (std::runtime_error const &e) {
+    std::cerr << "AConnection::runCGI(): fcntl(): ERROR: " << e.what()
+              << std::endl;
+    close(pipeInArray[0]);
+    close(pipeInArray[1]);
+    close(pipeOutArray[0]);
+    close(pipeOutArray[1]);
+    OnCgiError();
+    return;
+  }
+
   _cgiPid = fork();
   Poll::lastForkPid(_cgiPid);
   if (_cgiPid == -1) {

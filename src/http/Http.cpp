@@ -52,8 +52,10 @@ void Http::OnBodyRecv(std::string msg) {
 }
 
 void Http::OnCgiRecv(std::string msg) {
-  std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$ >";
+  std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$" << std::endl;
   std::cout << msg;
+  if (msg.empty() || *(msg.end() - 1) != '\n')
+    std::cout << "\nno newline at the end" << std::endl;
   std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
 }
 
@@ -158,8 +160,16 @@ Response &Http::processFile(std::string uri) {
   std::vector<Context> &cgiContext = _context->getContext("cgi");
   if (cgiContext.size() != 0 &&
       cgiContext[0].getArgs()[0] == file.getExtension()) {
+    std::vector<std::string> env;
+
+    env.push_back("REQUEST_METHOD=GET");
+    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env.push_back("SCRIPT_FILENAME=./index.php");
+    env.push_back("REDIRECT_STATUS=");
+
     runCGI(cgiContext[0].getDirective("cgi_path")[0][0],
-           std::vector<std::string>(), std::vector<std::string>());
+           std::vector<std::string>(), env);
     _response = Response();
     _responseReady = false;
     return _response;
