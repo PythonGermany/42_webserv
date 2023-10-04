@@ -143,7 +143,6 @@ void Poll::tryToAddNewElements(CallbackPointer const *callback,
         callbackObjects.pop_back();
         throw;
       }
-      if (callback[i].link) std::cerr << "link created" << std::endl;
     }
 }
 

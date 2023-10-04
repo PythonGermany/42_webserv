@@ -1,12 +1,13 @@
 #include "AConnection.hpp"
 
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <unistd.h>
-#include <wait.h>
 
 #include <iostream>
 
 #include "Poll.hpp"
+#include "global.hpp"
 
 AConnection::AConnection(Address const &serverAddress,
                          Address const &remoteAddress) {
@@ -31,7 +32,8 @@ AConnection::~AConnection() {
     int status;
     if (kill(_cgiPid, SIGKILL) == -1) std::cerr << "ERROR: kill()" << std::endl;
     waitpid(_cgiPid, &status, 0);
-    std::cerr << "waitpid()" << std::endl;
+    accessLog_g.write("reaped CGI process: " + toString<int>(_cgiPid), DEBUG,
+                      BLUE);
   }
 }
 
@@ -112,7 +114,6 @@ void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
 void AConnection::cgiSend(std::string const &src) { _cgiWriteBuffer += src; }
 
 void AConnection::onPipeInPollEvent(struct pollfd &pollfd) {
-  std::cerr << "i am a link" << std::endl;
   if (_cgiPid == -1)
     pollfd.events = 0;
   else {
@@ -171,8 +172,9 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     int status;
 
     waitpid(_cgiPid, &status, 0);  // TODO: error checking?
+    pid_t tmp = _cgiPid;
     _cgiPid = -1;
-    std::cerr << "waitpid()" << std::endl;
+    accessLog_g.write("reaped CGI process: " + toString<int>(tmp), DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0) {
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
@@ -188,8 +190,9 @@ void AConnection::KillCgi() {
 
   if (kill(_cgiPid, SIGKILL) == -1) std::cerr << "ERROR: kill()" << std::endl;
   waitpid(_cgiPid, &status, 0);
-  std::cerr << "waitpid()" << std::endl;
+  pid_t tmp = _cgiPid;
   _cgiPid = -1;
+  accessLog_g.write("reaped CGI process: " + toString<int>(tmp), DEBUG, BLUE);
   _cgiReadBuffer.clear();
   _cgiWriteBuffer.clear();
   OnCgiError();
@@ -351,8 +354,8 @@ void AConnection::runCGI(std::string const &program,
       c_env.push_back(const_cast<char *>(it->c_str()));
     c_env.push_back(NULL);
     execve(program.c_str(), c_arg.data(), c_env.data());
-    std::cerr << "webserv: error: execve(): " << std::strerror(errno)
-              << std::endl;
+    std::cerr << "webserv: error: execve(): " << program << ": "
+              << std::strerror(errno) << std::endl;
     exit(EXIT_FAILURE);
   }
   close(pipeInArray[1]);
@@ -370,7 +373,8 @@ void AConnection::runCGI(std::string const &program,
   _newCallbackObject[1].link = true;
   _newCallbackObject[1].ptr = this;
   _isListening = Poll::setPollInactive(this);
-  std::cerr << "create link" << std::endl;
+  accessLog_g.write("forked CGI process: " + toString<int>(_cgiPid), DEBUG,
+                    BLUE);
 }
 
 void AConnection::stopReceiving() { Poll::clearPollEvent(POLLIN, this); }
