@@ -33,7 +33,8 @@ void Init::initLogDefaults(Context& context) {
     accessLog_g.setFile(http.getDirective("access_log")[0][0]);
   if (http.exists("error_log"))
     errorLog_g.setFile(http.getDirective("error_log")[0][0]);
-  Log::setAllowError(true);
+  accessLog_g.setInitialized(true);
+  errorLog_g.setInitialized(true);
 }
 
 void Init::initMimeTypes(Context& context) {
