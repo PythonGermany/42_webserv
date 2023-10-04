@@ -21,8 +21,6 @@ Context loadConfig(std::string path) {
 int main(int argc, char** argv) {
   try {
     std::string path = loadArguments(argc, argv);
-    accessLog_g.setInitialized(true);
-    errorLog_g.setInitialized(true);
     printInfo(PRINT | UNSET);
     if (printHelp(PRINT | UNSET)) return 0;
     Init::init(loadConfig(path));

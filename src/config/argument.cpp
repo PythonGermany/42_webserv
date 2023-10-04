@@ -38,9 +38,11 @@ std::string loadArguments(int argc, char** argv) {
       if (ret == FLAG_DUPLICATE)
         throw std::runtime_error("Duplicate flag '" + std::string(argv[i]) +
                                  "'");
-      else if (ret == ARG_INVALID)
+      else if (ret == ARG_INVALID) {
+        printHelp(SET);
         throw std::runtime_error("Invalid argument for for flag '" +
                                  std::string(argv[i]) + "'");
+      }
     }
   }
   return path;

@@ -21,7 +21,10 @@ class Log {
   static std::string _timeFormat;
   static std::string _dateFormat;
 
-  bool _initialized;
+  bool _fileSet;      // True once file has been set
+  bool _initialized;  // Must be set to true in order to write to the log file
+
+  bool _error;  // True if an error occured while writing to the log file
 
  public:
   Log(std::string path);
