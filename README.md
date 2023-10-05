@@ -7,6 +7,7 @@
 - [ ] <del>Maybe implement configurable default mime</del>
 - [x] Fix file uploading
 - [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
+- [ ] Implement support for multilistendirective or change config in webserv.hpp
 - [ ] Figure out why resolving symlinks doesnt work
 - [ ] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
                                           && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)

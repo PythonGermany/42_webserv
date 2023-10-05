@@ -239,7 +239,8 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
     pollfd.events &= ~POLLIN;
     return;
   }
-  _readBuffer += std::string(tmpbuffer, tmpbuffer + msglen);
+  //_readBuffer += std::string(tmpbuffer, tmpbuffer + msglen); // TODO: remove
+  _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
   if (bodySize == WAIT_FOR_HEAD && _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
