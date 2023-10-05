@@ -47,7 +47,6 @@ void Poll::remove(size_t pos) {
  * @throw noexcept
  */
 void Poll::remove(IFileDescriptor *src) {
-  std::cerr << "remove: " << src << std::endl;
   for (size_t i = 0; i < callbackObjects.size();) {
     if (callbackObjects[i].ptr == src) {
       remove(i);
