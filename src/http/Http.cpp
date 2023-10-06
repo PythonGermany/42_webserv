@@ -53,9 +53,47 @@ void Http::OnBodyRecv(std::string msg) {
 }
 
 void Http::OnCgiRecv(std::string msg) {
-  std::cout << "$$$$$$$$$ BEGIN CGI $$$$$$$$$$ >";
-  std::cout << msg;
-  std::cout << "< $$$$$$$$$$ END CGI $$$$$$$$$$$" << std::endl;
+  _response = Response("HTTP/1.1", "200", "OK");
+  std::istringstream *body = new std::istringstream(msg);
+  int bodySize = msg.size();
+
+  std::string line;
+  while (std::getline(*body, line)) {
+    bodySize -= line.size() + 1;
+    if (line.empty() == false && line[line.size() - 1] == '\r')
+      line.erase(line.size() - 1);
+    if (line.empty()) break;
+    std::string name = line.substr(0, line.find(':'));
+    if (line.find(": ") == name.size())
+      line.erase(0, name.size() + 2);
+    else {
+      _response = processError("500", "Internal Server Error");
+      sendResponse();
+      return;
+    }
+    for (std::string::iterator it = name.begin(); it != name.end(); ++it)
+      *it = std::tolower(*it);
+    if (name == "content-type")
+      _response.setHeader("Content-Type", line);
+    else if (name == "x-powered-by")
+      continue;  // TODO: server_tokens ?
+    else
+      errorLog_g.write("cgi header header field not supported: " + name, DEBUG);
+  }
+
+  if (body->good() == false || bodySize == -1) {
+    delete body;
+    _response = processError("500", "Internal Server Error");
+    sendResponse();
+    return;
+  }
+  _response.setHeader("Content-Length", toString(bodySize));
+  _response.setBody(body);
+
+  // _response.setHeader("Content-Type", "text/plain");
+  // _response.setHeader("Content-Type", "text/html");
+  _responseReady = true;
+  sendResponse();
 }
 
 void Http::OnCgiError() {
@@ -127,6 +165,29 @@ Response &Http::processRequest() {
   return processFile(_uri);
 }
 
+static std::string getcwd() {
+  size_t const sizeToExtend = 1024;
+  size_t size = 0;
+  char *local_buffer;
+
+  while (true) {
+    size += sizeToExtend;
+    local_buffer = new char[size];
+    if (getcwd(local_buffer, size) != NULL) {
+      try {
+        std::string cwd(local_buffer);
+        delete[] local_buffer;
+        return cwd;
+      } catch (std::bad_alloc const &) {
+        delete[] local_buffer;
+        throw;
+      }
+    }
+    delete[] local_buffer;
+    if (errno != ERANGE) return NULL;
+  }
+}
+
 Response &Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
@@ -159,17 +220,36 @@ Response &Http::processFile(std::string uri) {
   std::vector<Context> &cgiContext = _context->getContext("cgi");
   if (cgiContext.size() != 0 &&
       cgiContext[0].getArgs()[0] == file.getExtension()) {
+    std::string pathname = file.getPath();
+    if (pathname.empty() || pathname[0] != '/') {
+      std::string cwd(getcwd());
+
+      cwd.push_back('/');
+      pathname.insert(0, cwd);
+    }
+    std::vector<std::string> env;
+    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env.push_back("SERVER_NAME=" + _request.getHeader("Host"));
+    env.push_back(
+        "SERVER_SOFTWARE="
+        "webserv");  // TODO: macro
+    env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    env.push_back("REQUEST_METHOD=" + _request.getMethod());
+    env.push_back("REMOTE_ADDR=" + client.str());
+    env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
+    env.push_back("SCRIPT_FILENAME=" + pathname);
+    env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
+    env.push_back("PATH_TRANSLATED=" + pathname);
+    env.push_back("SCRIPT_NAME=" + pathname);
+
+    env.push_back("REDIRECT_STATUS=");
+
     runCGI(cgiContext[0].getDirective("cgi_path")[0][0],
-           std::vector<std::string>(), std::vector<std::string>());
+           std::vector<std::string>(), env);
     _response = Response();
     _responseReady = false;
     return _response;
   }
-
-  // if (file.getExtension() == _context->getDirective("cgi")[0][0]) {
-  //   std::cout << "CGI" << std::endl;
-  // } else
-  //   std::cout << "NO CGI" << std::endl;
 
   // Load the file
   _response = Response("HTTP/1.1", "200", "OK");
