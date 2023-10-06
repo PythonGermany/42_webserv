@@ -32,8 +32,9 @@ AConnection::~AConnection() {
     int status;
     if (kill(_cgiPid, SIGKILL) == -1) std::cerr << "ERROR: kill()" << std::endl;
     waitpid(_cgiPid, &status, 0);
-    accessLog_g.write("reaped CGI process: " + toString<int>(_cgiPid), DEBUG,
-                      BLUE);
+    accessLog_g.write(
+        "reaped CGI process (destructor): " + toString<int>(_cgiPid), DEBUG,
+        BLUE);
   }
 }
 
@@ -174,7 +175,8 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     waitpid(_cgiPid, &status, 0);  // TODO: error checking?
     pid_t tmp = _cgiPid;
     _cgiPid = -1;
-    accessLog_g.write("reaped CGI process: " + toString<int>(tmp), DEBUG, BLUE);
+    accessLog_g.write("reaped CGI process (pipe closed): " + toString<int>(tmp),
+                      DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0) {
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
@@ -192,7 +194,8 @@ void AConnection::KillCgi() {
   waitpid(_cgiPid, &status, 0);
   pid_t tmp = _cgiPid;
   _cgiPid = -1;
-  accessLog_g.write("reaped CGI process: " + toString<int>(tmp), DEBUG, BLUE);
+  accessLog_g.write("reaped CGI process (after kill): " + toString<int>(tmp),
+                    DEBUG, BLUE);
   _cgiReadBuffer.clear();
   _cgiWriteBuffer.clear();
   OnCgiError();
