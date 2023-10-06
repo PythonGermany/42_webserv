@@ -2,7 +2,7 @@
 
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
-  this->headDelimiter = "\r\n\r\n";
+  this->readDelimiter = "\r\n\r\n";
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -47,7 +47,27 @@ void Http::OnHeadRecv(std::string msg) {
   if (_responseReady) sendResponse();
 }
 
+void Http::OnChunkSizeRecv(std::string msg) {
+  size_t end = msg.find(';');
+  if (end == std::string::npos) end = msg.size() - readDelimiter.size();
+
+  bodySize = 0;
+  if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF)
+    std::cerr << RED << "OnChunkSizeRecv(): sscanf failure" << RESET
+              << std::endl;
+
+  if (isBodySizeValid(_currBodySize + bodySize) == false)
+    processError("413", "Request Entity Too Large");
+  if (_responseReady) sendResponse();
+
+  bodySize += 2;
+  _readState = BODY;
+}
+
 void Http::OnBodyRecv(std::string msg) {
+  if (_request.getHeader("Transfer-Encoding") == "chunked")
+    msg.erase(msg.size() - 2, 2);
+
   _response = processPutData(_uri, msg);
   if (_responseReady) sendResponse();
 }
@@ -118,7 +138,7 @@ Response &Http::processRequest() {
 
   // Handle PUT request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
-  if (_request.getMethod() == "PUT") return processUploadHead();
+  if (_request.getMethod() == "PUT") return processBodyRequest();
 
   // Handle DELETE request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
@@ -192,31 +212,35 @@ Response &Http::processFile(std::string uri) {
   return _response;
 }
 
-Response &Http::processUploadHead() {
+Response &Http::processBodyRequest() {
   if (_request.getHeader("Content-Range") != "")
     return processError("501", "Not Implemented");
+
+  _currBodySize = 0;
+  if (_request.getHeader("Transfer-Encoding") != "") {
+    if (_request.getHeader("Transfer-Encoding") != "chunked")
+      return processError("501", "Not Implemented");
+    readDelimiter = "\r\n";
+    _readState = CHUNK_SIZE;
+    return _response;
+  }
 
   // Check if body size is specified
   std::string bodySizeStr = _request.getHeader("Content-Length");
   if (bodySizeStr.empty()) return processError("411", "Length Required");
   _expectedBodySize = fromString<size_t>(bodySizeStr);
 
-  // Find max body size
-  size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
-  if (_context->exists("max_client_body_size", true))
-    maxBodySize = fromString<size_t>(
-        _context->getDirective("max_client_body_size", true)[0][0]);
-
   // Check if body size is too large
-  if (_expectedBodySize > maxBodySize)
+  if (isBodySizeValid(_expectedBodySize) == false)
     return processError("413", "Request Entity Too Large");
-  _currBodySize = 0;
+
   bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize);
+  _readState = BODY;
   return _response;
 }
 
 Response &Http::processPutData(std::string uri, std::string &data) {
-  // Create and write file
+  // Create file
   if (_currBodySize == 0) {
     std::string path = _context->getDirective("root", true)[0][0] + uri;
     _newFile = !File(path).exists();
@@ -229,19 +253,32 @@ Response &Http::processPutData(std::string uri, std::string &data) {
     if (_file.good() == false)
       return processError("500", "Internal Server Error");
   }
+
+  // Write to file
   _file.write(data.c_str(), data.size());
   if (_file.good() == false)
     return processError("500", "Internal Server Error");
   _currBodySize += data.size();
-  if (_currBodySize >= _expectedBodySize) {
-    if (_newFile)
-      _response = Response("HTTP/1.1", "201", "Created");
-    else
-      _response = Response("HTTP/1.1", "204", "No Content");
-    _response.setHeader("Location", getAbsoluteUri(uri));
-    _responseReady = true;
-  } else
-    bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
+
+  if (_request.getHeader("Transfer-Encoding") == "chunked") {
+    if (bodySize == 2) return getPutResponse(uri);
+    readDelimiter = "\r\n";
+    _readState = CHUNK_SIZE;
+    return _response;
+  }
+
+  if (_currBodySize >= _expectedBodySize) return getPutResponse(uri);
+  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
+  return _response;
+}
+
+Response &Http::getPutResponse(std::string uri) {
+  if (_newFile)
+    _response = Response("HTTP/1.1", "201", "Created");
+  else
+    _response = Response("HTTP/1.1", "204", "No Content");
+  _response.setHeader("Location", getAbsoluteUri(uri));
+  _responseReady = true;
   return _response;
 }
 
@@ -384,6 +421,7 @@ void Http::sendResponse() {
     _response.setHeader("Content-Length", toString(0));
   if (_response.getHeader("Content-type").empty())
     _response.setHeader("Content-type", HTTP_DEFAULT_MIME);
+
   // https://datatracker.ietf.org/doc/html/rfc2616#section-14.18
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
 
@@ -395,11 +433,13 @@ void Http::sendResponse() {
   // Send response
   send(new std::istringstream(_response.generateHead()));
   if (_response.getBody() != NULL) send(_response.getBody());
-  _responseReady = false;
-  bodySize = WAIT_FOR_HEAD;
 
-  // Close connection if needed or asked for // TODO: Ask if it is guaranteed
-  // that everythign is sent before closing
+  // Reset class variables
+  _responseReady = false;
+  readDelimiter = "\r\n\r\n";
+  _readState = HEAD;
+
+  // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
       _request.getHeader("Connection") == "close")
     stopReceiving();
@@ -438,6 +478,14 @@ bool Http::isMethodValid() {
   for (size_t i = 0; i < allowedMethods.size(); i++)
     if (allowedMethods[i] == _request.getMethod()) return true;
   return false;
+}
+
+bool Http::isBodySizeValid(size_t size) const {
+  size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
+  if (_context->exists("max_client_body_size", true))
+    maxBodySize = fromString<size_t>(
+        _context->getDirective("max_client_body_size", true)[0][0]);
+  return size <= maxBodySize;
 }
 
 bool Http::isCgiExtension(std::string extension) const {

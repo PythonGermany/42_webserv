@@ -31,6 +31,7 @@ class Http : public AConnection {
   ~Http();
 
   void OnHeadRecv(std::string msg);
+  void OnChunkSizeRecv(std::string msg);
   void OnBodyRecv(std::string msg);
   void OnCgiRecv(std::string msg);
   void OnCgiError();
@@ -38,8 +39,9 @@ class Http : public AConnection {
  private:
   Response& processRequest();
   Response& processFile(std::string uri);
-  Response& processUploadHead();
+  Response& processBodyRequest();
   Response& processPutData(std::string uri, std::string& data);
+  Response& getPutResponse(std::string uri);
   Response& processOptions();
   Response& processDelete(std::string uri);
   Response& processAutoindex(std::string uri);
@@ -54,6 +56,7 @@ class Http : public AConnection {
 
   bool isMehodImplemented(std::string method) const;
   bool isMethodValid();
+  bool isBodySizeValid(size_t size) const;
   bool isCgiExtension(std::string extension) const;
   std::vector<std::string> getAllowedMethods(bool forUri = true) const;
   std::string getContextPath(std::string token, bool searchTree = false) const;

@@ -1,6 +1,10 @@
 [![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
 [![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
 
+HTTP RFC: https://datatracker.ietf.org/doc/html/rfc2616
+Cookie RFC: https://datatracker.ietf.org/doc/html/rfc2965
+CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
+
 # TODO
 
 - [ ] Investigate random closing of program without any notice after sending a first request
