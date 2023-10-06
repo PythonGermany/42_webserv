@@ -194,6 +194,21 @@ bool Address::operator==(Address const &other) const {
   }
 }
 
+std::string Address::str() const {
+  char buffer[INET6_ADDRSTRLEN];
+
+  if (!inet_ntop(_family, addr(), buffer, INET6_ADDRSTRLEN))
+    throw std::runtime_error(std::string("Address::str(): ") +
+                             std::strerror(errno));
+  if (_family == AF_INET6) {
+    std::string result("[");
+    result.append(buffer);
+    result.push_back(']');
+    return result;
+  }
+  return std::string(buffer);
+}
+
 /**
  * @throw std::runtime_error() if addr.family() is not AF_INET or AF_INET6
  */

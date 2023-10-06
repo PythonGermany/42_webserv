@@ -11,11 +11,10 @@
 #include <cstring>
 #include <limits>
 #include <ostream>  //overload
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-
-#include <set>
 #include <utility>
 
 /**
@@ -40,6 +39,7 @@ class Address {
   void size(socklen_t size);
   void port(in_port_t port);
   in_port_t port() const;
+  std::string str() const;
 
   bool operator<(Address const &other) const;
   static std::set<Address> resolveHost(std::string const &src);
