@@ -184,7 +184,7 @@ static std::string getcwd() {
       }
     }
     delete[] local_buffer;
-    if (errno != ERANGE) return NULL;
+    if (errno != ERANGE) throw std::runtime_error(std::strerror(errno));
   }
 }
 
@@ -221,12 +221,17 @@ Response &Http::processFile(std::string uri) {
   if (cgiContext.size() != 0 &&
       cgiContext[0].getArgs()[0] == file.getExtension()) {
     std::string pathname = file.getPath();
-    if (pathname.empty() || pathname[0] != '/') {
-      std::string cwd(getcwd());
+    if (pathname.empty() || pathname[0] != '/') try {
+        std::string cwd(getcwd());
 
-      cwd.push_back('/');
-      pathname.insert(0, cwd);
-    }
+        cwd.push_back('/');
+        pathname.insert(0, cwd);
+      } catch (std::runtime_error const &e) {
+        errorLog_g.write(
+            std::string(BRIGHT_RED "ERROR:" RESET " getcwd(): ") + e.what(),
+            ERROR);  // TODO: WARNING?
+        return processError("500", "Internal Server Error");
+      }
     std::vector<std::string> env;
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("SERVER_NAME=" + _request.getHeader("Host"));
