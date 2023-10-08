@@ -45,6 +45,8 @@ class Http : public AConnection {
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
   Response& processError(std::string code, std::string reason);
+  Response& processCgi(std::string const& uri, File const& file,
+                       std::string const& cgiPathname);
 
   std::string getDefaultBody(std::string code, std::string reason) const;
 

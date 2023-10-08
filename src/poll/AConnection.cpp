@@ -177,7 +177,8 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     _cgiPid = -1;
     accessLog_g.write("reaped CGI process (pipe closed): " + toString<int>(tmp),
                       DEBUG, BLUE);
-    if (WEXITSTATUS(status) != 0) {
+    if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
+      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, DEBUG);
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
       OnCgiError();

@@ -77,8 +77,19 @@ void Http::OnCgiRecv(std::string msg) {
       _response.setHeader("Content-Type", line);
     else if (name == "x-powered-by")
       continue;  // TODO: server_tokens ?
+    else if (name == "status") {
+      std::cout << "line: " << line << std::endl;
+      std::istringstream ss(line);
+      std::string status;
+      std::getline(ss, status, ' ');
+      _response.setStatus(status);
+      std::getline(ss, status);
+      _response.setReason(status);
+    } else if (name == "location")
+      _response.setHeader(name, line);
     else
-      errorLog_g.write("cgi header header field not supported: " + name, DEBUG);
+      errorLog_g.write(
+          "cgi header header field not supported: " + name + "=" + line, DEBUG);
   }
 
   if (body->good() == false || bodySize == -1) {
@@ -220,40 +231,7 @@ Response &Http::processFile(std::string uri) {
   std::vector<Context> &cgiContext = _context->getContext("cgi");
   if (cgiContext.size() != 0 &&
       cgiContext[0].getArgs()[0] == file.getExtension()) {
-    std::string pathname = file.getPath();
-    if (pathname.empty() || pathname[0] != '/') try {
-        std::string cwd(getcwd());
-
-        cwd.push_back('/');
-        pathname.insert(0, cwd);
-      } catch (std::runtime_error const &e) {
-        errorLog_g.write(
-            std::string(BRIGHT_RED "ERROR:" RESET " getcwd(): ") + e.what(),
-            ERROR);  // TODO: WARNING?
-        return processError("500", "Internal Server Error");
-      }
-    std::vector<std::string> env;
-    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    env.push_back("SERVER_NAME=" + _request.getHeader("Host"));
-    env.push_back(
-        "SERVER_SOFTWARE="
-        "webserv");  // TODO: macro
-    env.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    env.push_back("REQUEST_METHOD=" + _request.getMethod());
-    env.push_back("REMOTE_ADDR=" + client.str());
-    env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
-    env.push_back("SCRIPT_FILENAME=" + pathname);
-    env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
-    env.push_back("PATH_TRANSLATED=" + pathname);
-    env.push_back("SCRIPT_NAME=" + pathname);
-
-    env.push_back("REDIRECT_STATUS=");
-
-    runCGI(cgiContext[0].getDirective("cgi_path")[0][0],
-           std::vector<std::string>(), env);
-    _response = Response();
-    _responseReady = false;
-    return _response;
+    return processCgi(uri, file, cgiContext[0].getDirective("cgi_path")[0][0]);
   }
 
   // Load the file
@@ -274,6 +252,53 @@ Response &Http::processFile(std::string uri) {
   if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
 
   _responseReady = true;
+  return _response;
+}
+
+Response &Http::processCgi(std::string const &uri, File const &file,
+                           std::string const &cgiPathname) {
+  (void)uri;
+
+  std::string pathname = file.getPath();
+  if (pathname.empty() || pathname[0] != '/') try {
+      std::string cwd(getcwd());
+
+      cwd.push_back('/');
+      pathname.insert(0, cwd);
+    } catch (std::runtime_error const &e) {
+      errorLog_g.write(
+          std::string(BRIGHT_RED "ERROR:" RESET " getcwd(): ") + e.what(),
+          ERROR);  // TODO: WARNING?
+      return processError("500", "Internal Server Error");
+    }
+  std::vector<std::string> env;
+  // const values:
+  env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+  env.push_back(
+      "SERVER_SOFTWARE="
+      "webserv");  // TODO: macro
+  env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+
+  // request specific values:
+  env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
+  env.push_back("SERVER_NAME=" + _request.getHeader("Host"));
+  env.push_back("REQUEST_METHOD=" + _request.getMethod());
+  env.push_back("REMOTE_ADDR=" + client.str());
+  env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
+  env.push_back("SCRIPT_FILENAME=" + pathname);
+  env.push_back("DOCUMENT_ROOT=" + _context->getDirective("root")[0][0]);
+  std::string servername;
+  if (_virtualHost->getContext().exists("server_name", true))
+    servername =
+        _virtualHost->getContext().getDirective("server_name", true)[0][0];
+  env.push_back("SERVER_NAME=" + servername);
+  env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
+
+  env.push_back("REDIRECT_STATUS=200");
+
+  runCGI(cgiPathname, std::vector<std::string>(), env);
+  _response = Response();
+  _responseReady = false;
   return _response;
 }
 
