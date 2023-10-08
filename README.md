@@ -1,8 +1,8 @@
 [![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
 [![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
 
-HTTP RFC: https://datatracker.ietf.org/doc/html/rfc2616
-Cookie RFC: https://datatracker.ietf.org/doc/html/rfc2965
+HTTP RFC: https://datatracker.ietf.org/doc/html/rfc2616  
+Cookie RFC: https://datatracker.ietf.org/doc/html/rfc2965  
 CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 
 # TODO
@@ -21,18 +21,16 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 
 # Contents
 
-- [42_webserv](#42_webserv)
-  - [Contents](#contents)
-  - [Introduction](#introduction)
-  - [Linux installation](#linux-installation)
-    - [Requirements](#requirements)
-    - [Compilation](#compilation)
-  - [Usage](#usage)
-    - [Flags](#flags)
-  - [Configuration](#configuration)
-    - [Contexts](#contexts)
-    - [Directives](#directives)
-    - [Example](#example)
+- [Introduction](#introduction)
+- [Linux installation](#linux-installation)
+  - [Requirements](#requirements)
+  - [Compilation](#compilation)
+- [Usage](#usage)
+  - [Flags](#flags)
+- [Configuration](#configuration)
+  - [Contexts](#contexts)
+  - [Directives](#directives)
+  - [Example](#example)
 
 # Introduction
 

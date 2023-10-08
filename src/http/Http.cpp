@@ -65,8 +65,10 @@ void Http::OnChunkSizeRecv(std::string msg) {
 }
 
 void Http::OnBodyRecv(std::string msg) {
-  if (_request.getHeader("Transfer-Encoding") == "chunked")
+  if (_request.getHeader("Transfer-Encoding") == "chunked") {
+    if (!endsWith(msg, "\r\n")) return (void)processError("400", "Bad Request");
     msg.erase(msg.size() - 2, 2);
+  }
 
   _response = processPutData(_uri, msg);
   if (_responseReady) sendResponse();
@@ -80,9 +82,9 @@ void Http::OnCgiRecv(std::string msg) {
 
 void Http::OnCgiError() {
   _response = processError("500", "Internal Server Error");
-  _responseReady = true;
+  _responseReady = true;  // INFO: Will be set in process error
   sendResponse();
-  _responseReady = false;
+  _responseReady = false;  // INFO: Will be reset in send response
 }
 
 Response &Http::processRequest() {
@@ -234,7 +236,7 @@ Response &Http::processBodyRequest() {
   if (isBodySizeValid(_expectedBodySize) == false)
     return processError("413", "Request Entity Too Large");
 
-  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize);
+  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   _readState = BODY;
   return _response;
 }
@@ -261,7 +263,7 @@ Response &Http::processPutData(std::string uri, std::string &data) {
   _currBodySize += data.size();
 
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (bodySize == 2) return getPutResponse(uri);
+    if (data.size() == 0) return getPutResponse(uri);
     readDelimiter = "\r\n";
     _readState = CHUNK_SIZE;
     return _response;
