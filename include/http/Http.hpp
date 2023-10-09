@@ -46,7 +46,8 @@ class Http : public AConnection {
   Response& processDelete(std::string uri);
   Response& processAutoindex(std::string uri);
   Response& processRedirect(std::string uri);
-  Response& processError(std::string code, std::string reason);
+  Response& processError(std::string code, std::string reason,
+                         bool close = false);
 
   std::string getDefaultBody(std::string code, std::string reason) const;
 

@@ -66,7 +66,8 @@ void Http::OnChunkSizeRecv(std::string msg) {
 
 void Http::OnBodyRecv(std::string msg) {
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (!endsWith(msg, "\r\n")) return (void)processError("400", "Bad Request");
+    if (!endsWith(msg, "\r\n"))
+      return (void)processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
   }
 
@@ -361,7 +362,7 @@ Response &Http::processRedirect(std::string uri) {
   return _response;
 }
 
-Response &Http::processError(std::string code, std::string reason) {
+Response &Http::processError(std::string code, std::string reason, bool close) {
   _response = Response("HTTP/1.1", code, reason);
 
   std::istream *body = NULL;
@@ -399,6 +400,7 @@ Response &Http::processError(std::string code, std::string reason) {
   }
   _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   if (_request.getMethod() != "HEAD") _response.setBody(body);
+  if (close) _response.setHeader("Connection", "close");
   _responseReady = true;
   return _response;
 }
