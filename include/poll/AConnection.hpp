@@ -11,8 +11,6 @@
 #include "timeval.hpp"
 #include "webserv.hpp"
 
-#define WAIT_FOR_HEAD std::string::npos
-
 class AConnection : public IFileDescriptor {
  public:
   AConnection();
@@ -27,13 +25,17 @@ class AConnection : public IFileDescriptor {
  protected:
   Address client;
   Address host;
+
+  typedef enum state_e { HEAD, BODY, CHUNK_SIZE } state_t;
+  state_t _readState;
+
   std::string::size_type headSizeLimit;
   std::string::size_type bodySize;
-  std::string headDelimiter;
-
+  std::string readDelimiter;
   size_t _writeBufferPos;
 
   virtual void OnHeadRecv(std::string msg) = 0;
+  virtual void OnChunkSizeRecv(std::string msg) = 0;
   virtual void OnBodyRecv(std::string msg) = 0;
   void send(std::istream *msg);
   void cgiSend(std::string const &msg);

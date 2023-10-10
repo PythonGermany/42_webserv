@@ -13,10 +13,11 @@ AConnection::AConnection(Address const &serverAddress,
                          Address const &remoteAddress) {
   host = serverAddress;
   client = remoteAddress;
+  _readState = HEAD;
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
   _writeBufferPos = std::string::npos;
-  headDelimiter = "\r\n\r\n";
+  readDelimiter = "\r\n\r\n";
   pipeIn = -1;
   pipeOut = -1;
   _cgiPid = -1;
@@ -256,13 +257,11 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
     pollfd.events &= ~POLLIN;
     return;
   }
-  //_readBuffer += std::string(tmpbuffer, tmpbuffer + msglen); // TODO: remove
   _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
-  if (bodySize == WAIT_FOR_HEAD && _readBuffer.size() > headSizeLimit) {
+  if (_readState == HEAD && _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;
-    return;
   }
 }
 
@@ -273,19 +272,22 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
   std::string::size_type pos;
 
   while (pollfd.events & POLLIN) {
-    if (bodySize == WAIT_FOR_HEAD) {
-      pos = _readBuffer.find(headDelimiter);
+    if (_readState == HEAD) {
+      pos = _readBuffer.find(readDelimiter);
       if (pos == std::string::npos) break;
-      pos += headDelimiter.size();
+      pos += readDelimiter.size();
       OnHeadRecv(_readBuffer.substr(0, pos));
-      _readBuffer.erase(0, pos);
+    } else if (_readState == CHUNK_SIZE) {
+      pos = _readBuffer.find(readDelimiter);
+      if (pos == std::string::npos) break;
+      pos += readDelimiter.size();
+      OnChunkSizeRecv(_readBuffer.substr(0, pos));
     } else {
       if (_readBuffer.size() < bodySize) break;
       pos = bodySize;
       OnBodyRecv(_readBuffer.substr(0, pos));
-      _readBuffer.erase(0, pos);
-      // bodySize = WAIT_FOR_HEAD;
     }
+    _readBuffer.erase(0, pos);
   }
 }
 
