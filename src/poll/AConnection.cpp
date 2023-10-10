@@ -96,15 +96,16 @@ void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
 
 void AConnection::cgiCloseSendPipe() {
   if (pipeOut == -1) return;
-  _closeCgiSendPipe = true;
+  if (_newPollfd[0].fd == pipeOut)
+    _newPollfd[0].events &= ~POLLINACTIVE;
+  else if (_newPollfd[1].fd == pipeOut)
+    _newPollfd[1].events &= ~POLLINACTIVE;
+  else
+    Poll::clearPollEvent(POLLINACTIVE, pipeOut);
   _isListening = Poll::setPollInactive(this);
 }
 
 void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
-  if (_closeCgiSendPipe) {
-    _closeCgiSendPipe = false;
-    pollfd.events &= ~POLLINACTIVE;
-  }
   pollfd.revents &= ~POLLOUT;
   ssize_t lenSent =
       ::write(pipeOut, _cgiWriteBuffer.data(), _cgiWriteBuffer.size());
@@ -120,7 +121,13 @@ void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
 }
 
 void AConnection::cgiSend(std::string const &src) {
-  if (pipeOut == -1) return;
+  if (pipeOut == -1) {
+    errorLog_g.write(BRIGHT_YELLOW
+                     "WARNING:" RESET
+                     "cgiSend() was called without an active pipe",
+                     WARNING);
+    return;
+  }
   if (_cgiWriteBuffer.empty()) Poll::addPollEvent(POLLOUT, pipeOut);
   _cgiWriteBuffer += src;
 }
@@ -390,7 +397,6 @@ void AConnection::runCGI(std::string const &program,
   _newCallbackObject[1].link = true;
   _newCallbackObject[1].ptr = this;
   _isListening = 0;
-  _closeCgiSendPipe = false;
   accessLog_g.write("forked CGI process: " + toString<int>(_cgiPid), DEBUG,
                     BLUE);
 }

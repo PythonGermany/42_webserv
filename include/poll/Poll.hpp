@@ -20,6 +20,7 @@ class Poll {
   static void addPollEvent(short event, IFileDescriptor *src);
   static void addPollEvent(short event, int fd);
   static void clearPollEvent(short event, IFileDescriptor *src);
+  static void clearPollEvent(short event, int fd);
   static short setPollInactive(IFileDescriptor *src);
   static void cleanUp();
   static pid_t lastForkPid();

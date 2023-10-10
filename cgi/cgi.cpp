@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main(int, char **argv, char **env) {
+  std::cout << "content-type: text/plain\r\n\r\n";
   if (isatty(0) == false) {
     std::cout << "cin: " << std::endl;
     while (std::cin.eof() == false) {

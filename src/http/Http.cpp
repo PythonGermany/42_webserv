@@ -70,8 +70,10 @@ void Http::OnBodyRecv(std::string msg) {
       return (void)processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
   }
-
-  _response = processPutData(_uri, msg);
+  if (_request.getMethod() == "PUT")
+    _response = processPutData(_uri, msg);
+  else if (_request.getMethod() == "POST")
+    processPostData(msg);
   if (_responseReady) sendResponse();
 }
 
@@ -200,7 +202,73 @@ Response &Http::processRequest() {
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
+  if (_request.getMethod() == "POST") return processPostRequest(_uri);
+
   return processFile(_uri);
+}
+
+Response &Http::processPostRequest(std::string uri) {
+  // prepare body
+
+  if (_request.getHeader("Content-Range") != "")
+    return processError("501", "Not Implemented");
+
+  _currBodySize = 0;
+  if (_request.getHeader("Transfer-Encoding") != "") {
+    if (_request.getHeader("Transfer-Encoding") != "chunked")
+      return processError("501", "Not Implemented");
+    readDelimiter = "\r\n";
+    _readState = CHUNK_SIZE;
+    return _response;
+  }
+
+  // Check if body size is specified
+  std::string bodySizeStr = _request.getHeader("Content-Length");
+  if (bodySizeStr.empty()) return processError("411", "Length Required");
+  _expectedBodySize = fromString<size_t>(bodySizeStr);
+
+  // Check if body size is too large
+  if (isBodySizeValid(_expectedBodySize) == false)
+    return processError("413", "Request Entity Too Large");
+
+  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
+  _readState = BODY;
+
+  // launch cgi
+  File file(_context->getDirective("root", true)[0][0] + uri);
+
+  // Add index file if needed
+  if (getContextArgs() + "/" == _request.getUri().getPath() &&
+      _context->exists("index")) {
+    std::string path = file.getPath();
+    std::vector<std::string> indexes = _context->getDirective("index", true)[0];
+    for (size_t i = 0; i < indexes.size(); i++) {
+      file = File(path + indexes[i]);
+      if (file.exists() && file.file() && file.readable()) break;
+    }
+  }
+
+  if (!file.exists()) {
+    // Redirect to directory if file does not exist
+    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
+      return processRedirect(uri + "/");
+    return processError("404", "Not Found");
+  }
+  if (file.dir()) {
+    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
+    if (_context->exists("autoindex", true) &&
+        _context->getDirective("autoindex", true)[0][0] == "on")
+      return processAutoindex(uri);
+    return processError("403", "Forbidden");
+  } else if (!file.readable())
+    return processError("403", "Forbidden");
+
+  std::vector<Context> &cgiContext = _context->getContext("cgi");
+  if (cgiContext.size() != 0 &&
+      cgiContext[0].getArgs()[0] == file.getExtension()) {
+    return processCgi(uri, file, cgiContext[0].getDirective("cgi_path")[0][0]);
+  }
+  return _response;
 }
 
 static std::string getcwd() {
@@ -286,29 +354,29 @@ Response &Http::processCgi(std::string const &uri, File const &file,
                            std::string const &cgiPathname) {
   (void)uri;
 
-  static int toggle = 0;
-  if (toggle == 1) {
-    cgiSend("this is a test Body\n");
-    // cgiCloseSendPipe();
-    toggle++;
-    _response = Response();
-    _responseReady = false;
-    return _response;
-  } else if (toggle == 2) {
-    cgiSend("this is the second part\n");
-    toggle++;
-    _response = Response();
-    _responseReady = false;
-    return _response;
-  } else if (toggle == 3) {
-    cgiSend("this is the third part\n");
-    cgiCloseSendPipe();
-    toggle = 0;
-    _response = Response();
-    _responseReady = false;
-    return _response;
-  } else
-    toggle++;
+  // static int toggle = 0;
+  // if (toggle == 1) {
+  //   cgiSend("this is a test Body\n");
+  //   // cgiCloseSendPipe();
+  //   toggle++;
+  //   _response = Response();
+  //   _responseReady = false;
+  //   return _response;
+  // } else if (toggle == 2) {
+  //   cgiSend("this is the second part\n");
+  //   toggle++;
+  //   _response = Response();
+  //   _responseReady = false;
+  //   return _response;
+  // } else if (toggle == 3) {
+  //   cgiSend("this is the third part\n");
+  //   cgiCloseSendPipe();
+  //   toggle = 0;
+  //   _response = Response();
+  //   _responseReady = false;
+  //   return _response;
+  // } else
+  //   toggle++;
 
   std::string pathname = file.getPath();
   if (pathname.empty() || pathname[0] != '/') try {
@@ -348,6 +416,7 @@ Response &Http::processCgi(std::string const &uri, File const &file,
   env.push_back("REDIRECT_STATUS=200");
 
   runCGI(cgiPathname, std::vector<std::string>(), env);
+  if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response = Response();
   _responseReady = false;
   return _response;
@@ -411,6 +480,26 @@ Response &Http::processPutData(std::string uri, std::string &data) {
   if (_currBodySize >= _expectedBodySize) return getPutResponse(uri);
   bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
   return _response;
+}
+
+void Http::processPostData(std::string &data) {
+  cgiSend(data);
+  _currBodySize += data.size();
+  if (_request.getHeader("Transfer-Encoding") == "chunked") {
+    if (data.size() == 0) {
+      cgiCloseSendPipe();
+      return;
+    }
+    readDelimiter = "\r\n";
+    _readState = CHUNK_SIZE;
+    return;
+  }
+
+  if (_currBodySize >= _expectedBodySize) {
+    cgiCloseSendPipe();
+    return;
+  }
+  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
 }
 
 Response &Http::getPutResponse(std::string uri) {

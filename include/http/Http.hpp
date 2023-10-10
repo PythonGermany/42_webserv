@@ -40,7 +40,9 @@ class Http : public AConnection {
   Response& processRequest();
   Response& processFile(std::string uri);
   Response& processBodyRequest();
+  Response& processPostRequest(std::string uri);
   Response& processPutData(std::string uri, std::string& data);
+  void processPostData(std::string& data);
   Response& getPutResponse(std::string uri);
   Response& processOptions();
   Response& processDelete(std::string uri);

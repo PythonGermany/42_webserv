@@ -191,26 +191,23 @@ void Poll::addPollEvent(short event, IFileDescriptor *src) {
     ++callbackObjectsIt;
     ++pollfdIt;
   }
-  throw std::invalid_argument("Poll::addPollEvent");
+  throw std::invalid_argument("Poll::addPollEvent(): no pointer found");
 }
 
 /**
  * undefined behavior if fd is not inside pollfds
  */
 void Poll::addPollEvent(short event, int fd) {
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      getInstance().callbackObjects.begin();
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
 
-  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+  while (pollfdIt != getInstance().pollfds.end()) {
     if (pollfdIt->fd == fd) {
       pollfdIt->events |= event;
       return;
     }
-    ++callbackObjectsIt;
     ++pollfdIt;
   }
-  throw std::invalid_argument("Poll::addPollEvent");
+  throw std::invalid_argument("Poll::addPollEvent(): no fd found");
 }
 
 void Poll::clearPollEvent(short event, IFileDescriptor *src) {
@@ -225,7 +222,20 @@ void Poll::clearPollEvent(short event, IFileDescriptor *src) {
     ++callbackObjectsIt;
     ++pollfdIt;
   }
-  throw std::invalid_argument("Poll::addPollEvent");
+  throw std::invalid_argument("Poll::clearPollEvent(): no pointer found");
+}
+
+void Poll::clearPollEvent(short event, int fd) {
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+
+  while (pollfdIt != getInstance().pollfds.end()) {
+    if (pollfdIt->fd == fd) {
+      pollfdIt->events &= ~event;
+      return;
+    }
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::clearPollEvent(): no fd found");
 }
 
 void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
@@ -241,7 +251,7 @@ void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
     ++callbackObjectsIt;
     ++pollfdIt;
   }
-  throw std::invalid_argument("Poll::addPollEvent");
+  throw std::invalid_argument("Poll::setPollActive(): no pointer found");
 }
 
 short Poll::setPollInactive(IFileDescriptor *src) {
@@ -258,7 +268,7 @@ short Poll::setPollInactive(IFileDescriptor *src) {
     ++callbackObjectsIt;
     ++pollfdIt;
   }
-  throw std::invalid_argument("Poll::getPollEvent");
+  throw std::invalid_argument("Poll::getPollInactive(): no pointer found");
 }
 
 /**

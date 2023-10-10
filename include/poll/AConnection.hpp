@@ -58,7 +58,6 @@ class AConnection : public IFileDescriptor {
   int pipeOut;
   std::string _cgiReadBuffer;
   std::string _cgiWriteBuffer;
-  bool        _closeCgiSendPipe;
   pid_t _cgiPid;
   short _isListening;
   struct timeval pipeInLastTimeActive;
