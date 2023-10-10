@@ -22,6 +22,7 @@ Http::~Http() {
 
 void Http::OnHeadRecv(std::string msg) {
   _request = Request();
+  _response = Response();
 
   // Parse request
   _request.parseHead(msg);
@@ -43,7 +44,7 @@ void Http::OnHeadRecv(std::string msg) {
   _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
 
   // Process request
-  _response = processRequest();
+  processRequest();
   if (_responseReady) sendResponse();
 }
 
@@ -54,9 +55,9 @@ void Http::OnChunkSizeRecv(std::string msg) {
   bodySize = 0;
   if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF) {
     errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG);
-    processError("500", "Internal server error");
+    processError("500", "Internal server error", true);
   } else if (isBodySizeValid(_currBodySize + bodySize) == false)
-    processError("413", "Request Entity Too Large");
+    processError("413", "Request Entity Too Large", true);
   if (_responseReady) return sendResponse();
 
   bodySize += 2;
@@ -70,7 +71,7 @@ void Http::OnBodyRecv(std::string msg) {
     msg.erase(msg.size() - 2, 2);
   }
 
-  _response = processPutData(_uri, msg);
+  processPutData(_uri, msg);
   if (_responseReady) sendResponse();
 }
 
@@ -81,13 +82,13 @@ void Http::OnCgiRecv(std::string msg) {
 }
 
 void Http::OnCgiError() {
-  _response = processError("500", "Internal Server Error");
+  processError("500", "Internal Server Error");
   _responseReady = true;  // INFO: Will be set in process error
   sendResponse();
   _responseReady = false;  // INFO: Will be reset in send response
 }
 
-Response &Http::processRequest() {
+void Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
   if (Log::getLevel() >= DEBUG &&
       _virtualHost->getContext().exists("server_name", true))
@@ -119,9 +120,9 @@ Response &Http::processRequest() {
   // Check if method is allowed
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
   if (!isMethodValid()) {
-    _response = processError("405", "Method Not Allowed");
+    processError("405", "Method Not Allowed");
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
-    return _response;
+    return;
   }
 
   // Handle OPTIONS request
@@ -149,7 +150,7 @@ Response &Http::processRequest() {
   return processFile(_uri);
 }
 
-Response &Http::processFile(std::string uri) {
+void Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
   // Add index file if needed
@@ -185,7 +186,7 @@ Response &Http::processFile(std::string uri) {
            std::vector<std::string>(), std::vector<std::string>());
     _response = Response();
     _responseReady = false;
-    return _response;
+    return;
   }
 
   // if (file.getExtension() == _context->getDirective("cgi")[0][0]) {
@@ -211,10 +212,9 @@ Response &Http::processFile(std::string uri) {
   if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
 
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processBodyRequest() {
+void Http::processBodyRequest() {
   if (_request.getHeader("Content-Range") != "")
     return processError("501", "Not Implemented");
 
@@ -224,7 +224,7 @@ Response &Http::processBodyRequest() {
       return processError("501", "Not Implemented");
     readDelimiter = "\r\n";
     _readState = CHUNK_SIZE;
-    return _response;
+    return;
   }
 
   // Check if body size is specified
@@ -238,10 +238,9 @@ Response &Http::processBodyRequest() {
 
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   _readState = BODY;
-  return _response;
 }
 
-Response &Http::processPutData(std::string uri, std::string &data) {
+void Http::processPutData(std::string uri, std::string &data) {
   // Create file
   if (_currBodySize == 0) {
     std::string path = _context->getDirective("root", true)[0][0] + uri;
@@ -266,35 +265,32 @@ Response &Http::processPutData(std::string uri, std::string &data) {
     if (data.size() == 0) return getPutResponse(uri);
     readDelimiter = "\r\n";
     _readState = CHUNK_SIZE;
-    return _response;
+    return;
   }
 
   if (_currBodySize >= _expectedBodySize) return getPutResponse(uri);
   bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
-  return _response;
 }
 
-Response &Http::getPutResponse(std::string uri) {
+void Http::getPutResponse(std::string uri) {
   if (_newFile)
     _response = Response("HTTP/1.1", "201", "Created");
   else
     _response = Response("HTTP/1.1", "204", "No Content");
   _response.setHeader("Location", getAbsoluteUri(uri));
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processOptions() {
+void Http::processOptions() {
   _response = Response("HTTP/1.1", "200", "OK");
   if (_uri == "/*") {
     _response.setHeader("Allow", concatenate(getAllowedMethods(false), ", "));
   } else
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processDelete(std::string uri) {
+void Http::processDelete(std::string uri) {
   std::string path = _context->getDirective("root", true)[0][0] + uri;
   File file(path);
 
@@ -305,10 +301,9 @@ Response &Http::processDelete(std::string uri) {
     return processError("500", "Internal Server Error");
   _response = Response("HTTP/1.1", "204", "No Content");
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processAutoindex(std::string uri) {
+void Http::processAutoindex(std::string uri) {
   std::stringstream *body = new std::stringstream(
       "<html>\r\n<head><title>Index of " + uri + "</title></head>\r\n<body>");
   *body << "<h1>Index of " + uri + "</h1><hr><pre><a href=\"../\">../</a>\r\n";
@@ -351,17 +346,15 @@ Response &Http::processAutoindex(std::string uri) {
   _response.setHeader("Content-Length", toString(getStreamBufferSize(*body)));
   _response.setHeader("Content-Type", "text/html");
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processRedirect(std::string uri) {
+void Http::processRedirect(std::string uri) {
   _response = Response("HTTP/1.1", "301", "Moved Permanently");
   _response.setHeader("Location", getAbsoluteUri(uri));
   _responseReady = true;
-  return _response;
 }
 
-Response &Http::processError(std::string code, std::string reason, bool close) {
+void Http::processError(std::string code, std::string reason, bool close) {
   _response = Response("HTTP/1.1", code, reason);
 
   std::istream *body = NULL;
@@ -401,7 +394,6 @@ Response &Http::processError(std::string code, std::string reason, bool close) {
   if (_request.getMethod() != "HEAD") _response.setBody(body);
   if (close) _response.setHeader("Connection", "close");
   _responseReady = true;
-  return _response;
 }
 
 std::string Http::getDefaultBody(std::string code, std::string reason) const {

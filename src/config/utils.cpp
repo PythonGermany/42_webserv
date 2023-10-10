@@ -141,7 +141,8 @@ std::string percentDecode(std::string str) {
       if (i + 2 >= str.length())
         throw std::runtime_error("uriDecode: invalid string");
       int value;
-      std::sscanf(str.substr(i + 1, 2).c_str(), "%x", &value);
+      if (std::sscanf(str.substr(i + 1, 2).c_str(), "%x", &value) == EOF)
+        throw std::runtime_error("uriDecode: invalid format");
       decoded += (char)value;
       i += 2;
     } else

@@ -93,7 +93,7 @@ int Uri::decode() {
     _host = percentDecode(_host);
     _port = percentDecode(_port);
     _path = percentDecode(_path);
-    _query = percentDecode(_query);
+    percentDecode(_query);
   } catch (const std::exception &e) {
     return -1;
   }

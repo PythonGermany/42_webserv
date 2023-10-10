@@ -37,17 +37,16 @@ class Http : public AConnection {
   void OnCgiError();
 
  private:
-  Response& processRequest();
-  Response& processFile(std::string uri);
-  Response& processBodyRequest();
-  Response& processPutData(std::string uri, std::string& data);
-  Response& getPutResponse(std::string uri);
-  Response& processOptions();
-  Response& processDelete(std::string uri);
-  Response& processAutoindex(std::string uri);
-  Response& processRedirect(std::string uri);
-  Response& processError(std::string code, std::string reason,
-                         bool close = false);
+  void processRequest();
+  void processFile(std::string uri);
+  void processBodyRequest();
+  void processPutData(std::string uri, std::string& data);
+  void getPutResponse(std::string uri);
+  void processOptions();
+  void processDelete(std::string uri);
+  void processAutoindex(std::string uri);
+  void processRedirect(std::string uri);
+  void processError(std::string code, std::string reason, bool close = false);
 
   std::string getDefaultBody(std::string code, std::string reason) const;
 
