@@ -37,6 +37,7 @@ class AConnection : public IFileDescriptor {
   virtual void OnBodyRecv(std::string msg) = 0;
   void send(std::istream *msg);
   void cgiSend(std::string const &msg);
+  void cgiCloseSendPipe();
   void runCGI(std::string const &program, std::vector<std::string> const &arg,
               std::vector<std::string> const &env);
   void stopReceiving();
@@ -55,6 +56,7 @@ class AConnection : public IFileDescriptor {
   int pipeOut;
   std::string _cgiReadBuffer;
   std::string _cgiWriteBuffer;
+  bool        _closeCgiSendPipe;
   pid_t _cgiPid;
   short _isListening;
   struct timeval pipeInLastTimeActive;

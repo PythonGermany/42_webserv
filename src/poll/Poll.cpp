@@ -194,6 +194,25 @@ void Poll::addPollEvent(short event, IFileDescriptor *src) {
   throw std::invalid_argument("Poll::addPollEvent");
 }
 
+/**
+ * undefined behavior if fd is not inside pollfds
+ */
+void Poll::addPollEvent(short event, int fd) {
+  std::vector<CallbackPointer>::iterator callbackObjectsIt =
+      getInstance().callbackObjects.begin();
+  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
+
+  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
+    if (pollfdIt->fd == fd) {
+      pollfdIt->events |= event;
+      return;
+    }
+    ++callbackObjectsIt;
+    ++pollfdIt;
+  }
+  throw std::invalid_argument("Poll::addPollEvent");
+}
+
 void Poll::clearPollEvent(short event, IFileDescriptor *src) {
   std::vector<CallbackPointer>::iterator callbackObjectsIt =
       getInstance().callbackObjects.begin();
@@ -231,7 +250,7 @@ short Poll::setPollInactive(IFileDescriptor *src) {
   std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
   while (callbackObjectsIt != getInstance().callbackObjects.end()) {
     if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
-      short tmp = pollfdIt->events;
+      short tmp = pollfdIt->events & POLLIN;
       pollfdIt->events &= ~POLLIN;
       pollfdIt->events |= POLLINACTIVE;
       return tmp;

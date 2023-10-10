@@ -18,6 +18,7 @@ class Poll {
   static void setTimeout(int src);
   static void setPollActive(short oldEvents, IFileDescriptor *src);
   static void addPollEvent(short event, IFileDescriptor *src);
+  static void addPollEvent(short event, int fd);
   static void clearPollEvent(short event, IFileDescriptor *src);
   static short setPollInactive(IFileDescriptor *src);
   static void cleanUp();

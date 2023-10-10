@@ -67,6 +67,10 @@ void Http::OnCgiRecv(std::string msg) {
     if (line.find(": ") == name.size())
       line.erase(0, name.size() + 2);
     else {
+      errorLog_g.write(BRIGHT_RED "ERROR:" RESET
+                                  " invalid format in cgi response header: " +
+                           line,
+                       ERROR);
       _response = processError("500", "Internal Server Error");
       sendResponse();
       return;
@@ -259,6 +263,30 @@ Response &Http::processCgi(std::string const &uri, File const &file,
                            std::string const &cgiPathname) {
   (void)uri;
 
+  static int toggle = 0;
+  if (toggle == 1) {
+    cgiSend("this is a test Body\n");
+    // cgiCloseSendPipe();
+    toggle++;
+    _response = Response();
+    _responseReady = false;
+    return _response;
+  } else if (toggle == 2) {
+    cgiSend("this is the second part\n");
+    toggle++;
+    _response = Response();
+    _responseReady = false;
+    return _response;
+  } else if (toggle == 3) {
+    cgiSend("this is the third part\n");
+    cgiCloseSendPipe();
+    toggle = 0;
+    _response = Response();
+    _responseReady = false;
+    return _response;
+  } else
+    toggle++;
+
   std::string pathname = file.getPath();
   if (pathname.empty() || pathname[0] != '/') try {
       std::string cwd(getcwd());
@@ -281,7 +309,7 @@ Response &Http::processCgi(std::string const &uri, File const &file,
 
   // request specific values:
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
-  env.push_back("SERVER_NAME=" + _request.getHeader("Host"));
+  // env.push_back("SERVER_NAME=" + _request.getHeader("host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("REMOTE_ADDR=" + client.str());
   env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
