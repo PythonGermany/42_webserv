@@ -52,13 +52,12 @@ void Http::OnChunkSizeRecv(std::string msg) {
   if (end == std::string::npos) end = msg.size() - readDelimiter.size();
 
   bodySize = 0;
-  if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF)
-    std::cerr << RED << "OnChunkSizeRecv(): sscanf failure" << RESET
-              << std::endl;
-
-  if (isBodySizeValid(_currBodySize + bodySize) == false)
+  if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF) {
+    errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG);
+    processError("500", "Internal server error");
+  } else if (isBodySizeValid(_currBodySize + bodySize) == false)
     processError("413", "Request Entity Too Large");
-  if (_responseReady) sendResponse();
+  if (_responseReady) return sendResponse();
 
   bodySize += 2;
   _readState = BODY;
