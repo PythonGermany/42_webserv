@@ -83,55 +83,61 @@ void Http::OnCgiRecv(std::string msg) {
   int bodySize = msg.size();
 
   std::string line;
-  while (std::getline(*body, line)) {
-    bodySize -= line.size() + 1;
-    if (line.empty() == false && line[line.size() - 1] == '\r')
-      line.erase(line.size() - 1);
-    if (line.empty()) break;
-    std::string name = line.substr(0, line.find(':'));
-    if (line.find(": ") == name.size())
-      line.erase(0, name.size() + 2);
-    else {
-      errorLog_g.write(BRIGHT_RED "ERROR:" RESET
-                                  " invalid format in cgi response header: " +
-                           line,
-                       ERROR);
+
+  try {
+    while (std::getline(*body, line)) {
+      bodySize -= line.size() + 1;
+      if (line.empty() == false && line[line.size() - 1] == '\r')
+        line.erase(line.size() - 1);
+      if (line.empty()) break;
+      std::string name = line.substr(0, line.find(':'));
+      if (line.find(": ") == name.size())
+        line.erase(0, name.size() + 2);
+      else {
+        errorLog_g.write(BRIGHT_RED "ERROR:" RESET
+                                    " invalid format in cgi response header: " +
+                             line,
+                         ERROR);
+        _response = processError("500", "Internal Server Error");
+        sendResponse();
+        delete body;
+        return;
+      }
+      for (std::string::iterator it = name.begin(); it != name.end(); ++it)
+        *it = std::tolower(*it);
+      if (name == "content-type")
+        _response.setHeader("Content-Type", line);
+      else if (name == "x-powered-by")
+        continue;  // TODO: server_tokens ?
+      else if (name == "status") {
+        std::cout << "line: " << line << std::endl;
+        std::istringstream ss(line);
+        std::string status;
+        std::getline(ss, status, ' ');
+        _response.setStatus(status);
+        std::getline(ss, status);
+        _response.setReason(status);
+      } else if (name == "location")
+        _response.setHeader(name, line);
+      else
+        errorLog_g.write(
+            "cgi header header field not supported: " + name + "=" + line,
+            DEBUG);
+    }
+
+    if (body->good() == false || bodySize == -1) {
       _response = processError("500", "Internal Server Error");
       sendResponse();
+      delete body;
       return;
     }
-    for (std::string::iterator it = name.begin(); it != name.end(); ++it)
-      *it = std::tolower(*it);
-    if (name == "content-type")
-      _response.setHeader("Content-Type", line);
-    else if (name == "x-powered-by")
-      continue;  // TODO: server_tokens ?
-    else if (name == "status") {
-      std::cout << "line: " << line << std::endl;
-      std::istringstream ss(line);
-      std::string status;
-      std::getline(ss, status, ' ');
-      _response.setStatus(status);
-      std::getline(ss, status);
-      _response.setReason(status);
-    } else if (name == "location")
-      _response.setHeader(name, line);
-    else
-      errorLog_g.write(
-          "cgi header header field not supported: " + name + "=" + line, DEBUG);
-  }
+    _response.setHeader("Content-Length", toString(bodySize));
 
-  if (body->good() == false || bodySize == -1) {
+  } catch (...) {
     delete body;
-    _response = processError("500", "Internal Server Error");
-    sendResponse();
-    return;
+    throw;
   }
-  _response.setHeader("Content-Length", toString(bodySize));
   _response.setBody(body);
-
-  // _response.setHeader("Content-Type", "text/plain");
-  // _response.setHeader("Content-Type", "text/html");
   _responseReady = true;
   sendResponse();
 }
