@@ -22,7 +22,6 @@ class Http : public AConnection {
   bool _newFile;
   size_t _expectedBodySize;
   size_t _currBodySize;
-  bool _responseReady;
 
   std::string _log;
 
