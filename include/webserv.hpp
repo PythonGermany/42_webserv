@@ -20,14 +20,12 @@ const arg_t args_g[6] = {{'i', 0, setInfo},        {'h', 0, setHelp},
 
 // Allowed token input structure in the format: {name, parent, isContext,
 // minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
-const token_t tokens[31] = {
+const token_t tokens[30] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
     {"error_log", "http", false, 0, 1, 1, 1, NULL},
-    {"timeout", "http", false, 0, 1, 1, 1,
-     isNumeric},  // TODO: Implement or remove
 
     // Mime type context
     {"types", "http", true, 1, 1, 0, 0, NULL},
