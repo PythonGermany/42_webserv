@@ -52,7 +52,7 @@ class Http : public AConnection {
   void processRequest();
   void processFile(std::string uri);
   void processBodyRequest();
-  void processPutData(std::string uri, std::string& data);
+  void processPutData(const std::string& data);
   void processPostData(std::string& data);
   void getPutResponse(std::string uri);
   void processOptions();

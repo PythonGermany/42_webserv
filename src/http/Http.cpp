@@ -68,7 +68,7 @@ void Http::OnBodyRecv(std::string msg) {
     msg.erase(msg.size() - 2, 2);
   }
   if (_request.getMethod() == "PUT")
-    processPutData(_uri, msg);
+    processPutData(msg);
   else if (_request.getMethod() == "POST")
     processPostData(msg);
   if (_response.isReady()) sendResponse();
@@ -344,13 +344,10 @@ void Http::processBodyRequest() {
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   _readState = BODY;
 
-  if (_request.getMethod() == "POST") return processFile(_uri);
-}
-
-void Http::processPutData(std::string uri, std::string &data) {
-  // Create file
-  if (_currBodySize == 0) {
-    std::string path = _context->getDirective("root", true)[0][0] + uri;
+  if (_request.getMethod() == "POST")
+    return processFile(_uri);
+  else if (_request.getMethod() == "PUT") {
+    std::string path = _context->getDirective("root", true)[0][0] + _uri;
     _newFile = !File(path).exists();
 
     if (!File(File(path).getDir()).exists())
@@ -361,21 +358,22 @@ void Http::processPutData(std::string uri, std::string &data) {
     if (_file.good() == false)
       return processError("500", "Internal Server Error");
   }
+}
 
-  // Write to file
+void Http::processPutData(const std::string &data) {
   _file.write(data.c_str(), data.size());
   if (_file.good() == false)
     return processError("500", "Internal Server Error");
   _currBodySize += data.size();
 
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (data.size() == 0) return getPutResponse(uri);
+    if (data.size() == 0) return getPutResponse(_uri);
     readDelimiter = "\r\n";
     _readState = CHUNK_SIZE;
     return;
   }
 
-  if (_currBodySize >= _expectedBodySize) return getPutResponse(uri);
+  if (_currBodySize >= _expectedBodySize) return getPutResponse(_uri);
   bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
 }
 
@@ -410,10 +408,8 @@ void Http::getPutResponse(std::string uri) {
 
 void Http::processOptions() {
   _response.init("HTTP/1.1", "200", "OK");
-  if (_uri == "/*") {
-    _response.setHeader("Allow", concatenate(getAllowedMethods(false), ", "));
-  } else
-    _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
+  _response.setHeader("Allow",
+                      concatenate(getAllowedMethods(_uri != "/*"), ", "));
   _response.setReady();
 }
 
