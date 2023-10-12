@@ -165,7 +165,6 @@ void Http::processRequest() {
   if (!isMehodImplemented(_request.getMethod()))
     return processError("501", "Not Implemented");
 
-  // Find correct location context
   _uri = _request.getUri().getPath();
   _context = _virtualHost->matchLocation(_uri);
   if (_context == NULL) return processError("500", "Internal Server Error");
@@ -174,7 +173,6 @@ void Http::processRequest() {
   if (Log::getLevel() >= DEBUG)
     _log += std::string(INDENT) + "Context URI: '" + contextUri + "'";
 
-  // Check if method is allowed
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
   if (!isMethodValid()) {
     processError("405", "Method Not Allowed");
@@ -182,94 +180,25 @@ void Http::processRequest() {
     return;
   }
 
-  // Handle OPTIONS request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.2
   if (_request.getMethod() == "OPTIONS") return processOptions();
 
-  // Check if the request should be redirected
   if (_context->exists("redirect"))
     return processRedirect(_context->getDirective("redirect")[0][0]);
 
-  // Process alias
   if (_context->exists("alias"))
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
   if (Log::getLevel() >= DEBUG)
     _log += std::string(INDENT) + "Resource URI: '" + _uri + "'";
 
-  // Handle PUT request
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
-  if (_request.getMethod() == "PUT") return processBodyRequest();
-
-  // Handle DELETE request
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
-  if (_request.getMethod() == "POST") return processPostRequest(_uri);
+  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
+  if (_request.getMethod() == "PUT" || _request.getMethod() == "POST")
+    return processBodyRequest();
 
   return processFile(_uri);
-}
-
-void Http::processPostRequest(std::string uri) {
-  // prepare body
-  // TODO: Use processBodyRequest to check for body limit
-  if (_request.getHeader("Content-Range") != "")
-    return processError("501", "Not Implemented");
-
-  _currBodySize = 0;
-  if (_request.getHeader("Transfer-Encoding") != "") {
-    if (_request.getHeader("Transfer-Encoding") != "chunked")
-      return processError("501", "Not Implemented");
-    readDelimiter = "\r\n";
-    _readState = CHUNK_SIZE;
-    return;
-  }
-
-  // Check if body size is specified
-  std::string bodySizeStr = _request.getHeader("Content-Length");
-  if (bodySizeStr.empty()) return processError("411", "Length Required");
-  _expectedBodySize = fromString<size_t>(bodySizeStr);
-
-  // Check if body size is too large
-  if (isBodySizeValid(_expectedBodySize) == false)
-    return processError("413", "Request Entity Too Large");
-
-  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
-  _readState = BODY;
-
-  // launch cgi
-  File file(_context->getDirective("root", true)[0][0] + uri);
-
-  // Add index file if needed
-  if (getContextArgs() + "/" == _request.getUri().getPath() &&
-      _context->exists("index")) {
-    std::string path = file.getPath();
-    std::vector<std::string> indexes = _context->getDirective("index", true)[0];
-    for (size_t i = 0; i < indexes.size(); i++) {
-      file = File(path + indexes[i]);
-      if (file.exists() && file.file() && file.readable()) break;
-    }
-  }
-
-  if (!file.exists()) {
-    // Redirect to directory if file does not exist
-    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
-      return processRedirect(uri + "/");
-    return processError("404", "Not Found");
-  }
-  if (file.dir()) {
-    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
-    if (_context->exists("autoindex", true) &&
-        _context->getDirective("autoindex", true)[0][0] == "on")
-      return processAutoindex(uri);
-    return processError("403", "Forbidden");
-  } else if (!file.readable())
-    return processError("403", "Forbidden");
-
-  std::vector<Context> &cgiContext = _context->getContext("cgi");
-  if (cgiContext.size() != 0 &&
-      cgiContext[0].getArgs()[0] == file.getExtension()) {
-    return processCgi(uri, file, cgiContext[0].getDirective("cgi_path")[0][0]);
-  }
 }
 
 static std::string getcwd() {
@@ -298,37 +227,18 @@ static std::string getcwd() {
 void Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
-  // Add index file if needed
-  if (getContextArgs() + "/" == _request.getUri().getPath() &&
-      _context->exists("index")) {
-    std::string path = file.getPath();
-    std::vector<std::string> indexes = _context->getDirective("index", true)[0];
-    for (size_t i = 0; i < indexes.size(); i++) {
-      file = File(path + indexes[i]);
-      if (file.exists() && file.file() && file.readable()) break;
-    }
-  }
+  addIndexToPath(file);
+  checkResourceValidity(file, uri);
+  if (_response.isReady()) return;
 
-  if (!file.exists()) {
-    // Redirect to directory if file does not exist
-    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
-      return processRedirect(uri + "/");
-    return processError("404", "Not Found");
-  }
-  if (file.dir()) {
-    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
-    if (_context->exists("autoindex", true) &&
-        _context->getDirective("autoindex", true)[0][0] == "on")
-      return processAutoindex(uri);
-    return processError("403", "Forbidden");
-  } else if (!file.readable())
-    return processError("403", "Forbidden");
-
+  // TODO: loop over vector
   std::vector<Context> &cgiContext = _context->getContext("cgi");
   if (cgiContext.size() != 0 &&
       cgiContext[0].getArgs()[0] == file.getExtension()) {
     return processCgi(uri, file, cgiContext[0].getDirective("cgi_path")[0][0]);
-  }
+  } else if (_request.getMethod() == "POST")
+    return processError("500",
+                        "Internal Server Error");  // TODO: Correct error code?
 
   // Load the file
   _response.init("HTTP/1.1", "200", "OK");
@@ -451,6 +361,8 @@ void Http::processBodyRequest() {
 
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   _readState = BODY;
+
+  if (_request.getMethod() == "POST") return processFile(_uri);
 }
 
 void Http::processPutData(std::string uri, std::string &data) {
@@ -625,6 +537,34 @@ void Http::processError(std::string code, std::string reason, bool close) {
   }
   if (close) _response.setHeader("Connection", "close");
   _response.setReady();
+}
+
+void Http::addIndexToPath(File &file) {
+  if (getContextArgs() + "/" == _request.getUri().getPath() &&
+      _context->exists("index")) {
+    std::string path = file.getPath();
+    std::vector<std::string> indexes = _context->getDirective("index", true)[0];
+    for (size_t i = 0; i < indexes.size(); i++) {
+      file = File(path + indexes[i]);
+      if (file.exists() && file.file() && file.readable()) break;
+    }
+  }
+}
+
+void Http::checkResourceValidity(const File &file, std::string uri) {
+  if (!file.exists()) {
+    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
+      return processRedirect(uri + "/");
+    return processError("404", "Not Found");
+  }
+  if (file.dir()) {
+    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
+    if (_context->exists("autoindex", true) &&
+        _context->getDirective("autoindex", true)[0][0] == "on")
+      return processAutoindex(uri);
+    return processError("403", "Forbidden");
+  } else if (!file.readable())
+    return processError("403", "Forbidden");
 }
 
 std::string Http::getDefaultBody(std::string code, std::string reason) const {

@@ -52,7 +52,6 @@ class Http : public AConnection {
   void processRequest();
   void processFile(std::string uri);
   void processBodyRequest();
-  void processPostRequest(std::string uri);
   void processPutData(std::string uri, std::string& data);
   void processPostData(std::string& data);
   void getPutResponse(std::string uri);
@@ -64,12 +63,13 @@ class Http : public AConnection {
   void processCgi(std::string const& uri, File const& file,
                   std::string const& cgiPathname);
 
+  void addIndexToPath(File& file);
+  void checkResourceValidity(const File& file, std::string uri);
   std::string getDefaultBody(std::string code, std::string reason) const;
 
   void sendResponse();
 
   std::string getAbsoluteUri(std::string uri) const;
-
   bool isMehodImplemented(std::string method) const;
   bool isMethodValid();
   bool isBodySizeValid(size_t size) const;
