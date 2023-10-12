@@ -10,6 +10,7 @@
 #include "Response.hpp"
 #include "VirtualHost.hpp"
 #include "global.hpp"
+#include "webserv.hpp"
 
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
 #define HTTP_VERSION "HTTP/1.1"

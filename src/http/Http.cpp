@@ -389,9 +389,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   std::vector<std::string> env;
   // const values:
   env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-  env.push_back(
-      "SERVER_SOFTWARE="
-      "webserv");  // TODO: macro
+  env.push_back("SERVER_SOFTWARE=" WEBSERV_ID);
   env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 
   // request specific values:
@@ -644,7 +642,7 @@ void Http::sendResponse() {
   }
 
   // Set default header values
-  _response.setHeader("Server", "webserv");
+  _response.setHeader("Server", WEBSERV_ID);
   if (_response.getHeader("Content-Length").empty())
     _response.setHeader("Content-Length", toString(0));
   if (_response.getHeader("Content-type").empty())

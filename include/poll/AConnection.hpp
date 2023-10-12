@@ -9,7 +9,6 @@
 #include "Address.hpp"
 #include "CallbackPointer.hpp"
 #include "timeval.hpp"
-#include "webserv.hpp"
 
 // WEBSERV_CONFIG ----------- ACONNECTION VALUES -------------------
 #define BUFFER_SIZE 65536
