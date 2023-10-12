@@ -128,7 +128,15 @@ void AConnection::cgiSend(std::string const &src) {
                      WARNING);
     return;
   }
-  if (_cgiWriteBuffer.empty()) Poll::addPollEvent(POLLOUT, pipeOut);
+  if (_cgiWriteBuffer.empty()) {
+    if (_newPollfd[0].fd == pipeOut)
+      _newPollfd[0].events |= POLLOUT;
+    else if (_newPollfd[1].fd == pipeOut)
+      _newPollfd[1].events |= POLLOUT;
+    else
+      Poll::addPollEvent(POLLOUT, pipeOut);
+  }
+  std::cout << "cgiSend(\n" << src << ")" << std::endl;
   _cgiWriteBuffer += src;
 }
 
