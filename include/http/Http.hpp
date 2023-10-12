@@ -11,6 +11,18 @@
 #include "VirtualHost.hpp"
 #include "global.hpp"
 
+// WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
+#define HTTP_VERSION "HTTP/1.1"
+#define HTTP_METHOD_COUNT 6
+#define HTTP_METHODS \
+  { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
+#define HTTP_DEFAULT_METHOD_COUNT 3
+#define HTTP_DEFAULT_METHODS \
+  { "GET", "HEAD", "OPTIONS" }
+#define HTTP_DEFAULT_MIME "application/octet-stream"
+#define MAX_CLIENT_BODY_SIZE 1048576
+#define INDENT "\r\n                          "
+
 class Http : public AConnection {
   Request _request;
   Response _response;

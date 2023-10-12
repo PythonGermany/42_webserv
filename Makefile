@@ -21,7 +21,6 @@ SRC			+= config/Context.cpp
 SRC			+= config/File.cpp
 SRC			+= config/Init.cpp
 SRC			+= config/Log.cpp
-SRC			+= config/structure.cpp
 SRC			+= config/utils.cpp
 SRC			+= config/VirtualHost.cpp
 
@@ -41,7 +40,6 @@ HEADERS		+= config/Context.hpp
 HEADERS		+= config/File.hpp
 HEADERS		+= config/Init.hpp
 HEADERS		+= config/Log.hpp
-HEADERS		+= config/structure.hpp
 HEADERS		+= config/utils.hpp
 HEADERS		+= config/VirtualHost.hpp
 

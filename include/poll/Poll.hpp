@@ -8,6 +8,13 @@
 
 #include "CallbackPointer.hpp"
 
+// WEBSERV_CONFIG ----------- POLL VALUES ---------------------------
+/**
+ * close connections if they are TIMEOUT milliseconds inactive
+ */
+#define CONNECTION_TIMEOUT 30000
+#define CGI_TIMEOUT 3000
+
 class Poll {
  public:
   static void add(CallbackPointer const &src, struct pollfd const &pollfd);

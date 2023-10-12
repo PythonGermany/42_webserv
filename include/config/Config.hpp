@@ -10,6 +10,71 @@
 #include "global.hpp"
 #include "utils.hpp"
 
+// ----------------------- CONFIG STRUCTURE ------------------------
+typedef struct token_s {
+  std::string name;
+  std::string parent;
+  bool isContext;
+  size_t minOccurence;
+  size_t maxOccurence;
+  size_t minArgs;
+  size_t maxArgs;
+  std::string (*func)(std::string const &value, size_t index);
+} token_t;
+
+// Validation functions are return a non-empty string if value is invalid
+std::string isMimeType(std::string const &value, size_t index);
+std::string isErrorPage(std::string const &value, size_t index);
+std::string isNumeric(std::string const &value, size_t index);
+std::string isMethod(std::string const &value, size_t index);
+std::string isLogLevel(std::string const &value, size_t index);
+std::string isAbsolutePath(std::string const &value, size_t index);
+std::string isExtension(std::string const &value, size_t index);
+std::string isBoolean(std::string const &value, size_t index);
+std::string isListen(std::string const &value, size_t index);
+
+// WEBSERV_CONFIG ---------- CONFIG VALUES -------------------------
+#define CONFIG_PATH "/etc/webserv/webserv.conf"
+
+/**
+ * Allowed token input structure in the format: {name, parent, isContext,
+ * minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
+ */
+const token_t tokens[30] = {
+    {"http", "_", true, 1, 1, 0, 0, NULL},
+    {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
+    {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
+    {"access_log", "http", false, 0, 1, 1, 1, NULL},
+    {"error_log", "http", false, 0, 1, 1, 1, NULL},
+
+    // Mime type context
+    {"types", "http", true, 1, 1, 0, 0, NULL},
+    {"type", "types", false, 1, -1, 2, -1, isMimeType},
+
+    // Server context
+    {"server", "http", true, 1, -1, 0, 0, NULL},
+    {"listen", "server", false, 1, -1, 1, 1, isListen},
+    {"server_name", "server", false, 0, -1, 1, -1, NULL},
+    {"root", "server", false, 1, 1, 1, 1, NULL},
+    {"index", "server", false, 0, 1, 1, -1, NULL},
+    {"allow", "server", false, 0, -1, 1, -1, isMethod},
+    {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
+    {"redirect", "server", false, 0, 1, 1, 1, NULL},
+    {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
+    {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
+    // Location context
+    {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
+    {"alias", "location", false, 0, 1, 1, 1, isAbsolutePath},
+    {"root", "location", false, 0, 1, 1, 1, NULL},
+    {"index", "location", false, 0, 1, 1, -1, NULL},
+    {"allow", "location", false, 0, -1, 1, -1, isMethod},
+    {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
+    {"redirect", "location", false, 0, 1, 1, 1, NULL},
+    {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
+    // CGI context
+    {"cgi", "server", true, 0, 1, 1, 1, isExtension},
+    {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};
+
 class Config {
  private:
   std::string _path;

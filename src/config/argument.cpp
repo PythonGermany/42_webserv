@@ -1,7 +1,63 @@
 #include "argument.hpp"
 
+arg_state_t setInfo(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printInfo(SET);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setHelp(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printHelp(SET);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setLogToStdout(const std::list<std::string> &values) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  std::string value = values.front();
+  Log::setLogToStdout(value == "on");
+  set = true;
+  if (value == "on" || value == "off") return SUCCESS;
+  return ARG_INVALID;
+}
+
+arg_state_t setLogLevel(const std::list<std::string> &values) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  std::string value = values.front();
+  Log::setLevel((log_level_t)(value[0] - '0'));
+  set = true;
+  if (value.size() == 1 && value >= "0" && value <= "3") return SUCCESS;
+  return ARG_INVALID;
+}
+
+arg_state_t setAccessLog(const std::list<std::string> &values) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  accessLog_g.setFile(values.front());
+  accessLog_g.setInitialized(true);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setErrorLog(const std::list<std::string> &values) {
+  static bool set = false;
+  if (set) return FLAG_DUPLICATE;
+  errorLog_g.setFile(values.front());
+  errorLog_g.setInitialized(true);
+  set = true;
+  return SUCCESS;
+}
+
 // Finds the argument defining struct for a flag
-arg_t findArgument(char flag) {
+static arg_t findArgument(char flag) {
   for (size_t i = 0; i < sizeof(args_g) / sizeof(arg_t); i++)
     if (args_g[i].flag == flag) return args_g[i];
   printHelp(SET);
@@ -9,9 +65,9 @@ arg_t findArgument(char flag) {
 }
 
 // Loads provided arguments
-// @return The selected configuration file path
-std::string loadArguments(int argc, char** argv) {
-  std::string path = CONFIG_PATH;
+// @return Config path input or empty if none was provided
+std::string loadArguments(int argc, char **argv) {
+  std::string path;
   if (argc > 1) {
     if (argv[1][0] != '-') path = std::string(argv[1]);
     arg_t arg = {'\0', 0, NULL};
