@@ -1,23 +1,26 @@
 #include "Response.hpp"
 
-Response::Response() : _body(NULL) {}
+Response::Response() : _body(NULL), _ready(false) {}
 
 Response::Response(std::string version, std::string status, std::string reason)
     : _version(version), _status(status), _reason(reason), _body(NULL) {}
 
-Response::Response(const Response &rhs) { *this = rhs; }
+Response::~Response() { delete _body; }
 
-Response &Response::operator=(const Response &rhs) {
-  if (this == &rhs) return *this;
-  _version = rhs._version;
-  _status = rhs._status;
-  _reason = rhs._reason;
-  _headers = rhs._headers;
-  _body = rhs._body;
-  return *this;
+void Response::init(std::string version, std::string status,
+                    std::string reason) {
+  _version = version;
+  _status = status;
+  _reason = reason;
+  clear();
 }
 
-Response::~Response() {}
+void Response::clear() {
+  _headers.clear();
+  delete _body;
+  _body = NULL;
+  _ready = false;
+}
 
 void Response::setVersion(std::string version) { _version = version; }
 
@@ -29,7 +32,12 @@ void Response::setHeaders(std::map<std::string, std::string> &headers) {
   _headers = headers;
 }
 
-void Response::setBody(std::istream *body) { _body = body; }
+void Response::setBody(std::istream *body) {
+  delete _body;
+  _body = body;
+}
+
+void Response::setReady(bool ready) { _ready = ready; }
 
 void Response::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
@@ -50,6 +58,14 @@ std::string Response::getHeader(std::string key) const {
 }
 
 std::istream *Response::getBody() { return _body; }
+
+std::istream *Response::resetBody() {
+  std::istream *tmp = _body;
+  _body = NULL;
+  return tmp;
+}
+
+bool Response::isReady() { return _ready; }
 
 std::string Response::generateHead() {
   std::string response = _version + " " + _status + " " + _reason + "\r\n";

@@ -13,7 +13,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 - [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
 - [ ] Implement support for multilistendirective or change config in webserv.hpp
 - [ ] Figure out why resolving symlinks doesnt work
-- [ ] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
+- [x] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
                                           && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
 - [ ] Implement cgi support
 
@@ -41,8 +41,8 @@ This project is a webserver written in C++98. It's functionality is listed below
 | Http | Http/1.1 |
 | Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
 | Logs | Access log / Error log |
-| Configuration file context | [http](#http) / [server](#server) / [location](#location) / [cgi](#cgi) |
-| Configuration file directives | [type](#type) / [include](#include) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [alias](#alias) / [redirect](#redirect) / [cgi_path](#cgi_path) |
+| Configuration file context | [cgi](#cgi) / [http](#http) / [location](#location) / [server](#server) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi_path](#cgi_path) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
 # Linux installation
 
 ## Requirements
@@ -101,7 +101,7 @@ http {
 }
 ```
 Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [types](#types) / [include](#include) / [log_to_stdout](#log_to_stdout) / [log_level](#log_level) / [access_log](#access_log) / [error_log](#error_log) / [server](#server)
+**Allowed tokens:** [access_log](#access_log) / [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [server](#server) / [types](#types)
 
 ### Types
 ```nginx
@@ -128,10 +128,10 @@ server {
     location PATH {
         [directives]
     }
-} 
+}
 ```
 Virtual server context. It contains the configuration of a virtual server.  
-**Allowed tokens:** [listen](#listen) / [server_name](#server_name) / [root](#root) / [index](#index) / [autoindex](#autoindex) / [max_client_body_size](#max_client_body_size) / [allow](#allow) / [error_page](#error_page) / [location](#location)
+**Allowed tokens:** [allow](#allow) / [autoindex](#autoindex) / [error_page](#error_page) / [index](#index) / [listen](#listen) / [location](#location) / [max_client_body_size](#max_client_body_size) / [root](#root) / [server_name](#server_name)
 
 ### Location
 ```nginx
@@ -151,7 +151,7 @@ location PATH {
 }
 ```
 Location context for `PATH`. It contains the configuration of a location.  
-**Allowed tokens:** [alias](#alias) / [root](#root) / [index](#index) / [allow](#allow) / [autoindex](#autoindex) / [redirect](#redirect) / [max_client_body_size](#max_client_body_size) / [cgi](#cgi)
+**Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
 
 ### Cgi
 ```nginx
@@ -164,95 +164,20 @@ Cgi context for `EXTENSION`. It contains the path of the cgi file.
 
 ## Directives
 
-### type
-```nginx
-type MIME_TYPE EXTENSION [EXTENSION ...];
-```
-Set the mime type for the given extensions.  
-**Allowed contexts:** [Types](#types)
-
-### include
-```nginx
-include PATH;
-```
-Include another configuration file.  
-**Allowed contexts:** [Http](#http) / [Server](#server) / [Location](#location) / [Cgi](#cgi)
-
-### log_to_stdout
-```nginx
-log_to_stdout [on|off];
-```
-Sets whether logs should also be displayed on the standard output.  
-Default: `off`  
-**Allowed contexts:** [Http](#http)
-
-### log_level
-```nginx
-log_level LEVEL;
-```
-Set the log level. Allowed log levels are `debug`, `info`, `warning` and `error`.  
-Default: `info`  
-**Allowed contexts:** [Http](#http)
-
 ### access_log
 ```nginx
 access_log PATH;
 ```
 Sets the path of the access log file.  
 Default: `/var/log/webserv/access.log`  
-**Allowed contexts:** [Http](#http)
+**Allowed in:** [Http](#http)
 
-### error_log
+### alias
 ```nginx
-error_log PATH;
+alias PATH;
 ```
-Sets the path of the error log file.  
-Default: `/var/log/webserv/error.log`  
-**Allowed contexts:** [Http](#http)
-
-### listen
-```nginx
-listen HOST:PORT;
-```
-Sets the host and port of the server.  
-**Allowed contexts:** [Server](#server)
-
-### server_name
-```nginx
-server_name NAME [NAME ...];
-```
-Sets the server names.  
-**Allowed contexts:** [Server](#server)
-
-### root
-```nginx
-root PATH;
-```
-Sets the root path for a context.  
-**Allowed contexts:** [Server](#server) / [Location](#location)
-
-### index
-```nginx
-index FILE [FILE ...];
-```
-Sets the index files for a context  
-**Allowed contexts:** [Server](#server) / [Location](#location)
-
-### autoindex
-```nginx
-autoindex [on|off];
-```
-Enables or disables the directory listing for a context  
-Default: `off`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
-
-### max_client_body_size
-```nginx
-max_client_body_size SIZE;
-```
-Sets the maximum body size for a client request message.  
-Default: `1048576`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+Set an alias path. Example request for alias PATH: `GET /alias/file` -> `root/PATH/file`  
+**Allowed in:** [Location](#location)
 
 ### allow
 ```nginx
@@ -260,35 +185,110 @@ allow METHOD [METHOD ...];
 ```
 Sets the allowed methods for a context.  
 Default: `GET` / `HEAD` / `OPTIONS`  
-**Allowed contexts:** [Server](#server) / [Location](#location)
+**Allowed in:** [Http](#http) / [Location](#location)
 
-### error_page
+### autoindex
 ```nginx
-error_page CODE PATH;
+autoindex [on|off];
 ```
-Sets a custom error page for the given status code.  
-**Allowed contexts:** [Server](#server)
-
-### alias
-```nginx
-alias PATH;
-```
-Set an alias path. Example request for alias PATH: `GET /alias/file` -> `root/PATH/file`  
-**Allowed contexts:** [Location](#location)
-
-### redirect
-```nginx
-redirect URL;
-```
-Redirects the request of the context to the given url.   
-**Allowed contexts:** [Server](#server) / [Location](#location)
+Enables or disables the directory listing for a context  
+Default: `off`  
+**Allowed in:** [Http](#http) / [Location](#location)
 
 ### cgi_path
 ```nginx
 cgi_path PATH;
 ```
 Sets the executable for the cgi context.    
-**Allowed contexts:** [Cgi](#cgi)
+**Allowed in:** [Cgi](#cgi)
+
+### error_log
+```nginx
+error_log PATH;
+```
+Sets the path of the error log file.  
+Default: `/var/log/webserv/error.log`  
+**Allowed in:** [Http](#http)
+
+### error_page
+```nginx
+error_page CODE PATH;
+```
+Sets a custom error page for the given status code.  
+**Allowed in:** [Server](#server)
+
+### include
+```nginx
+include PATH;
+```
+Include another configuration file.  
+**Allowed in:** [Cgi](#cgi) / [Http](#http) / [Location](#location) / [Server](#server)
+
+### index
+```nginx
+index FILE [FILE ...];
+```
+Sets the index files for a context  
+**Allowed in:** [Location](#location) / [Server](#server)
+
+### listen
+```nginx
+listen HOST:PORT;
+```
+Sets the host and port of the server.  
+**Allowed in:** [Server](#server)
+
+### log_level
+```nginx
+log_level LEVEL;
+```
+Set the log level. Allowed log levels are `debug`, `info`, `warning` and `error`.  
+Default: `info`  
+**Allowed in:** [Http](#http)
+
+### log_to_stdout
+```nginx
+log_to_stdout [on|off];
+```
+Sets whether logs should also be displayed on the standard output.  
+Default: `off`  
+**Allowed in:** [Http](#http)
+
+### max_client_body_size
+```nginx
+max_client_body_size SIZE;
+```
+Sets the maximum body size for a client request message.  
+Default: `1048576`  
+**Allowed in:** [Location](#location) / [Server](#server)
+
+### redirect
+```nginx
+redirect URL;
+```
+Redirects the request of the context to the given url.   
+**Allowed in:** [Location](#location) / [Server](#server)
+
+### root
+```nginx
+root PATH;
+```
+Sets the root path for a context.  
+**Allowed in:** [Location](#location) / [Server](#server)
+
+### server_name
+```nginx
+server_name NAME [NAME ...];
+```
+Sets the server names.  
+**Allowed in:** [Server](#server)
+
+### type
+```nginx
+type MIME_TYPE EXTENSION [EXTENSION ...];
+```
+Set the mime type for the given extensions.  
+**Allowed in:** [Types](#types)
 
 ## Example
 ```nginx

@@ -68,8 +68,7 @@ std::string isMimeType(std::string const &value, size_t index) {
   return "";
 }
 
-std::string isErrorPage(std::string const &value,
-                        size_t index) {  // TODO find better way to do this
+std::string isErrorPage(std::string const &value, size_t index) {
   if (index == 0) {
     if (value == "100" || value == "101" || value == "300" || value == "400" ||
         value == "401" || value == "402" || value == "403" || value == "404" ||
@@ -133,7 +132,7 @@ std::string isBoolean(std::string const &value, size_t index) {
 
 std::string isListen(std::string const &value, size_t index) {
   if (value.empty()) return "Invalid listen format (empty)";
-  if (value.size() <= 5) return "";  // TODO: Ask what this is for
+  if (value.size() <= 5) return isNumeric(value, index);
 
   bool ipv6 = value[0] == '[';
   std::string address, port;

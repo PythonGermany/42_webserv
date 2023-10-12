@@ -2,6 +2,7 @@
 #define RESPONSE_HPP
 
 #include <algorithm>
+#include <istream>
 #include <map>
 #include <string>
 
@@ -13,18 +14,23 @@ class Response {
   std::map<std::string, std::string> _headers;
   std::istream *_body;
 
+  bool _ready;
+
  public:
   Response();
   Response(std::string version, std::string status, std::string reason);
-  Response(const Response &rhs);
   Response &operator=(const Response &rhs);
   ~Response();
+
+  void init(std::string version, std::string status, std::string reason);
+  void clear();
 
   void setVersion(std::string version);
   void setStatus(std::string status);
   void setReason(std::string reason);
   void setHeaders(std::map<std::string, std::string> &headers);
   void setBody(std::istream *body);
+  void setReady(bool ready = true);
 
   void setHeader(std::string key, std::string value);
 
@@ -34,6 +40,9 @@ class Response {
   std::string getHeader(std::string key) const;
 
   std::istream *getBody();
+  std::istream *resetBody();
+
+  bool isReady();
 
   std::string generateHead();
 };

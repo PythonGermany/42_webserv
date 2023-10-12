@@ -22,7 +22,6 @@ class Http : public AConnection {
   bool _newFile;
   size_t _expectedBodySize;
   size_t _currBodySize;
-  bool _responseReady;
 
   std::string _log;
 
@@ -37,21 +36,20 @@ class Http : public AConnection {
   void OnCgiError();
 
  private:
-  Response& processRequest();
-  Response& processFile(std::string uri);
-  Response& processBodyRequest();
-  Response& processPostRequest(std::string uri);
-  Response& processPutData(std::string uri, std::string& data);
+  void processRequest();
+  void processFile(std::string uri);
+  void processBodyRequest();
+  void processPostRequest(std::string uri);
+  void processPutData(std::string uri, std::string& data);
   void processPostData(std::string& data);
-  Response& getPutResponse(std::string uri);
-  Response& processOptions();
-  Response& processDelete(std::string uri);
-  Response& processAutoindex(std::string uri);
-  Response& processRedirect(std::string uri);
-  Response& processError(std::string code, std::string reason,
-                         bool close = false);
-  Response& processCgi(std::string const& uri, File const& file,
-                       std::string const& cgiPathname);
+  void getPutResponse(std::string uri);
+  void processOptions();
+  void processDelete(std::string uri);
+  void processAutoindex(std::string uri);
+  void processRedirect(std::string uri);
+  void processError(std::string code, std::string reason, bool close = false);
+  void processCgi(std::string const& uri, File const& file,
+                  std::string const& cgiPathname);
 
   std::string getDefaultBody(std::string code, std::string reason) const;
 

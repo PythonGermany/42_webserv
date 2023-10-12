@@ -8,8 +8,11 @@ VirtualHost::VirtualHost() {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
-  _resolvedListenDirective =
-      Address::resolveHost(_context.getDirective("listen")[0][0]);
+
+  std::vector<std::vector<std::string> > &listens =
+      _context.getDirective("listen");
+  for (size_t i = 0; i < listens.size(); i++)
+    addSets(_resolvedListenDirective, Address::resolveHost(listens[i][0]));
 }
 
 VirtualHost::VirtualHost(const VirtualHost &rhs) { *this = rhs; }

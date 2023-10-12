@@ -40,6 +40,7 @@ AConnection::~AConnection() {
 }
 
 void AConnection::send(std::istream *msg) {
+  if (msg == NULL) return;
   if (_writeStreams.empty()) Poll::addPollEvent(POLLOUT, this);
   try {
     _writeStreams.push(msg);

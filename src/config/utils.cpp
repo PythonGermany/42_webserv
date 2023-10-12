@@ -141,7 +141,8 @@ std::string percentDecode(std::string str) {
       if (i + 2 >= str.length())
         throw std::runtime_error("uriDecode: invalid string");
       int value;
-      std::sscanf(str.substr(i + 1, 2).c_str(), "%x", &value);
+      if (std::sscanf(str.substr(i + 1, 2).c_str(), "%x", &value) == EOF)
+        throw std::runtime_error("uriDecode: invalid format");
       decoded += (char)value;
       i += 2;
     } else
@@ -186,17 +187,6 @@ std::string getTime(std::string format, const time_t* timer) {
     }
     return std::string(buffer);
   }
-}
-
-std::string getMemorySize(size_t size) {
-  std::stringstream ss;
-  if (size < 1024)
-    ss << size << "B";
-  else if (size < 1024 * 1024)
-    ss << size / 1024 << "KB";
-  else
-    ss << size / (1024 * 1024) << "MB";
-  return ss.str();
 }
 
 size_t getStreamBufferSize(std::istream& stream) {
