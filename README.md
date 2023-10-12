@@ -13,7 +13,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 - [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
 - [ ] Implement support for multilistendirective or change config in webserv.hpp
 - [ ] Figure out why resolving symlinks doesnt work
-- [ ] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
+- [x] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
                                           && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
 - [ ] Implement cgi support
 

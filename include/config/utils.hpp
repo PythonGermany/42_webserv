@@ -127,11 +127,14 @@ std::string percentEncode(std::string str, std::string reserved);
 // @exception No custom exceptions
 std::string getTime(std::string format, const time_t* timer = NULL);
 
-// Returns a string describing the size in different formats depending on the
-// size
-std::string getMemorySize(size_t size);
-
 // Returns the size until the end of the stream
 size_t getStreamBufferSize(std::istream& stream);
+
+// Adds all elements from set b to set a
+template <typename T>
+void addSets(std::set<T>& a, const std::set<T> b) {
+  for (typename std::set<T>::const_iterator it = b.begin(); it != b.end(); ++it)
+    a.insert(*it);
+}
 
 #endif

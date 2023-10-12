@@ -68,8 +68,7 @@ std::string isMimeType(std::string const &value, size_t index) {
   return "";
 }
 
-std::string isErrorPage(std::string const &value,
-                        size_t index) {  // TODO find better way to do this
+std::string isErrorPage(std::string const &value, size_t index) {
   if (index == 0) {
     if (value == "100" || value == "101" || value == "300" || value == "400" ||
         value == "401" || value == "402" || value == "403" || value == "404" ||

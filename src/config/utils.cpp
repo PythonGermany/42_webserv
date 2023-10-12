@@ -189,17 +189,6 @@ std::string getTime(std::string format, const time_t* timer) {
   }
 }
 
-std::string getMemorySize(size_t size) {
-  std::stringstream ss;
-  if (size < 1024)
-    ss << size << "B";
-  else if (size < 1024 * 1024)
-    ss << size / 1024 << "KB";
-  else
-    ss << size / (1024 * 1024) << "MB";
-  return ss.str();
-}
-
 size_t getStreamBufferSize(std::istream& stream) {
   stream.seekg(0, std::ios::end);
   size_t size = stream.tellg();
