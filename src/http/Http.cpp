@@ -419,7 +419,20 @@ Response &Http::processCgi(std::string const &uri, File const &file,
   env.push_back("SERVER_NAME=" + servername);
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
 
-  env.push_back("REDIRECT_STATUS=200");
+  env.push_back("REDIRECT_STATUS=200");  // TODO: ?
+
+  env.push_back(
+      "HTTP_HOST=" +
+      _request.getHeader("Host"));  // TODO: is it empty if not defined?
+  if (_request.getMethod() == "POST") {
+    env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
+    std::cerr << "CONTENT_LENGTH=" << _request.getHeader("Content-length")
+              << std::endl;
+
+    env.push_back("CONTENT_TYPE=" + _request.getHeader("Content-type"));
+    std::cerr << "CONTENT_TYPE=" << _request.getHeader("Content-type")
+              << std::endl;
+  }
 
   runCGI(cgiPathname, std::vector<std::string>(), env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
@@ -489,7 +502,7 @@ Response &Http::processPutData(std::string uri, std::string &data) {
 }
 
 void Http::processPostData(std::string &data) {
-  cgiSend(data);
+  cgiSend(percentDecode(data));
   _currBodySize += data.size();
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
     if (data.size() == 0) {
