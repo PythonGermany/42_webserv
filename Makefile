@@ -111,6 +111,11 @@ jmeter:
 	fi
 	./tests/jmeter/bin/jmeter
 
+wordpress:
+	wget https://wordpress.org/latest.zip
+	unzip latest.zip -d tests/websites/
+	rm -f latest.zip
+
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 

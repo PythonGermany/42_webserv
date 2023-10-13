@@ -4,6 +4,3 @@
 [submodule "tests/websites/myceel"]
 	path = tests/websites/myceel
 	url = git@github.com:PythonGermany/myceel.git
-[submodule "tests/websites/wordpress"]
-	path = tests/websites/wordpress
-	url = git@github.com:WordPress/WordPress.git
