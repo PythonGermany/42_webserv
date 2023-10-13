@@ -22,17 +22,17 @@ int main(int argc, char** argv) {
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);
     if (printHelp(PRINT | UNSET)) return 0;
-    {
-      Context context = loadConfig(path);
-      if (printConfig(PRINT | UNSET, context.getStructure())) return 0;
-      Init::init(context);
-    }
+
+    Context context = loadConfig(path);
+    if (printConfig(PRINT | UNSET, context.getStructure())) return 0;
+    Init::init(context);
     while (true) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
     errorLog_g.write(e.what(), ERROR, BRIGHT_RED);
     printHelp(PRINT);
+    return 1;
   }
   return 0;
 }
