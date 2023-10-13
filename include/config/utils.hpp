@@ -92,17 +92,6 @@ T fromString(std::string str) {
 // Converts a character to a hex string
 std::string toHexString(unsigned char c);
 
-// Highlights the parts of a string between delimiters with a color
-// @param str The string to highlight
-// @param currColor The color the function will reset to after highlighting a
-// section of text
-// @param color The color to use
-// @param delim The delimiter characters
-// @return The highlighted string
-// @exception No custom exceptions
-std::string highlight(std::string str, std::string currColor, std::string color,
-                      std::string delim = "'");
-
 // Expands all the wildcards in a path into a set of expanded paths
 // matching the wildcard patterns of the path
 // @param path The full path with wildcard patterns

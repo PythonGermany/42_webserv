@@ -57,9 +57,9 @@ class Context {
   // @exception No custom exceptions
   bool exists(std::string token, bool searchTree = false) const;
 
-  // Prints the context to the standard output
+  // Returns the structure of the parsed config as a string
   // @exception No custom exceptions
-  void print(int indent = 0) const;
+  std::string getStructure(int indent = 0) const;
 
  private:
   // Adds a token occurence to the member _tokenOccurences

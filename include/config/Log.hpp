@@ -27,7 +27,7 @@ typedef struct log_color_s {
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
 
-const log_color_t lvlColors[5] = {{ERROR, RED},
+const log_color_t lvlColors[5] = {{ERROR, BRIGHT_RED},
                                   {WARNING, YELLOW},
                                   {INFO, WHITE},
                                   {DEBUG, GRAY},

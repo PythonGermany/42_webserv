@@ -15,5 +15,8 @@ webserv
 cgi/cgi
 tools/transformer
 
+#wordpress
+tests/websites/wordpress/
+
 #webserv conf
 conf/sites-enabled/

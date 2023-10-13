@@ -43,3 +43,15 @@ int printHelp(int flags) {
   if (getBit(UNSET, flags)) isSet = false;
   return ret;
 }
+
+int printConfig(int flags, std::string data) {
+  static bool isSet = false;
+  int ret = 0;
+  if (getBit(SET, flags)) isSet = true;
+  if (isSet && getBit(PRINT, flags)) {
+    std::cout << data;
+    ret = 1;
+  }
+  if (getBit(UNSET, flags)) isSet = false;
+  return ret;
+}

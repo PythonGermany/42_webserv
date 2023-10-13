@@ -72,6 +72,7 @@ A flag overwrites the default setting as well as one that may be configured in t
 | --- | --- | --- |
 | i | Prints out some information before starting the server | NONE |
 | h | Prints out some help before starting the server | NONE |
+| c | Prints out the parsed config file structure | NONE |
 | s | Controls [log_to_stdout](#log_to_stdout) | on/off |
 | l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 / 4 for `error` / `warning` / `info` / `debug` / `verbose`
 | a | Controls [access_log](#access_log) | PATH

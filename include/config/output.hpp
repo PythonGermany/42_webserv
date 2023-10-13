@@ -17,5 +17,6 @@ typedef enum output_flag_e {
 
 void printInfo(int flags);
 int printHelp(int flags);
+int printConfig(int flags, std::string data = "");
 
 #endif

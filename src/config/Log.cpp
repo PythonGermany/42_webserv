@@ -49,7 +49,7 @@ void Log::write(std::string msg, log_level_t level, std::string color) {
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
   if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL) {
     if (color == RESET) color = getLevelColor(level);
-    std::cout << timeStamp << color << highlight(msg, color, BLUE) << RESET
+    std::cout << timeStamp << color << msg << RESET
               << std::endl;
   }
   if (!_initialized) return;

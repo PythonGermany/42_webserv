@@ -18,6 +18,15 @@ arg_state_t setHelp(const std::list<std::string> &values) {
   return SUCCESS;
 }
 
+arg_state_t setConfig(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printConfig(SET);
+  set = true;
+  return SUCCESS;
+}
+
 arg_state_t setLogToStdout(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
@@ -61,7 +70,7 @@ static arg_t findArgument(char flag) {
   for (size_t i = 0; i < sizeof(args_g) / sizeof(arg_t); i++)
     if (args_g[i].flag == flag) return args_g[i];
   printHelp(SET);
-  throw std::runtime_error("Unknown flag '" + toString(flag));
+  throw std::runtime_error("Unknown flag '" + toString(flag) + "'");
 }
 
 // Loads provided arguments

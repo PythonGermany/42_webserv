@@ -14,7 +14,6 @@ Context loadConfig(std::string path) {
   Config config(path);
   config.removeComments();
   context = config.parseContext(context, config.getConfig());
-  if (LOG_LEVEL >= DEBUG) context.print();
   return context;
 }
 
@@ -23,7 +22,11 @@ int main(int argc, char** argv) {
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);
     if (printHelp(PRINT | UNSET)) return 0;
-    Init::init(loadConfig(path));
+    {
+      Context context = loadConfig(path);
+      if (printConfig(PRINT | UNSET, context.getStructure())) return 0;
+      Init::init(context);
+    }
     while (true) {
       if (!Poll::poll()) break;
     }

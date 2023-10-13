@@ -103,19 +103,20 @@ bool Context::exists(std::string token, bool searchTree) const {
   return false;
 }
 
-void Context::print(int indent) const {
+std::string Context::getStructure(int indent) const {
+  std::string ret = "";
   std::string spaces = GRAY;
   for (int i = 0; i < indent; i++) spaces += "| ";
-  std::cout << spaces << RED << _name;
+  ret += spaces + BRIGHT_RED + _name;
   spaces += "| ";
   spaces += RESET;
 
   // Print arguments
   if (_args.size() > 0) {
-    std::cout << " " << GREEN;
-    for (size_t i = 0; i < _args.size(); i++) std::cout << _args[i] << " ";
+    ret += " " GREEN;
+    for (size_t i = 0; i < _args.size(); i++) ret += _args[i] + " ";
   }
-  std::cout << RESET << std::endl;
+  ret += RESET "\r\n";
 
   // Print directives
   for (std::map<std::string,
@@ -123,10 +124,10 @@ void Context::print(int indent) const {
            _directives.begin();
        it != _directives.end(); it++) {
     for (size_t i = 0; i < it->second.size(); i++) {
-      std::cout << spaces << BLUE << it->first << " " << GREEN;
+      ret += spaces + BLUE + it->first + " " GREEN;
       for (size_t j = 0; j < it->second[i].size(); j++)
-        std::cout << it->second[i][j] << " ";
-      std::cout << RESET << std::endl;
+        ret += it->second[i][j] + " ";
+      ret += RESET "\r\n";
     }
   }
 
@@ -135,8 +136,9 @@ void Context::print(int indent) const {
            _contexts.begin();
        it != _contexts.end(); it++) {
     for (size_t i = 0; i < it->second.size(); i++)
-      it->second[i].print(indent + 1);
+      ret += it->second[i].getStructure(indent + 1);
   }
+  return ret;
 }
 
 void Context::addTokenOccurence(std::string token) {
