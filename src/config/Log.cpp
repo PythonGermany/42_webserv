@@ -47,13 +47,30 @@ log_level_t Log::getLevel() { return _log_level; }
 void Log::write(std::string msg, log_level_t level, std::string color) {
   if (level > _log_level) return;
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-  if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL)
+  if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL) {
+    if (color == RESET) color = getLevelColor(level);
     std::cout << timeStamp << color << highlight(msg, color, BRIGHT_YELLOW)
               << RESET << std::endl;
+  }
   if (!_initialized) return;
   _file << timeStamp << msg << std::endl;
   if (_file.good() || _error) return;
   std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
             << "Unable to write to log file: " << _path << std::endl;
   _error = true;
+}
+
+std::string Log::getLevelColor(log_level_t level) {
+  static std::map<log_level_t, std::string> colors;
+
+  std::map<log_level_t, std::string>::const_iterator itr = colors.find(level);
+  if (itr != colors.end()) return itr->second;
+
+  for (size_t i = 0; i < sizeof(lvlColors) / sizeof(log_color_t); i++) {
+    if (lvlColors[i].level == level) {
+      colors[level] = lvlColors[i].color;
+      return lvlColors[i].color;
+    }
+  }
+  return RESET;
 }

@@ -131,8 +131,9 @@ void Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
   if (Log::getLevel() >= DEBUG &&
       _virtualHost->getContext().exists("server_name", true))
-    _log += std::string(INDENT) + "VirtualHost: " +
-            _virtualHost->getContext().getDirective("server_name", true)[0][0];
+    accessLog_g.write("VirtualHost: " + _virtualHost->getContext().getDirective(
+                                            "server_name", true)[0][0],
+                      DEBUG);
 
   // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
@@ -153,7 +154,7 @@ void Http::processRequest() {
 
   std::string contextUri = getContextArgs();
   if (Log::getLevel() >= DEBUG)
-    _log += std::string(INDENT) + "Context URI: '" + contextUri + "'";
+    accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
   if (!isMethodValid()) {
@@ -170,8 +171,7 @@ void Http::processRequest() {
 
   if (_context->exists("alias"))
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
-  if (Log::getLevel() >= DEBUG)
-    _log += std::string(INDENT) + "Resource URI: '" + _uri + "'";
+  accessLog_g.write("Resource URI: '" + _uri + "'", DEBUG);
 
   // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
@@ -587,10 +587,9 @@ void Http::sendResponse() {
       _request.getHeader("Connection") == "close")
     stopReceiving();
 
-  accessLog_g.write(_log + std::string(INDENT) + "'" + _response.getVersion() +
-                        " " + _response.getStatus() + " " +
-                        _response.getReason() + "' " +
-                        _request.getHeader("User-Agent"),
+  accessLog_g.write(_log + _response.getVersion() + " " +
+                        _response.getStatus() + " " + _response.getReason() +
+                        "' " + _request.getHeader("User-Agent"),
                     INFO);
   _response.clear();
 }

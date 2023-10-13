@@ -3,11 +3,19 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 
 #include "File.hpp"
 #include "colors.hpp"
 #include "utils.hpp"
+
+typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG } log_level_t;
+
+typedef struct log_color_s {
+  log_level_t level;
+  std::string color;
+} log_color_t;
 
 // -------------------------- LOG VALUES ---------------------------
 
@@ -19,7 +27,8 @@
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
 
-typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG } log_level_t;
+const log_color_t lvlColors[4] = {
+    {ERROR, RED}, {WARNING, YELLOW}, {INFO, WHITE}, {DEBUG, GRAY}};
 
 class Log {
  private:
@@ -53,6 +62,9 @@ class Log {
   // Writes a message to the log file and if enabled also to the standard output
   // @exception No custom exceptions
   void write(std::string msg, log_level_t level, std::string color = RESET);
+
+ private:
+  std::string getLevelColor(log_level_t level);
 };
 
 #endif

@@ -22,7 +22,6 @@
   { "GET", "HEAD", "OPTIONS" }
 #define HTTP_DEFAULT_MIME "application/octet-stream"
 #define MAX_CLIENT_BODY_SIZE 1048576
-#define INDENT "\r\n                          "
 
 class Http : public AConnection {
   Request _request;
