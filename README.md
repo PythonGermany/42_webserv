@@ -42,8 +42,8 @@ This project is a webserver written in C++98. It's functionality is listed below
 | Http | Http/1.1 |
 | Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
 | Logs | Access log / Error log |
-| Configuration file context | [cgi](#cgi) / [http](#http) / [location](#location) / [server](#server) |
-| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi_path](#cgi_path) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
+| Configuration file context | [http](#http) / [location](#location) / [server](#server) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
 # Linux installation
 
 ## Requirements
@@ -125,6 +125,7 @@ server {
     max_client_body_size SIZE;
     allow METHOD [METHOD ...];
     error_page CODE PATH;
+    cgi EXTENSION PATH;
 
     location PATH {
         [directives]
@@ -153,15 +154,6 @@ location PATH {
 ```
 Location context for `PATH`. It contains the configuration of a location.  
 **Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
-
-### Cgi
-```nginx
-cgi EXTENSION {
-    cgi_path PATH;
-}
-```
-Cgi context for `EXTENSION`. It contains the path of the cgi file.  
-**Allowed tokens:** [cgi_path](#cgi_path)
 
 ## Directives
 
@@ -196,12 +188,12 @@ Enables or disables the directory listing for a context
 Default: `off`  
 **Allowed in:** [Http](#http) / [Location](#location)
 
-### cgi_path
+### cgi
 ```nginx
-cgi_path PATH;
+cgi EXTENSTION PATH;
 ```
-Sets the executable for the cgi context.    
-**Allowed in:** [Cgi](#cgi)
+Sets the cgi EXECUTABLE to path for EXTENSION.    
+**Allowed in:** [Server](#server)
 
 ### error_log
 ```nginx
