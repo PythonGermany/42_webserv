@@ -32,6 +32,7 @@ std::string isAbsolutePath(std::string const &value, size_t index);
 std::string isExtension(std::string const &value, size_t index);
 std::string isBoolean(std::string const &value, size_t index);
 std::string isListen(std::string const &value, size_t index);
+std::string isCgi(std::string const &value, size_t index);
 
 // WEBSERV_CONFIG ---------- CONFIG VALUES -------------------------
 #define CONFIG_PATH "/etc/webserv/webserv.conf"
@@ -40,7 +41,7 @@ std::string isListen(std::string const &value, size_t index);
  * Allowed token input structure in the format: {name, parent, isContext,
  * minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
  */
-const token_t tokens[30] = {
+const token_t tokens[29] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
@@ -62,6 +63,8 @@ const token_t tokens[30] = {
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
     {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
+    {"cgi", "server", false, 0, -1, 2, 2, isCgi},
+
     // Location context
     {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
     {"alias", "location", false, 0, 1, 1, 1, isAbsolutePath},
@@ -70,10 +73,7 @@ const token_t tokens[30] = {
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
-    {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric},
-    // CGI context
-    {"cgi", "server", true, 0, -1, 1, 1, isExtension},
-    {"cgi_path", "cgi", false, 1, 1, 1, 1, NULL}};
+    {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric}};
 
 class Config {
  private:

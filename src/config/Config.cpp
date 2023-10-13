@@ -97,6 +97,11 @@ std::string isListen(std::string const &value, size_t index) {
   return "";
 }
 
+std::string isCgi(std::string const &value, size_t index) {
+  if (index == 0) return isExtension(value, index);
+  return isAbsolutePath(value, index);
+}
+
 Config::Config() : _path(CONFIG_PATH) {}
 
 Config::Config(std::string path) {

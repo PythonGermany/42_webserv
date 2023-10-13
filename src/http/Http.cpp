@@ -215,11 +215,9 @@ void Http::processFile(std::string uri) {
   checkResourceValidity(file, uri);
   if (_response.isReady()) return;
 
-  // TODO: loop over vector
-  std::vector<Context> &cgiContext = _context->getContext("cgi");
-  if (cgiContext.size() != 0 &&
-      cgiContext[0].getArgs()[0] == file.getExtension()) {
-    return processCgi(uri, file, cgiContext[0].getDirective("cgi_path")[0][0]);
+  std::vector<std::vector<std::string> > &cgis = _context->getDirective("cgi");
+  if (cgis.size() != 0 && cgis[0][0] == file.getExtension()) {
+    return processCgi(uri, file, cgis[0][1]);
   } else if (_request.getMethod() == "POST")
     return processError("500",
                         "Internal Server Error");  // TODO: Correct error code?
@@ -635,9 +633,10 @@ bool Http::isBodySizeValid(size_t size) const {
 
 bool Http::isCgiExtension(std::string extension) const {
   if (!_context->exists("cgi", true)) return false;
-  std::vector<Context> &cgis = _context->getContext("cgi", true);
+  std::vector<std::vector<std::string> > &cgis =
+      _context->getDirective("cgi", true);
   for (size_t i = 0; i < cgis.size(); i++)
-    if (cgis[i].getArgs()[0] == extension) return true;
+    if (cgis[i][0] == extension) return true;
   return false;
 }
 
