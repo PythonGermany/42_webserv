@@ -10,7 +10,7 @@
 #include "colors.hpp"
 #include "utils.hpp"
 
-typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG } log_level_t;
+typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG, VERBOSE } log_level_t;
 
 typedef struct log_color_s {
   log_level_t level;
@@ -27,8 +27,11 @@ typedef struct log_color_s {
 #define LOG_TIME_FORMAT "%H:%M:%S GMT"
 #define LOG_DATE_FORMAT "%d-%m-%Y"
 
-const log_color_t lvlColors[4] = {
-    {ERROR, RED}, {WARNING, YELLOW}, {INFO, WHITE}, {DEBUG, GRAY}};
+const log_color_t lvlColors[5] = {{ERROR, RED},
+                                  {WARNING, YELLOW},
+                                  {INFO, WHITE},
+                                  {DEBUG, GRAY},
+                                  {VERBOSE, GRAY}};
 
 class Log {
  private:

@@ -34,7 +34,7 @@ arg_state_t setLogLevel(const std::list<std::string> &values) {
   std::string value = values.front();
   Log::setLevel((log_level_t)(value[0] - '0'));
   set = true;
-  if (value.size() == 1 && value >= "0" && value <= "3") return SUCCESS;
+  if (value.size() == 1 && value >= "0" && value <= "4") return SUCCESS;
   return ARG_INVALID;
 }
 

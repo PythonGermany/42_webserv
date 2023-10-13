@@ -79,6 +79,8 @@ void Http::OnCgiRecv(std::string msg) {
   int bodySize = msg.size();
   _response.setBody(new std::istringstream(msg));
 
+  accessLog_g.write("CGI output: \"" + msg + "\"", VERBOSE);
+
   std::string line;
   while (std::getline(*_response.getBody(), line)) {
     bodySize -= line.size() + 1;

@@ -44,7 +44,7 @@ std::string isMethod(std::string const &value, size_t index) {
 std::string isLogLevel(std::string const &value, size_t index) {
   (void)index;
   if (value == "debug" || value == "info" || value == "warning" ||
-      value == "error")
+      value == "error" || value == "verbose")
     return "";
   return "Invalid log level";
 }

@@ -19,6 +19,7 @@ void Init::initLogDefaults(Context& context) {
   // Init log level
   if (http.exists("log_level")) {
     std::string level = http.getDirective("log_level")[0][0];
+
     if (level == "debug")
       Log::setLevel(DEBUG);
     else if (level == "info")
@@ -27,6 +28,8 @@ void Init::initLogDefaults(Context& context) {
       Log::setLevel(WARNING);
     else if (level == "error")
       Log::setLevel(ERROR);
+    else if (level == "verbose")
+      Log::setLevel(VERBOSE);
   }
   // Init log files
   if (http.exists("access_log"))
