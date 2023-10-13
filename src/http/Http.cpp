@@ -52,7 +52,7 @@ void Http::OnChunkSizeRecv(std::string msg) {
 
   bodySize = 0;
   if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF) {
-    errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG);
+    errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG, BRIGHT_RED);
     processError("500", "Internal server error", true);
   } else if (isBodySizeValid(_currBodySize + bodySize) == false)
     processError("413", "Request Entity Too Large", true);
@@ -91,9 +91,7 @@ void Http::OnCgiRecv(std::string msg) {
     if (line.find(": ") == name.size())
       line.erase(0, name.size() + 2);
     else {
-      errorLog_g.write(BRIGHT_RED "ERROR:" RESET
-                                  " invalid format in cgi response header: " +
-                           line,
+      errorLog_g.write("ERROR: invalid format in cgi response header: " + line,
                        ERROR);
       return OnCgiError();
     }
@@ -273,9 +271,8 @@ void Http::processCgi(std::string const &uri, File const &file,
       cwd.push_back('/');
       pathname.insert(0, cwd);
     } catch (std::runtime_error const &e) {
-      errorLog_g.write(
-          std::string(BRIGHT_RED "ERROR:" RESET " getcwd(): ") + e.what(),
-          ERROR);  // TODO: WARNING?
+      errorLog_g.write(std::string("ERROR: getcwd(): ") + e.what(), DEBUG,
+                       YELLOW);  // TODO: WARNING?
       return processError("500", "Internal Server Error");
     }
   std::vector<std::string> env;

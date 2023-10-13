@@ -31,7 +31,8 @@ AConnection::~AConnection() {
   }
   if (_cgiPid != -1 && Poll::lastForkPid() != 0) {
     int status;
-    if (kill(_cgiPid, SIGKILL) == -1) errorLog_g.write(RED "ERROR:" RESET " kill()", DEBUG);
+    if (kill(_cgiPid, SIGKILL) == -1)
+      errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
     waitpid(_cgiPid, &status, 0);
     accessLog_g.write(
         "reaped CGI process (destructor): " + toString<int>(_cgiPid), DEBUG,
@@ -123,9 +124,7 @@ void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
 
 void AConnection::cgiSend(std::string const &src) {
   if (pipeOut == -1) {
-    errorLog_g.write(BRIGHT_YELLOW
-                     "WARNING:" RESET
-                     "cgiSend() was called without an active pipe",
+    errorLog_g.write("WARNING: cgiSend() was called without an active pipe",
                      WARNING);
     return;
   }
@@ -205,7 +204,8 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     accessLog_g.write("reaped CGI process (pipe closed): " + toString<int>(tmp),
                       DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
-      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, DEBUG);
+      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, DEBUG,
+                       BRIGHT_RED);
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
       OnCgiError();
@@ -219,7 +219,7 @@ void AConnection::KillCgi() {
   int status;
 
   if (kill(_cgiPid, SIGKILL) == -1)
-    errorLog_g.write(RED "ERROR:" RESET " kill()", DEBUG);
+    errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
   waitpid(_cgiPid, &status, 0);
   pid_t tmp = _cgiPid;
   _cgiPid = -1;
@@ -334,13 +334,13 @@ void AConnection::runCGI(std::string const &program,
   int pipeOutArray[2];
 
   if (pipe(pipeInArray) == -1) {
-    errorLog_g.write(RED "ERROR:" RESET " pipe()", DEBUG);
+    errorLog_g.write("ERROR: pipe()", DEBUG, BRIGHT_RED);
     OnCgiError();
     return;
   }
 
   if (pipe(pipeOutArray)) {
-    errorLog_g.write(RED "ERROR:" RESET " pipe()", DEBUG);
+    errorLog_g.write("ERROR: pipe()", DEBUG, BRIGHT_RED);
     close(pipeInArray[0]);
     close(pipeInArray[1]);
     OnCgiError();
@@ -354,7 +354,7 @@ void AConnection::runCGI(std::string const &program,
     close(pipeInArray[1]);
     close(pipeOutArray[0]);
     close(pipeOutArray[1]);
-    errorLog_g.write(RED "ERROR:" RESET " fork()", DEBUG);
+    errorLog_g.write("ERROR: fork()", DEBUG, BRIGHT_RED);
     OnCgiError();
     return;
   }
@@ -365,13 +365,13 @@ void AConnection::runCGI(std::string const &program,
     if (dup2(pipeInArray[1], STDOUT_FILENO) == -1) {
       close(pipeInArray[1]);
       close(pipeOutArray[0]);
-      errorLog_g.write(RED "ERROR:" RESET " dup2()", DEBUG);
+      errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
       exit(EXIT_FAILURE);
     }
     if (dup2(pipeOutArray[0], STDIN_FILENO) == -1) {
       close(pipeOutArray[0]);
       close(pipeInArray[1]);
-      errorLog_g.write(RED "ERROR:" RESET " dup2()", DEBUG);
+      errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
       exit(EXIT_FAILURE);
     }
     close(pipeInArray[1]);
@@ -388,9 +388,8 @@ void AConnection::runCGI(std::string const &program,
       c_env.push_back(const_cast<char *>(it->c_str()));
     c_env.push_back(NULL);
     execve(program.c_str(), c_arg.data(), c_env.data());
-    //errorLog_g.write("webserv: error: execve(): " + program + ": " + std::strerror(errno), ERROR);
-    std::cerr << "webserv: " << RED << "error: execve(): " << program << ": "
-              << std::strerror(errno) << RESET << std::endl;
+    std::cerr << "webserv: " << BRIGHT_RED << "error: execve(): " << program
+              << ": " << std::strerror(errno) << RESET << std::endl;
     exit(EXIT_FAILURE);
   }
   close(pipeInArray[1]);

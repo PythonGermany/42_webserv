@@ -22,6 +22,7 @@ typedef struct arg_s {
 // indicate an error
 arg_state_e setInfo(const std::list<std::string> &values);
 arg_state_e setHelp(const std::list<std::string> &values);
+arg_state_t setConfig(const std::list<std::string> &values);
 arg_state_t setLogToStdout(const std::list<std::string> &values);
 arg_state_t setLogLevel(const std::list<std::string> &values);
 arg_state_t setAccessLog(const std::list<std::string> &values);
@@ -32,9 +33,10 @@ arg_state_t setErrorLog(const std::list<std::string> &values);
  * Allowed argument input structure in the format: {flag, argCount,
  * validation-/initializationFunction}
  */
-const arg_t args_g[6] = {{'i', 0, setInfo},        {'h', 0, setHelp},
-                         {'s', 1, setLogToStdout}, {'l', 1, setLogLevel},
-                         {'a', 1, setAccessLog},   {'e', 1, setErrorLog}};
+const arg_t args_g[7] = {{'i', 0, setInfo},     {'h', 0, setHelp},
+                         {'c', 0, setConfig},   {'s', 1, setLogToStdout},
+                         {'l', 1, setLogLevel}, {'a', 1, setAccessLog},
+                         {'e', 1, setErrorLog}};
 
 std::string loadArguments(int argc, char **argv);
 
