@@ -60,22 +60,6 @@ std::string toHexString(unsigned char c) {
   return hex;
 }
 
-std::string highlight(std::string str, std::string currColor, std::string color,
-                      std::string delim) {
-  bool first = true;
-  size_t i = str.find_first_of(delim);
-  while (i != std::string::npos) {
-    if (first == true) {
-      str.insert(i, color);
-      i += color.length();
-    } else
-      str.insert(i + delim.length(), currColor);
-    first = !first;
-    i = str.find_first_of(delim, i + delim.length());
-  }
-  return str;
-}
-
 std::set<std::string> processWildcard(std::string path) {
   std::list<std::string> fs(1, path);
   std::set<std::string> ret;

@@ -24,8 +24,8 @@ void Http::OnHeadRecv(std::string msg) {
 
   // Parse request
   _request.parseHead(msg);
-  _log = toString<Address &>(client) + ": '" + _request.getMethod() + " " +
-         _request.getUri().generate() + " " + _request.getVersion() + "' -> " +
+  _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
+         _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
 
   // If possible use host of absolute uri otherwise use host of header
@@ -587,9 +587,9 @@ void Http::sendResponse() {
       _request.getHeader("Connection") == "close")
     stopReceiving();
 
-  accessLog_g.write(_log + _response.getVersion() + " " +
+  accessLog_g.write(_log + " -> " + _response.getVersion() + " " +
                         _response.getStatus() + " " + _response.getReason() +
-                        "' " + _request.getHeader("User-Agent"),
+                        " " + _request.getHeader("User-Agent"),
                     INFO);
   _response.clear();
 }
