@@ -114,7 +114,7 @@ void Http::OnCgiRecv(std::string msg) {
     } else if (name == "location")
       _response.setHeader(name, line);
     else
-      errorLog_g.write(
+      accessLog_g.write(
           "cgi header header field not supported: " + name + "=" + line, DEBUG);
   }
 
