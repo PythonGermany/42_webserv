@@ -9,14 +9,16 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 
 - [ ] Investigate random closing of program without any notice after sending a first request
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
-- [ ] <del>Maybe implement configurable default mime</del>
-- [x] Fix file uploading
-- [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
-- [x] Implement support for multilistendirective or change config
 - [ ] Figure out why resolving symlinks doesnt work
+- [ ] Implement cgi support
+
+- [x] Fix file uploading
+- [x] Implement support for multilistendirective or change config
 - [x] Implement chunked transfer encoding (https://datatracker.ietf.org/doc/html/rfc2616#section-3.6 
                                           && https://datatracker.ietf.org/doc/html/rfc2616#section-19.4.6)
-- [ ] Implement cgi support
+
+- [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
+- [ ] <del>Maybe implement configurable default mime</del>
 
 - [ ] Remove unwanted submodules and config once ready for evaluation
 

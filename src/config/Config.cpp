@@ -110,7 +110,7 @@ Config::Config(std::string path) {
   File f(path);
   if (f.isSymLink() && f.resolveSymlink() != 0)
     throw std::runtime_error("Config: Failed to resolve symlink '" + path +
-                             "'");
+                             "': " + std::strerror(errno));
   std::ifstream fstream(f.getPath().c_str());
   if (fstream.is_open() == false)
     throw std::runtime_error("Config: Failed to open file '" + path + "'");

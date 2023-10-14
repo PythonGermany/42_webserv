@@ -19,4 +19,5 @@ tools/transformer
 tests/websites/wordpress/
 
 #webserv conf
-conf/sites-enabled/
+conf/sites-enabled/*
+!conf/sites-enabled/config_test.conf
