@@ -136,7 +136,7 @@ void AConnection::cgiSend(std::string const &src) {
     else
       Poll::addPollEvent(POLLOUT, pipeOut);
   }
-  std::cout << "cgiSend(\n" << src << ")" << std::endl;
+  accessLog_g.write("cgiSend(\n" + src + ")", VERBOSE);
   _cgiWriteBuffer += src;
 }
 

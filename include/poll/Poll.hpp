@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "CallbackPointer.hpp"
+#include "global.hpp"
 
 // WEBSERV_CONFIG ----------- POLL VALUES ---------------------------
 /**

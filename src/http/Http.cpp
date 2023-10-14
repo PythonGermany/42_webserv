@@ -102,7 +102,7 @@ void Http::OnCgiRecv(std::string msg) {
     else if (name == "x-powered-by")
       continue;  // TODO: server_tokens ?
     else if (name == "status") {
-      std::cout << "line: " << line << std::endl;
+      accessLog_g.write("OnCgiRecv(): line: " + line, DEBUG);
       std::istringstream ss(line);
       std::string status;
       std::getline(ss, status, ' ');
@@ -283,6 +283,7 @@ void Http::processCgi(std::string const &uri, File const &file,
 
   // request specific values:
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
+  env.push_back("PATH_INFO=" + _request.getUri().getQuery());
   // env.push_back("SERVER_NAME=" + _request.getHeader("host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("REMOTE_ADDR=" + client.str());
@@ -303,12 +304,12 @@ void Http::processCgi(std::string const &uri, File const &file,
       _request.getHeader("Host"));  // TODO: is it empty if not defined?
   if (_request.getMethod() == "POST") {
     env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
-    std::cerr << "CONTENT_LENGTH=" << _request.getHeader("Content-length")
-              << std::endl;
+    accessLog_g.write("CONTENT_LENGTH=" + _request.getHeader("Content-length"),
+                      DEBUG);
 
     env.push_back("CONTENT_TYPE=" + _request.getHeader("Content-type"));
-    std::cerr << "CONTENT_TYPE=" << _request.getHeader("Content-type")
-              << std::endl;
+    accessLog_g.write("CONTENT_TYPE=" + _request.getHeader("Content-type"),
+                      DEBUG);
   }
 
   runCGI(cgiPathname, std::vector<std::string>(), env);

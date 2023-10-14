@@ -164,7 +164,7 @@ void Poll::iterate() {
         ++i;
       }
     } catch (std::exception const &e) {
-      std::cerr << e.what() << '\n';
+      accessLog_g.write(std::string(e.what()) + "\n", DEBUG);
       remove(callbackObjects[i].ptr);
       release(newCallbackObject, newPollfd,
               sizeof(newPollfd) / sizeof(*newPollfd));
