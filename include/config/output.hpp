@@ -4,11 +4,12 @@
 #include <iostream>
 
 #include "colors.hpp"
+#include "webserv.hpp"
 
 typedef enum output_flag_e {
-  SET = 1,
-  PRINT = (1 << 1),
-  UNSET = (1 << 2)
+  SET = 0b1,
+  PRINT = 0b10,
+  UNSET = 0b100
 } output_flag_t;
 
 // Information output functions can be triggered through flags. They need to be
@@ -17,6 +18,8 @@ typedef enum output_flag_e {
 
 void printInfo(int flags);
 int printHelp(int flags);
-int printConfig(int flags, std::string data = "");
+int printConfigStructure(int flags, std::string data = "");
+int printConfigValidation(int flags, std::string path = "");
+int printVersion(int flags);
 
 #endif

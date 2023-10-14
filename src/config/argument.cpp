@@ -1,6 +1,6 @@
 #include "argument.hpp"
 
-arg_state_t setInfo(const std::list<std::string> &values) {
+arg_state_t setPrintInfo(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;
   if (set) return FLAG_DUPLICATE;
@@ -9,7 +9,7 @@ arg_state_t setInfo(const std::list<std::string> &values) {
   return SUCCESS;
 }
 
-arg_state_t setHelp(const std::list<std::string> &values) {
+arg_state_t setPrintHelp(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;
   if (set) return FLAG_DUPLICATE;
@@ -18,11 +18,29 @@ arg_state_t setHelp(const std::list<std::string> &values) {
   return SUCCESS;
 }
 
-arg_state_t setConfig(const std::list<std::string> &values) {
+arg_state_t setPrintConfigStructure(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;
   if (set) return FLAG_DUPLICATE;
-  printConfig(SET);
+  printConfigStructure(SET);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setPrintConfigValidation(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printConfigValidation(SET);
+  set = true;
+  return SUCCESS;
+}
+
+arg_state_t setPrintVersion(const std::list<std::string> &values) {
+  static bool set = false;
+  if (values.size() > 0) return ARG_INVALID;
+  if (set) return FLAG_DUPLICATE;
+  printVersion(SET);
   set = true;
   return SUCCESS;
 }
@@ -74,9 +92,9 @@ static arg_t findArgument(char flag) {
 }
 
 // Loads provided arguments
-// @return Config path input or empty if none was provided
+// @return Config path input or CONFIG_PATH if none was provided
 std::string loadArguments(int argc, char **argv) {
-  std::string path;
+  std::string path = CONFIG_PATH;
   if (argc > 1) {
     if (argv[1][0] != '-') path = std::string(argv[1]);
     arg_t arg = {'\0', 0, NULL};

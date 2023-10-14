@@ -25,31 +25,61 @@ int printHelp(int flags) {
   int ret = 0;
   if (getBit(SET, flags)) isSet = true;
   if (isSet && getBit(PRINT, flags)) {
-    std::cout << BRIGHT_RED << "Usage: " << BRIGHT_GREEN
-              << "./webserv [configuration_file] [-i|-h] [ [-FLAG "
-                 "ARGUMENT] ...]\r\n"
-              << BRIGHT_RED << "Flags:\r\n"
-              << BRIGHT_GREEN
-              << "  -i Prints out a info block when starting the server\r\n"
-                 "  -h Prints this help message\r\n"
-                 "  -s Turn stdout 'on' or 'off'\r\n"
-                 "  -l set the log level using '0/1/2/3' for "
-                 "error/warning/info/debug\r\n"
-                 "  -a Sets the path for the access log file\r\n"
-                 "  -e Sets the path for the error log file"
-              << RESET << std::endl;
+    std::cout
+        << BRIGHT_YELLOW << "Usage: " << RESET
+        << "./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-s|-l|-a|-e "
+           "ARGUMENT] ...]\r\n"
+        << BRIGHT_YELLOW << "Flags:\r\n"
+        << RESET
+        << "  -i Show info block when starting the server\r\n"
+           "  -h Show this help message and exit\r\n"
+           "  -v Show version of webserv and exit\r\n"
+           "  -c Show parsed config file structure and exit\r\n"
+           "  -t Check if the config file syntax is valid and exit\r\n"
+           "  -s Turn stdout 'on' or 'off'\r\n"
+           "  -l set the log level using '0/1/2/3' for "
+           "error/warning/info/debug\r\n"
+           "  -a Sets the path for the access log file\r\n"
+           "  -e Sets the path for the error log file"
+        << std::endl;
     ret = 1;
   }
   if (getBit(UNSET, flags)) isSet = false;
   return ret;
 }
 
-int printConfig(int flags, std::string data) {
+int printConfigStructure(int flags, std::string data) {
   static bool isSet = false;
   int ret = 0;
   if (getBit(SET, flags)) isSet = true;
   if (isSet && getBit(PRINT, flags)) {
     std::cout << data;
+    ret = 1;
+  }
+  if (getBit(UNSET, flags)) isSet = false;
+  return ret;
+}
+
+int printConfigValidation(int flags, std::string path) {
+  static bool isSet = false;
+  int ret = 0;
+  if (getBit(SET, flags)) isSet = true;
+  if (isSet && getBit(PRINT, flags)) {
+    std::cout << BRIGHT_GREEN << "Configuration file " << path
+              << " syntax is valid" << std::endl;
+    ret = 1;
+  }
+  if (getBit(UNSET, flags)) isSet = false;
+  return ret;
+}
+
+int printVersion(int flags) {
+  static bool isSet = false;
+  int ret = 0;
+  if (getBit(SET, flags)) isSet = true;
+  if (isSet && getBit(PRINT, flags)) {
+    std::cout << BRIGHT_YELLOW << "webserv version: " << WEBSERV_ID << RESET
+              << std::endl;
     ret = 1;
   }
   if (getBit(UNSET, flags)) isSet = false;

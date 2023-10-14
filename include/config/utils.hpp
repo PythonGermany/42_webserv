@@ -126,4 +126,9 @@ void addSets(std::set<T>& a, const std::set<T> b) {
     a.insert(*it);
 }
 
+// Converts a string from a string with an optional suffix to its byte size
+// @param size The size to convert
+// @param baseFactor The base factor e.g. 1000 or 1024
+size_t toBytes(std::string size, size_t baseFactor = 1024);
+
 #endif

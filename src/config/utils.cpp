@@ -179,3 +179,15 @@ size_t getStreamBufferSize(std::istream& stream) {
   stream.seekg(0, std::ios::beg);
   return size;
 }
+
+size_t toBytes(std::string size, size_t baseFactor) {
+  size_t factor = 1;
+  if (endsWith(size, "k")) {
+    size.erase(size.size() - 1, 1);
+    factor = baseFactor;
+  } else if (endsWith(size, "m")) {
+    size.erase(size.size() - 1, 1);
+    factor = baseFactor * baseFactor;
+  }
+  return fromString<size_t>(size) * factor;
+}

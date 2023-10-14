@@ -33,6 +33,16 @@ std::string isNumeric(std::string const &value, size_t index) {
   return "";
 }
 
+std::string isMemorySize(std::string const &value, size_t index) {
+  std::string v = value;
+  if (endsWith(value, "k") || endsWith(value, "m"))
+    v = value.substr(0, value.size() - 1);
+  if (isNumeric(v, index) != "")
+    return "All characters must be numeric exept the last one can "
+           "optionally be k or m";
+  return "";
+}
+
 std::string isMethod(std::string const &value, size_t index) {
   (void)index;
   if (value == "GET" || value == "HEAD" || value == "OPTIONS" ||
@@ -102,10 +112,13 @@ std::string isCgi(std::string const &value, size_t index) {
   return isAbsolutePath(value, index);
 }
 
-Config::Config() : _path(CONFIG_PATH) {}
+Config::Config()
+    : _path(CONFIG_PATH), _includePath(File(CONFIG_PATH).getDir()) {}
 
-Config::Config(std::string path) {
+Config::Config(std::string path, std::string includePath) {
   _path = path.empty() ? CONFIG_PATH : path;
+  _includePath =
+      includePath.empty() ? File(_path).getDir() : File(includePath).getDir();
 
   File f(path);
   if (f.isSymLink() && f.resolveSymlink() != 0)
@@ -227,7 +240,7 @@ void Config::processInclude(Context &context, std::string path) {
   if (startsWith(path, "/"))
     includePath = path;
   else
-    includePath = File(_path).getDir() + path;
+    includePath = _includePath + path;
 
   // Get file list
   std::set<std::string> files = processWildcard(includePath);
@@ -237,7 +250,7 @@ void Config::processInclude(Context &context, std::string path) {
         "Context: '" + context.getName() + "' -> Include '" + *itr + "'",
         DEBUG);
     // Recursively parse included config files
-    Config config(*itr);
+    Config config(*itr, _includePath);
     config.removeComments();
     config.parseContext(context, config.getConfig(), 1, false);
   }

@@ -51,7 +51,6 @@ HEADERS		+= poll/IFileDescriptor.hpp
 HEADERS		+= poll/CallbackPointer.hpp
 HEADERS		+= poll/timeval.hpp
 
-HEADERS		+= http/testconn.hpp
 HEADERS		+= http/Http.hpp
 HEADERS		+= http/Request.hpp
 HEADERS		+= http/Response.hpp
@@ -60,7 +59,7 @@ OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http -fsanitize=address
+CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http
 
 all: $(NAME)
 
@@ -94,6 +93,9 @@ performance:
 
 debug:
 	make CXXFLAGS="-g $(CXXFLAGS)"
+
+fsanitize:
+	make CXXFLAGS="-fsanitize=address $(CXXFLAGS)"
 
 custom:
 	make CXXFLAGS="$(ARG) $(CXXFLAGS)"

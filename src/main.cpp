@@ -21,10 +21,16 @@ int main(int argc, char** argv) {
   try {
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);
-    if (printHelp(PRINT | UNSET)) return 0;
+
+    int ret = 0;
+    ret |= printVersion(PRINT | UNSET);
+    ret |= printHelp(PRINT | UNSET);
+    if (ret) return 0;
 
     Context context = loadConfig(path);
-    if (printConfig(PRINT | UNSET, context.getStructure())) return 0;
+    ret |= printConfigStructure(PRINT | UNSET, context.getStructure());
+    ret |= printConfigValidation(PRINT | UNSET, path);
+    if (ret) return 0;
     Init::init(context);
     while (true) {
       if (!Poll::poll()) break;

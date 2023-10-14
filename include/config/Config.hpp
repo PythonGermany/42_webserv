@@ -26,6 +26,7 @@ typedef struct token_s {
 std::string isMimeType(std::string const &value, size_t index);
 std::string isErrorPage(std::string const &value, size_t index);
 std::string isNumeric(std::string const &value, size_t index);
+std::string isMemorySize(std::string const &value, size_t index);
 std::string isMethod(std::string const &value, size_t index);
 std::string isLogLevel(std::string const &value, size_t index);
 std::string isAbsolutePath(std::string const &value, size_t index);
@@ -61,7 +62,7 @@ const token_t tokens[29] = {
     {"allow", "server", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
-    {"max_client_body_size", "server", false, 0, 1, 1, 1, isNumeric},
+    {"max_client_body_size", "server", false, 0, 1, 1, 1, isMemorySize},
     {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
     {"cgi", "server", false, 0, -1, 2, 2, isCgi},
 
@@ -73,16 +74,17 @@ const token_t tokens[29] = {
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
-    {"max_client_body_size", "location", false, 0, 1, 1, 1, isNumeric}};
+    {"max_client_body_size", "location", false, 0, 1, 1, 1, isMemorySize}};
 
 class Config {
  private:
   std::string _path;
+  std::string _includePath;
   std::string _config;
 
  public:
   Config();
-  Config(std::string path);
+  Config(std::string path, std::string includePath = "");
   Config(const Config &rhs);
   Config &operator=(const Config &rhs);
   ~Config();

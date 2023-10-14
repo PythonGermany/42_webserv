@@ -277,7 +277,7 @@ void Http::processCgi(std::string const &uri, File const &file,
       pathname.insert(0, cwd);
     } catch (std::runtime_error const &e) {
       errorLog_g.write(std::string("ERROR: getcwd(): ") + e.what(), DEBUG,
-                       YELLOW);  // TODO: WARNING?
+                       YELLOW);
       return processError("500", "Internal Server Error");
     }
   std::vector<std::string> env;
@@ -306,7 +306,8 @@ void Http::processCgi(std::string const &uri, File const &file,
 
   env.push_back(
       "HTTP_HOST=" +
-      _request.getHeader("Host"));  // TODO: is it empty if not defined?
+      _request.getHeader("Host"));  // TODO: is it empty if not defined? -> The
+                                    // return of getHeader: yes
   if (_request.getMethod() == "POST") {
     env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
     accessLog_g.write("CONTENT_LENGTH=" + _request.getHeader("Content-length"),
@@ -630,8 +631,8 @@ bool Http::isMethodValid() {
 bool Http::isBodySizeValid(size_t size) const {
   size_t maxBodySize = MAX_CLIENT_BODY_SIZE;
   if (_context->exists("max_client_body_size", true))
-    maxBodySize = fromString<size_t>(
-        _context->getDirective("max_client_body_size", true)[0][0]);
+    maxBodySize =
+        toBytes(_context->getDirective("max_client_body_size", true)[0][0]);
   return size <= maxBodySize;
 }
 

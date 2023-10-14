@@ -63,22 +63,33 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [-i|-h] [ [-FLAG ARGUMENT] ...]
+./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-s|-l|-a|-e ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 
 ## Flags
-A flag overwrites the default setting as well as one that may be configured in the config file. It can be utilized to configure an option directly from the start of the program instead of only after the configuration has been read and parsed.
+
+A flag overwrites the default setting as well as the ones that are configured in the config file.
 
 | Flag | Description | Allowed values
 | --- | --- | --- |
-| i | Prints out some information before starting the server | NONE |
-| h | Prints out some help before starting the server | NONE |
-| c | Prints out the parsed config file structure | NONE |
+| i | Show info block when starting the server | NONE |
+| h | Show this help message and exit | NONE |
+| v | Show version of webserv and exit | NONE
+| c | Show parsed config file structure and exit | NONE |
+| t | Check if the config file syntax is valid and exit | NONE |
 | s | Controls [log_to_stdout](#log_to_stdout) | on/off |
 | l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 / 4 for `error` / `warning` / `info` / `debug` / `verbose`
 | a | Controls [access_log](#access_log) | PATH
 | e | Controls [error_log](#error_log) | PATH
+
+**Flags can be utilized to configure an option directly from the start of the program instead of only after the configuration has been read and parsed.**  
+
+### Example:
+```
+./webserv [configuration_file] -s on -l 3 -a PATH
+```
+You can look at the parsing debug output by setting the flag `s` to `on` and the flag `l` to `3` or higher, this will override the default setting before the config has been read, parsed and applied. If you also want to write the parsing log messages to a file the flag `a` needs to be set to the `path` you want the log file to be. Those steps are necessary because even if you specify all the previous flag settings in the config file they will only be applied after having successfully loaded your config settings, which will, of course, happen after the config file has been parsed.
 
 # Configuration
 
@@ -125,7 +136,7 @@ server {
     index FILE [FILE ...];
 
     autoindex [on|off];
-    max_client_body_size SIZE;
+    max_client_body_size SIZE[k|m];
     allow METHOD [METHOD ...];
     error_page CODE PATH;
     cgi EXTENSION PATH;
@@ -136,7 +147,7 @@ server {
 }
 ```
 Virtual server context. It contains the configuration of a virtual server.  
-**Allowed tokens:** [allow](#allow) / [autoindex](#autoindex) / [error_page](#error_page) / [index](#index) / [listen](#listen) / [location](#location) / [max_client_body_size](#max_client_body_size) / [root](#root) / [server_name](#server_name)
+**Allowed tokens:** [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_page](#error_page) / [index](#index) / [listen](#listen) / [location](#location) / [max_client_body_size](#max_client_body_size) / [root](#root) / [server_name](#server_name)
 
 ### Location
 ```nginx
@@ -149,14 +160,10 @@ location PATH {
     autoindex [on|off];
     redirect URL;
     max_client_body_size SIZE;
-
-    cgi EXTENSION {
-        [directives];
-    }
 }
 ```
 Location context for `PATH`. It contains the configuration of a location.  
-**Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
+**Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
 
 ## Directives
 
@@ -252,10 +259,10 @@ Default: `off`
 
 ### max_client_body_size
 ```nginx
-max_client_body_size SIZE;
+max_client_body_size SIZE[k|m];
 ```
 Sets the maximum body size for a client request message.  
-Default: `1048576`  
+Default: `1m`  
 **Allowed in:** [Location](#location) / [Server](#server)
 
 ### redirect
@@ -320,10 +327,10 @@ server {
   root /var/www/html;
   index index.html index.htm;
   autoindex on;
-  max_client_body_size 1048576;
+  max_client_body_size 1m;
   allow GET HEAD OPTIONS;
-
   error_page 404 /404.html;
+  cgi php /usr/bin/php-cgi;
 
   location /example {
     alias /www; # Request: GET /example/file -> root/www/file
@@ -333,11 +340,6 @@ server {
   }
   location /redirect {
     redirect http://www.duckduckgo.com;
-  }
-  location /cgi {
-    cgi php {
-      cgi_path /usr/bin/php-cgi;
-    }
   }
 }
 ```
