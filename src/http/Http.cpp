@@ -139,7 +139,6 @@ void Http::processRequest() {
                                             "server_name", true)[0][0],
                       DEBUG);
 
-  // Check if the request is valid
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
   if (_request.getUri().decode() || !_request.isValid())
     return processError("400", "Bad Request");
@@ -147,7 +146,6 @@ void Http::processRequest() {
   if (_request.getVersion() != HTTP_VERSION)
     return processError("505", "HTTP Version Not Supported");
 
-  // Check if method is implemented
   // https://datatracker.ietf.org/doc/html/rfc2616#section-10.5.2
   if (!isMehodImplemented(_request.getMethod()))
     return processError("501", "Not Implemented");
