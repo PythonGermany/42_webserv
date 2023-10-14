@@ -129,3 +129,21 @@ tj:
 	./tools/transformer j include/* src/* src/*/* include/*/*
 
 .PHONY: all clean fclean re
+
+help:
+	@echo "Available Makefile rules:"
+	@echo "  all          : Build the webserv binary"
+	@echo "  clean        : Remove object files"
+	@echo "  fclean       : Remove object files and the webserv binary"
+	@echo "  re           : Rebuild the webserv binary (fclean + all)"
+	@echo "  cgi          : Build the CGI program"
+	@echo "  performance  : Build with optimization flags (-O3)"
+	@echo "  debug        : Build with debugging symbols (-g)"
+	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
+	@echo "  flamegraph   : Generate flamegraph profiling SVG"
+	@echo "  jmeter       : Download and run Apache JMeter"
+	@echo "  wordpress    : Download the latest WordPress"
+	@echo "  lines        : Count lines of code in source files"
+	@echo "  transformer  : Build the 'transformer' tool"
+	@echo "  tr           : Run 'transformer' tool to replace includes with local paths"
+	@echo "  tj           : Run 'transformer' tool to revert includes to original paths"
