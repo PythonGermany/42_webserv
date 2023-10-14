@@ -20,6 +20,8 @@ Http::~Http() {
 }
 
 void Http::OnHeadRecv(std::string msg) {
+  // trimStart(msg, "\r\n"); // TODO: Check if this makes sense
+  // if (msg.empty()) return;
   _request = Request();
 
   // Parse request
