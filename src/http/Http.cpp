@@ -106,7 +106,6 @@ void Http::OnCgiRecv(std::string msg) {
     else if (name == "x-powered-by")
       continue;  // TODO: server_tokens ?
     else if (name == "status") {
-      accessLog_g.write("OnCgiRecv(): line: " + line, DEBUG);
       std::istringstream ss(line);
       std::string status;
       std::getline(ss, status, ' ');
@@ -115,8 +114,12 @@ void Http::OnCgiRecv(std::string msg) {
       _response.setReason(status);
     } else if (name == "location")
       _response.setHeader(name, line);
-    else
-      accessLog_g.write(
+    else if (name == "expires") {
+      _response.setHeader(name, line);
+    } else if (name == "cache-control") {
+      _response.setHeader(name, line);
+    } else
+      errorLog_g.write(
           "cgi header header field not supported: " + name + "=" + line, DEBUG);
   }
 
@@ -314,6 +317,8 @@ void Http::processCgi(std::string const &uri, File const &file,
                       DEBUG);
   }
 
+  env.push_back("SERVER_ADDR=" + host.str());
+
   runCGI(cgiPathname, std::vector<std::string>(), env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response.clear();
@@ -378,7 +383,7 @@ void Http::processPutData(const std::string &data) {
 }
 
 void Http::processPostData(std::string &data) {
-  cgiSend(percentDecode(data));
+  cgiSend(data);
   _currBodySize += data.size();
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
     if (data.size() == 0) {
