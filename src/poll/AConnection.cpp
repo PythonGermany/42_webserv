@@ -124,8 +124,7 @@ void AConnection::onPipeOutPollOut(struct pollfd &pollfd) {
 
 void AConnection::cgiSend(std::string const &src) {
   if (pipeOut == -1) {
-    errorLog_g.write("WARNING: cgiSend() was called without an active pipe",
-                     WARNING);
+    errorLog_g.write("cgiSend() was called without an active pipe", ERROR);
     return;
   }
   if (_cgiWriteBuffer.empty()) {
@@ -202,10 +201,9 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     pid_t tmp = _cgiPid;
     _cgiPid = -1;
     accessLog_g.write("reaped CGI process (pipe closed): " + toString<int>(tmp),
-                      DEBUG, BLUE);
+                      DEBUG);
     if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
-      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, DEBUG,
-                       BRIGHT_RED);
+      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, ERROR);
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
       OnCgiError();

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
-    errorLog_g.write(e.what(), ERROR, BRIGHT_RED);
+    errorLog_g.write(e.what(), ERROR);
     printHelp(PRINT);
     return 1;
   }

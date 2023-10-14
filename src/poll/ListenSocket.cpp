@@ -59,7 +59,7 @@ void ListenSocket::create(Address const &addr, int backlog) {
   accessLog_g.write("Listen: " + toString<Address const &>(addr), DEBUG);
   Poll::add(newInstance, pollfd);
 }
-#include <iostream>
+
 void ListenSocket::onPollEvent(struct pollfd &pollfd,
                                CallbackPointer *newCallbackObject,
                                struct pollfd *newPollfd) {
@@ -97,7 +97,7 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd,
   } catch (std::bad_alloc const &e) {
     close(newPollfd->fd);
     newPollfd->fd = -1;
-    std::cerr << "Failed to accept client: ENOMEM"
-              << '\n';  // TODO: implement counter
+    errorLog_g.write("Failed to accept client: ENOMEM", DEBUG,
+                     BRIGHT_RED);  // TODO: implement counter
   }
 }

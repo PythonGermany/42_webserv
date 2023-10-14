@@ -552,8 +552,7 @@ std::string Http::getDefaultBody(std::string code, std::string reason) const {
 
 void Http::sendResponse() {
   if (_response.isReady() == false) {
-    accessLog_g.write("WARNING: Trying to send response before it is ready",
-                      WARNING, BRIGHT_YELLOW);
+    accessLog_g.write("Trying to send response before it is ready", WARNING);
     return;
   }
 
