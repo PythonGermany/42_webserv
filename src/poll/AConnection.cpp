@@ -34,9 +34,10 @@ AConnection::~AConnection() {
     if (kill(_cgiPid, SIGKILL) == -1)
       errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
     waitpid(_cgiPid, &status, 0);
-    accessLog_g.write(
-        "reaped CGI process (destructor): " + toString<int>(_cgiPid), DEBUG,
-        BLUE);
+    accessLog_g.write("reaped CGI process: " + toString<int>(_cgiPid) +
+                          " exit status: " + toString<int>(status) +
+                          " reason: object destructed",
+                      DEBUG, BLUE);
   }
 }
 
@@ -200,8 +201,10 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     waitpid(_cgiPid, &status, 0);  // TODO: error checking?
     pid_t tmp = _cgiPid;
     _cgiPid = -1;
-    accessLog_g.write("reaped CGI process (pipe closed): " + toString<int>(tmp),
-                      DEBUG);
+    accessLog_g.write("reaped CGI process: " + toString<int>(tmp) +
+                          " exit status: " + toString<int>(status) +
+                          " reason: process closed stdout",
+                      DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
       errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, ERROR);
       _cgiReadBuffer.clear();
@@ -221,7 +224,9 @@ void AConnection::KillCgi() {
   waitpid(_cgiPid, &status, 0);
   pid_t tmp = _cgiPid;
   _cgiPid = -1;
-  accessLog_g.write("reaped CGI process (after kill): " + toString<int>(tmp),
+  accessLog_g.write("reaped CGI process: " + toString<int>(tmp) +
+                        " exit status: " + toString<int>(status) +
+                        " reason: process killed",
                     DEBUG, BLUE);
   _cgiReadBuffer.clear();
   _cgiWriteBuffer.clear();
