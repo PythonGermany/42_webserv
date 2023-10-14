@@ -20,6 +20,7 @@ Http::~Http() {
 }
 
 void Http::OnHeadRecv(std::string msg) {
+  accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
   // trimStart(msg, "\r\n"); // TODO: Check if this makes sense
   // if (msg.empty()) return;
   _request = Request();
@@ -49,6 +50,7 @@ void Http::OnHeadRecv(std::string msg) {
 }
 
 void Http::OnChunkSizeRecv(std::string msg) {
+  accessLog_g.write("HTTP chunk size: '" + msg + "'", VERBOSE);
   size_t end = msg.find(';');
   if (end == std::string::npos) end = msg.size() - readDelimiter.size();
 
@@ -65,6 +67,7 @@ void Http::OnChunkSizeRecv(std::string msg) {
 }
 
 void Http::OnBodyRecv(std::string msg) {
+  accessLog_g.write("HTTP body: '" + msg + "'", VERBOSE);
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
     if (!endsWith(msg, "\r\n")) return processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
@@ -77,11 +80,10 @@ void Http::OnBodyRecv(std::string msg) {
 }
 
 void Http::OnCgiRecv(std::string msg) {
+  accessLog_g.write("CGI out: \"" + msg + "\"", VERBOSE);
   _response.init("HTTP/1.1", "200", "OK");
   int bodySize = msg.size();
   _response.setBody(new std::istringstream(msg));
-
-  accessLog_g.write("CGI output: \"" + msg + "\"", VERBOSE);
 
   std::string line;
   while (std::getline(*_response.getBody(), line)) {
