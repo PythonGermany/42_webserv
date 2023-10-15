@@ -2,7 +2,8 @@
 
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
-  this->readDelimiter = "\r\n\r\n";
+  this->_readState = STATUS;
+  this->readDelimiter = "\r\n";
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -19,14 +20,34 @@ Http::~Http() {
       DEBUG);
 }
 
-void Http::OnHeadRecv(std::string msg) {
-  accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
-  // trimStart(msg, "\r\n"); // TODO: Check if this makes sense
-  // if (msg.empty()) return;
+void Http::OnStatusRecv(std::string msg) {
+  accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
+
+  if (startsWith(msg, "\r\n")) return;
   _request = Request();
 
+  // TODO: Implement uri dot resolving somewhere here or maybe in the uri
+  // class
+  // -> uri class prob better
+  if (_request.parseStatus(msg) || _request.getUri().decode() ||
+      _request.getUri().pathOutOfBound())
+    processError("400", "Bad Request");
+  else if (isHttpVersionValid(_request.getVersion()) == false) {
+    processError("505", "HTTP Version Not Supported");
+    _response.setHeader("Upgrade", "HTTP/" HTTP_VERSION);
+    _response.setHeader("Connection", "Upgrade");
+  }
+  if (_response.isReady()) return sendResponse();
+  _readState = HEAD;
+  readDelimiter = "\r\n\r\n";
+}
+
+void Http::OnHeadRecv(std::string msg) {
+  accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
+
   // Parse request
-  _request.parseHead(msg);
+  if (_request.parseHeaderFields(msg))
+    return processError("400", "Bad Request");
   _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
@@ -41,11 +62,12 @@ void Http::OnHeadRecv(std::string msg) {
       requestHost += ":" + _request.getUri().getPort();
   }
 
-  // Find virtual host
-  _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
+  if (_request.getHeader("Host").size() > 0) {
+    _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
+    processRequest();
+  } else
+    processError("400", "Bad Request");
 
-  // Process request
-  processRequest();
   if (_response.isReady()) sendResponse();
 }
 
@@ -64,6 +86,7 @@ void Http::OnChunkSizeRecv(std::string msg) {
 
   bodySize += 2;
   _readState = BODY;
+  readDelimiter = "";
 }
 
 void Http::OnBodyRecv(std::string msg) {
@@ -139,15 +162,6 @@ void Http::processRequest() {
     accessLog_g.write("VirtualHost: " + _virtualHost->getContext().getDirective(
                                             "server_name", true)[0][0],
                       DEBUG);
-
-  // TODO: Implement uri dot resolving somewhere here or maybe in the uri class
-  // -> uri class prob better
-  if (_request.getUri().decode() || !_request.isValid())
-    return processError("400", "Bad Request");
-
-  if (_request.getVersion() !=
-      HTTP_VERSION)  // TODO: Implement version comparison according to rfc
-    return processError("505", "HTTP Version Not Supported");
 
   if (!isMehodImplemented(_request.getMethod()))
     return processError("501", "Not Implemented");
@@ -265,7 +279,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   //   toggle++;
 
   std::string pathname = file.getPath();
-  if (pathname.empty() || pathname[0] != '/') try {
+  if (!startsWith(pathname, "/")) try {
       std::string cwd(getcwd());
 
       cwd.push_back('/');
@@ -276,6 +290,7 @@ void Http::processCgi(std::string const &uri, File const &file,
       return processError("500", "Internal Server Error");
     }
   std::vector<std::string> env;
+
   // const values:
   env.push_back("GATEWAY_INTERFACE=CGI/1.1");
   env.push_back("SERVER_SOFTWARE=" WEBSERV_ID);
@@ -283,9 +298,7 @@ void Http::processCgi(std::string const &uri, File const &file,
 
   // request specific values:
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
-  env.push_back("PATH_INFO=" +
-                file.getDir());  // TODO: Check if correct, it should be the
-                                 // absolute path now
+  env.push_back("PATH_TRANSLATED=" + File(pathname).getDir());
   // env.push_back("SERVER_NAME=" + _request.getHeader("host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("REMOTE_ADDR=" + client.str());
@@ -293,9 +306,8 @@ void Http::processCgi(std::string const &uri, File const &file,
   env.push_back("SCRIPT_FILENAME=" + pathname);
   env.push_back("DOCUMENT_ROOT=" + _context->getDirective("root", true)[0][0]);
   std::string servername;
-  if (_virtualHost->getContext().exists("server_name", true))
-    servername =
-        _virtualHost->getContext().getDirective("server_name", true)[0][0];
+  if (_context->exists("server_name", true))
+    servername = _context->getDirective("server_name", true)[0][0];
   env.push_back("SERVER_NAME=" + servername);
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
 
@@ -316,10 +328,11 @@ void Http::processCgi(std::string const &uri, File const &file,
     accessLog_g.write("CONTENT_TYPE=" + _request.getHeader("Content-type"),
                       DEBUG);
   }
-
   env.push_back("SERVER_ADDR=" + host.str());
 
-  runCGI(cgiPathname, std::vector<std::string>(), env);
+  std::vector<std::string> arg;
+  arg.push_back(pathname);
+  runCGI(cgiPathname, arg, env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response.clear();
 }
@@ -348,6 +361,7 @@ void Http::processBodyRequest() {
 
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   _readState = BODY;
+  readDelimiter = "";
 
   if (_request.getMethod() == "POST")
     return processFile(_uri);
@@ -499,7 +513,7 @@ void Http::processError(std::string code, std::string reason, bool close) {
         _response.setBody(new std::ifstream(path.c_str()));
         size_t bodySize = file.size();
         if (_response.getBody()->good() == false || bodySize == -1ul)
-          return processError("505", "Internal Server Error");
+          return processError("500", "Internal Server Error");
         _response.setHeader("Content-Length", toString(bodySize));
 
         // Set mime type
@@ -574,8 +588,8 @@ void Http::sendResponse() {
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
 
   // Check if connection should be kept alive
-  if (_request.getHeader("Connection") == "keep-alive" ||
-      _response.getHeader("Connection") != "close")
+  if (_request.getHeader("Connection") != "close" &&
+      _response.getHeader("Connection") == "")
     _response.setHeader("Connection", "keep-alive");
 
   // Send response
@@ -583,8 +597,8 @@ void Http::sendResponse() {
   if (_request.getMethod() != "HEAD") send(_response.resetBody());
 
   // Reset class variables
-  readDelimiter = "\r\n\r\n";
-  _readState = HEAD;
+  _readState = STATUS;
+  readDelimiter = "\r\n";
 
   // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
@@ -620,7 +634,24 @@ bool Http::isMehodImplemented(std::string method) const {
   return false;
 }
 
-bool Http::isMethodValid() {
+bool Http::isHttpVersionValid(std::string version) const {
+  if (startsWith(version, "HTTP/"))
+    version.erase(0, std::string("HTTP/").size());
+  std::vector<std::string> in = split(version, ".");
+  if (in.size() < 1 || in.size() > 2) return false;
+
+  std::vector<std::string> reqired = split(HTTP_VERSION, ".");
+  if (reqired.size() < 1 || reqired.size() > 2 || in.size() != reqired.size())
+    return false;
+
+  for (size_t i = 0; i < in.size(); i++)
+    if (fromString<size_t>(trimStart(in[i], "0")) !=
+        fromString<size_t>(trimStart(reqired[i], "0")))
+      return false;
+  return true;
+}
+
+bool Http::isMethodValid() const {
   std::vector<std::string> allowedMethods = getAllowedMethods();
   for (size_t i = 0; i < allowedMethods.size(); i++)
     if (allowedMethods[i] == _request.getMethod()) return true;

@@ -16,8 +16,6 @@ class Request {
   std::string _version;
   std::map<std::string, std::string> _headers;
 
-  bool _error;
-
  public:
   Request();
   Request(const Request &rhs);
@@ -33,9 +31,8 @@ class Request {
 
   void deleteHeaderField(std::string key, std::string value);
 
-  void parseHead(std::string msg);
-  void parseHeaderFields(std::string fields);
-  bool isValid() const;
+  int parseStatus(std::string line);
+  int parseHeaderFields(std::string fields);
 };
 
 #endif

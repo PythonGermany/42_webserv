@@ -13,7 +13,7 @@
 #include "webserv.hpp"
 
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
-#define HTTP_VERSION "HTTP/1.1"
+#define HTTP_VERSION "1.1"
 #define HTTP_METHOD_COUNT 6
 #define HTTP_METHODS \
   { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
@@ -41,6 +41,7 @@ class Http : public AConnection {
   Http(Address const& client, Address const& host);
   ~Http();
 
+  void OnStatusRecv(std::string msg);
   void OnHeadRecv(std::string msg);
   void OnChunkSizeRecv(std::string msg);
   void OnBodyRecv(std::string msg);
@@ -70,7 +71,8 @@ class Http : public AConnection {
 
   std::string getAbsoluteUri(std::string uri) const;
   bool isMehodImplemented(std::string method) const;
-  bool isMethodValid();
+  bool isHttpVersionValid(std::string version) const;
+  bool isMethodValid() const;
   bool isBodySizeValid(size_t size) const;
   bool isCgiExtension(std::string extension) const;
   std::vector<std::string> getAllowedMethods(bool forUri = true) const;

@@ -28,7 +28,7 @@ class AConnection : public IFileDescriptor {
   Address client;
   Address host;
 
-  typedef enum state_e { HEAD, BODY, CHUNK_SIZE } state_t;
+  typedef enum state_e { STATUS, HEAD, BODY, CHUNK_SIZE } state_t;
   state_t _readState;
 
   std::string::size_type headSizeLimit;
@@ -36,6 +36,7 @@ class AConnection : public IFileDescriptor {
   std::string readDelimiter;
   size_t _writeBufferPos;
 
+  virtual void OnStatusRecv(std::string msg) = 0;
   virtual void OnHeadRecv(std::string msg) = 0;
   virtual void OnChunkSizeRecv(std::string msg) = 0;
   virtual void OnBodyRecv(std::string msg) = 0;

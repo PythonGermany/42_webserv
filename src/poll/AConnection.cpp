@@ -13,11 +13,11 @@ AConnection::AConnection(Address const &serverAddress,
                          Address const &remoteAddress) {
   host = serverAddress;
   client = remoteAddress;
-  _readState = HEAD;
+  _readState = STATUS;
+  readDelimiter = "\r\n";
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
   _writeBufferPos = std::string::npos;
-  readDelimiter = "\r\n\r\n";
   pipeIn = -1;
   pipeOut = -1;
   _cgiPid = -1;
@@ -206,7 +206,8 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
                           " reason: process closed stdout",
                       DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
-      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, ERROR);
+      errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, VERBOSE,
+                       RED);
       _cgiReadBuffer.clear();
       _cgiWriteBuffer.clear();
       OnCgiError();
@@ -279,7 +280,8 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   }
   _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
-  if (_readState == HEAD && _readBuffer.size() > headSizeLimit) {
+  if ((_readState == STATUS || _readState == HEAD) &&
+      _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;
   }
@@ -291,8 +293,15 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
 void AConnection::passReadBuffer(struct pollfd &pollfd) {
   std::string::size_type pos;
 
-  while (pollfd.events & POLLIN) {
-    if (_readState == HEAD) {
+  while (pollfd.events & POLLIN) {  // TODO python: Maybe implement automatic
+                                    // readDelimiter selection based on state
+
+    if (_readState == STATUS) {  // TODO python: Change to switch maybe
+      pos = _readBuffer.find(readDelimiter);
+      if (pos == std::string::npos) break;
+      pos += readDelimiter.size();
+      OnStatusRecv(_readBuffer.substr(0, pos));
+    } else if (_readState == HEAD) {
       pos = _readBuffer.find(readDelimiter);
       if (pos == std::string::npos) break;
       pos += readDelimiter.size();

@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request() { _error = false; }
+Request::Request() {}
 
 Request::Request(const Request &rhs) { *this = rhs; }
 
@@ -10,7 +10,6 @@ Request &Request::operator=(const Request &rhs) {
   _uri = rhs._uri;
   _version = rhs._version;
   _headers = rhs._headers;
-  _error = rhs._error;
   return *this;
 }
 
@@ -50,51 +49,32 @@ void Request::deleteHeaderField(std::string key, std::string value) {
   if (field.empty()) _headers.erase(it);
 }
 
-void Request::parseHead(std::string msg) {
-  // Find head delimiter
-  size_t pos = msg.find("\r\n");
-  if (pos == std::string::npos) {
-    _error = true;
-    return;
-  }
+int Request::parseStatus(std::string line) {
+  if (!endsWith(line, "\r\n")) return 1;
 
-  // Parse request line
-  std::string requestLine = msg.substr(0, pos);
-  std::vector<std::string> requestLineTokens = split(requestLine, " ");
-  if (requestLineTokens.size() != 3) {
-    _error = true;
-    return;
-  }
+  line.erase(line.size() - 2, 2);
+  std::vector<std::string> requestLineTokens = split(line, " ");
+  if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
-
-  // Parse header fields
-  parseHeaderFields(msg.substr(pos + 2));
+  if (!startsWith(_version, "HTTP/")) return 1;
+  return 0;
 }
 
-void Request::parseHeaderFields(std::string fields) {
+int Request::parseHeaderFields(std::string fields) {
   size_t end = fields.find("\r\n");
 
   while (end != std::string::npos) {
     std::string line = fields.substr(0, end);
     if (line.empty()) break;
     size_t colon = line.find(":");
-    if (colon == std::string::npos) {
-      _error = true;
-      return;
-    }
+    if (colon == std::string::npos) return 1;
     std::string key = line.substr(0, colon);
     std::string value = line.substr(colon + 1);
     setHeader(key, value);
     fields.erase(0, line.size() + 2);
     end = fields.find("\r\n");
   }
-}
-
-bool Request::isValid() const {
-  if (_error) return false;
-  if (_uri.pathOutOfBound() || !startsWith(_version, "HTTP/")) return false;
-  if (_headers.find("host") == _headers.end()) return false;
-  return true;
+  return 0;
 }
