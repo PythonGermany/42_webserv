@@ -95,10 +95,6 @@ void Request::parseHeaderFields(std::string fields) {
 bool Request::isValid() const {
   if (_error) return false;
   if (_uri.pathOutOfBound() || !startsWith(_version, "HTTP/")) return false;
-
-  // Host header is always required
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-9
   if (_headers.find("host") == _headers.end()) return false;
-
   return true;
 }

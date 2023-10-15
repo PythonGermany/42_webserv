@@ -47,6 +47,8 @@ class Uri {
   bool compare(const Uri &rhs) const;
 
   bool pathOutOfBound() const;
+  bool
+  resolveDots();  // TODO: Implement, should also check for path out of bounds
 };
 
 #endif

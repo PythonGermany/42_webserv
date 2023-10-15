@@ -73,7 +73,7 @@ bool Poll::poll() {
     throw std::runtime_error(std::string("Poll::poll(): ") +
                              std::strerror(errno));
 
-  if (ready == 0) std::cerr << "Poll: no revents" << std::endl;
+  if (ready == 0) errorLog_g.write("Poll: no revents", DEBUG, BRIGHT_RED);
   poll.timeout = -1;
   poll.iterate();
   return true;

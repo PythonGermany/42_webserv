@@ -11,6 +11,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
 - [ ] Figure out why resolving symlinks doesnt work
 - [ ] Implement cgi support
+- [ ] Fix issue of cases like /uploaded/../listing/index.php where restrictions of one context can be bypassed
 
 - [x] Fix file uploading
 - [x] Implement support for multilistendirective or change config

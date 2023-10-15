@@ -136,20 +136,19 @@ void Http::OnCgiError() {
 
 void Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  if (Log::getLevel() >= DEBUG &&
-      _virtualHost->getContext().exists("server_name", true))
+  if (_virtualHost->getContext().exists("server_name", true))
     accessLog_g.write("VirtualHost: " + _virtualHost->getContext().getDirective(
                                             "server_name", true)[0][0],
                       DEBUG);
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1
+  // TODO: Implement uri dot resolving somewhere here or maybe in the uri class
+  // -> uri class prob better
   if (_request.getUri().decode() || !_request.isValid())
     return processError("400", "Bad Request");
 
   if (_request.getVersion() != HTTP_VERSION)
     return processError("505", "HTTP Version Not Supported");
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.5.2
   if (!isMehodImplemented(_request.getMethod()))
     return processError("501", "Not Implemented");
 
@@ -161,14 +160,12 @@ void Http::processRequest() {
   if (Log::getLevel() >= DEBUG)
     accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.6
   if (!isMethodValid()) {
     processError("405", "Method Not Allowed");
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
     return;
   }
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.2
   if (_request.getMethod() == "OPTIONS") return processOptions();
 
   if (_context->exists("redirect"))
@@ -178,10 +175,8 @@ void Http::processRequest() {
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
   accessLog_g.write("Resource URI: '" + _uri + "'", DEBUG);
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.7
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-9.6
   if (_request.getMethod() == "PUT" || _request.getMethod() == "POST")
     return processBodyRequest();
 
