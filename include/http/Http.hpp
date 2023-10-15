@@ -62,8 +62,8 @@ class Http : public AConnection {
   void processCgi(std::string const& uri, File const& file,
                   std::string const& cgiPathname);
 
-  void addIndexToPath(File& file);
-  void checkResourceValidity(const File& file, std::string uri);
+  void addIndexToPath(File& file, std::string& uri);
+  void checkResourceValidity(const File& file, const std::string& uri);
   std::string getDefaultBody(std::string code, std::string reason) const;
 
   void sendResponse();

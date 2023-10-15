@@ -146,7 +146,8 @@ void Http::processRequest() {
   if (_request.getUri().decode() || !_request.isValid())
     return processError("400", "Bad Request");
 
-  if (_request.getVersion() != HTTP_VERSION)
+  if (_request.getVersion() !=
+      HTTP_VERSION)  // TODO: Implement version comparison according to rfc
     return processError("505", "HTTP Version Not Supported");
 
   if (!isMehodImplemented(_request.getMethod()))
@@ -209,7 +210,7 @@ static std::string getcwd() {
 void Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
-  addIndexToPath(file);
+  addIndexToPath(file, uri);
   checkResourceValidity(file, uri);
   if (_response.isReady()) return;
 
@@ -518,19 +519,19 @@ void Http::processError(std::string code, std::string reason, bool close) {
   _response.setReady();
 }
 
-void Http::addIndexToPath(File &file) {
-  if (getContextArgs() + "/" == _request.getUri().getPath() &&
-      _context->exists("index")) {
+void Http::addIndexToPath(File &file, std::string &uri) {
+  if (endsWith(uri, "/") && _context->exists("index", true)) {
     std::string path = file.getPath();
     std::vector<std::string> indexes = _context->getDirective("index", true)[0];
     for (size_t i = 0; i < indexes.size(); i++) {
       file = File(path + indexes[i]);
+      uri = file.getPath();
       if (file.exists() && file.file() && file.readable()) break;
     }
   }
 }
 
-void Http::checkResourceValidity(const File &file, std::string uri) {
+void Http::checkResourceValidity(const File &file, const std::string &uri) {
   if (!file.exists()) {
     if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
       return processRedirect(uri + "/");
