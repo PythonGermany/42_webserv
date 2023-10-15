@@ -135,14 +135,6 @@ void Http::OnCgiRecv(std::string msg) {
       _response.setReason(status);
     } else
       _response.setHeader(name, line);
-    // else if (name == "expires") { // TODO: remove if not needed anymore
-    //   _response.setHeader(name, line);
-    // } else if (name == "cache-control") {
-    //   _response.setHeader(name, line);
-    // } else
-    //   errorLog_g.write(
-    //       "cgi header header field not supported: " + name + "=" + line,
-    //       DEBUG);
   }
 
   if (_response.getBody()->good() == false) return OnCgiError();
@@ -174,7 +166,7 @@ void Http::processRequest() {
   if (Log::getLevel() >= DEBUG)
     accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
-  if (!isMethodValid()) {
+  if (isMethodValid() == false) {
     processError("405", "Method Not Allowed");
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
     return;
@@ -227,12 +219,16 @@ void Http::processFile(std::string uri) {
   checkResourceValidity(file, uri);
   if (_response.isReady()) return;
 
-  std::vector<std::vector<std::string> > &cgis = _context->getDirective("cgi");
-  if (cgis.size() != 0 && cgis[0][0] == file.getExtension()) {
-    return processCgi(uri, file, cgis[0][1]);
-  } else if (_request.getMethod() == "POST")
-    return processError("500",
-                        "Internal Server Error");  // TODO: Correct error code?
+  std::string cgiPath = getCgiPath(file.getExtension());
+  if (cgiPath.size() > 0)
+    return processCgi(uri, file, cgiPath);
+  else if (_request.getMethod() == "POST") {
+    processError("405", "Method Not Allowed");
+    std::vector<std::string> allowed = getAllowedMethods();
+    allowed.erase(std::find(allowed.begin(), allowed.end(), "POST"));
+    _response.setHeader("Allow", concatenate(allowed, ", "));
+    return;
+  }
 
   // Load the file
   _response.init("HTTP/1.1", "200", "OK");
@@ -253,31 +249,6 @@ void Http::processFile(std::string uri) {
 void Http::processCgi(std::string const &uri, File const &file,
                       std::string const &cgiPathname) {
   (void)uri;
-
-  // static int toggle = 0;
-  // if (toggle == 1) {
-  //   cgiSend("this is a test Body\n");
-  //   // cgiCloseSendPipe();
-  //   toggle++;
-  //   _response = Response();
-  //   _responseReady = false;
-  //   return _response;
-  // } else if (toggle == 2) {
-  //   cgiSend("this is the second part\n");
-  //   toggle++;
-  //   _response = Response();
-  //   _responseReady = false;
-  //   return _response;
-  // } else if (toggle == 3) {
-  //   cgiSend("this is the third part\n");
-  //   cgiCloseSendPipe();
-  //   toggle = 0;
-  //   _response = Response();
-  //   _responseReady = false;
-  //   return _response;
-  // } else
-  //   toggle++;
-
   std::string pathname = file.getPath();
   if (!startsWith(pathname, "/")) try {
       std::string cwd(getcwd());
@@ -313,14 +284,13 @@ void Http::processCgi(std::string const &uri, File const &file,
 
   env.push_back("REDIRECT_STATUS=200");  // TODO: ?
 
-  env.push_back(
-      "HTTP_HOST=" +
-      _request.getHeader("Host"));  // TODO: is it empty if not defined? -> The
-                                    // return of getHeader: yes
+  env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
   env.push_back("HTTP_COOKIE=" + _request.getHeader("Cookie"));
 
   if (_request.getMethod() == "POST") {
-    env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
+    env.push_back("CONTENT_LENGTH=" +
+                  _request.getHeader(
+                      "Content-length"));  // TODO: What if request is chunked?
     accessLog_g.write("CONTENT_LENGTH=" + _request.getHeader("Content-length"),
                       DEBUG);
 
@@ -666,13 +636,13 @@ bool Http::isBodySizeValid(size_t size) const {
   return size <= maxBodySize;
 }
 
-bool Http::isCgiExtension(std::string extension) const {
-  if (!_context->exists("cgi", true)) return false;
+std::string Http::getCgiPath(std::string extension) const {
+  if (!_context->exists("cgi", true)) return "";
   std::vector<std::vector<std::string> > &cgis =
       _context->getDirective("cgi", true);
   for (size_t i = 0; i < cgis.size(); i++)
-    if (cgis[i][0] == extension) return true;
-  return false;
+    if (cgis[i][0] == extension) return cgis[i][1];
+  return "";
 }
 
 std::vector<std::string> Http::getAllowedMethods(bool forUri) const {

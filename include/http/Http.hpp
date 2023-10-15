@@ -74,7 +74,7 @@ class Http : public AConnection {
   bool isHttpVersionValid(std::string version) const;
   bool isMethodValid() const;
   bool isBodySizeValid(size_t size) const;
-  bool isCgiExtension(std::string extension) const;
+  std::string getCgiPath(std::string extension) const;
   std::vector<std::string> getAllowedMethods(bool forUri = true) const;
   std::string getContextPath(std::string token, bool searchTree = false) const;
   std::string getContextArgs() const;
