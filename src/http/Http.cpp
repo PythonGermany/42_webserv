@@ -294,7 +294,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   env.push_back("REMOTE_ADDR=" + client.str());
   env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
   env.push_back("SCRIPT_FILENAME=" + pathname);
-  env.push_back("DOCUMENT_ROOT=" + _context->getDirective("root")[0][0]);
+  env.push_back("DOCUMENT_ROOT=" + _context->getDirective("root", true)[0][0]);
   std::string servername;
   if (_virtualHost->getContext().exists("server_name", true))
     servername =

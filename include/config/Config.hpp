@@ -42,7 +42,7 @@ std::string isCgi(std::string const &value, size_t index);
  * Allowed token input structure in the format: {name, parent, isContext,
  * minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
  */
-const token_t tokens[29] = {
+const token_t tokens[30] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
@@ -74,7 +74,8 @@ const token_t tokens[29] = {
     {"allow", "location", false, 0, -1, 1, -1, isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
-    {"max_client_body_size", "location", false, 0, 1, 1, 1, isMemorySize}};
+    {"max_client_body_size", "location", false, 0, 1, 1, 1, isMemorySize},
+    {"cgi", "location", false, 0, -1, 2, 2, isCgi}};
 
 class Config {
  private:

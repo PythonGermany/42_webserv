@@ -160,10 +160,11 @@ location PATH {
     autoindex [on|off];
     redirect URL;
     max_client_body_size SIZE;
+    cgi EXTENSTION PATH;
 }
 ```
 Location context for `PATH`. It contains the configuration of a location.  
-**Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
+**Allowed tokens:** [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [index](#index) / [max_client_body_size](#max_client_body_size) / [redirect](#redirect) / [root](#root) 
 
 ## Directives
 
@@ -203,7 +204,7 @@ Default: `off`
 cgi EXTENSTION PATH;
 ```
 Sets the cgi EXECUTABLE to path for EXTENSION.    
-**Allowed in:** [Server](#server)
+**Allowed in:** [Location](#location) / [Server](#server)
 
 ### error_log
 ```nginx
