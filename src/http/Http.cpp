@@ -101,9 +101,7 @@ void Http::OnCgiRecv(std::string msg) {
     }
     for (std::string::iterator it = name.begin(); it != name.end(); ++it)
       *it = std::tolower(*it);
-    if (name == "content-type")
-      _response.setHeader("Content-Type", line);
-    else if (name == "x-powered-by")
+    if (name == "x-powered-by")
       continue;  // TODO: server_tokens ?
     else if (name == "status") {
       std::istringstream ss(line);
@@ -112,15 +110,16 @@ void Http::OnCgiRecv(std::string msg) {
       _response.setStatus(status);
       std::getline(ss, status);
       _response.setReason(status);
-    } else if (name == "location")
-      _response.setHeader(name, line);
-    else if (name == "expires") {
-      _response.setHeader(name, line);
-    } else if (name == "cache-control") {
-      _response.setHeader(name, line);
     } else
-      errorLog_g.write(
-          "cgi header header field not supported: " + name + "=" + line, DEBUG);
+      _response.setHeader(name, line);
+    // else if (name == "expires") { // TODO: remove if not needed anymore
+    //   _response.setHeader(name, line);
+    // } else if (name == "cache-control") {
+    //   _response.setHeader(name, line);
+    // } else
+    //   errorLog_g.write(
+    //       "cgi header header field not supported: " + name + "=" + line,
+    //       DEBUG);
   }
 
   if (_response.getBody()->good() == false) return OnCgiError();
@@ -284,7 +283,9 @@ void Http::processCgi(std::string const &uri, File const &file,
 
   // request specific values:
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
-  env.push_back("PATH_INFO=" + _request.getUri().getQuery());
+  env.push_back("PATH_INFO=" +
+                file.getDir());  // TODO: Check if correct, it should be the
+                                 // absolute path now
   // env.push_back("SERVER_NAME=" + _request.getHeader("host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("REMOTE_ADDR=" + client.str());
@@ -304,6 +305,8 @@ void Http::processCgi(std::string const &uri, File const &file,
       "HTTP_HOST=" +
       _request.getHeader("Host"));  // TODO: is it empty if not defined? -> The
                                     // return of getHeader: yes
+  env.push_back("HTTP_COOKIE=" + _request.getHeader("Cookie"));
+
   if (_request.getMethod() == "POST") {
     env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
     accessLog_g.write("CONTENT_LENGTH=" + _request.getHeader("Content-length"),
