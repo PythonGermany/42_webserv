@@ -249,17 +249,21 @@ void Http::processFile(std::string uri) {
 void Http::processCgi(std::string const &uri, File const &file,
                       std::string const &cgiPathname) {
   (void)uri;
+  std::string root = _context->getDirective("root", true)[0][0];
   std::string pathname = file.getPath();
-  if (!startsWith(pathname, "/")) try {
-      std::string cwd(getcwd());
+  std::string cwd;
+  try {
+    cwd = getcwd();
+    cwd.push_back('/');
+  } catch (const std::exception &e) {
+    errorLog_g.write(std::string("ERROR: getcwd(): ") + e.what(), DEBUG,
+                     YELLOW);
+    return processError("500", "Internal Server Error");
+  }
 
-      cwd.push_back('/');
-      pathname.insert(0, cwd);
-    } catch (std::runtime_error const &e) {
-      errorLog_g.write(std::string("ERROR: getcwd(): ") + e.what(), DEBUG,
-                       YELLOW);
-      return processError("500", "Internal Server Error");
-    }
+  if (!startsWith(pathname, "/")) pathname.insert(0, cwd);
+  // TODO: Test
+  if (!startsWith(root, "/")) root.insert(0, cwd);
   std::vector<std::string> env;
 
   // const values:
@@ -268,24 +272,30 @@ void Http::processCgi(std::string const &uri, File const &file,
   env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 
   // request specific values:
+  env.push_back("DOCUMENT_ROOT=" + root);
+  env.push_back("SCRIPT_FILENAME=" + pathname);
+  env.push_back("REQUEST_URI=" +
+                _request.getUri().getPath());  // TODO: that was the problem
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
-  env.push_back("PATH_TRANSLATED=" + File(pathname).getDir());
-  // env.push_back("SERVER_NAME=" + _request.getHeader("host"));
+
+  // env.push_back("PATH_TRANSLATED=" + File(pathname).getDir());
+  //  env.push_back("SERVER_NAME=" + _request.getHeader("host")); // TODO: still
+  //  needed?
+  env.push_back("REDIRECT_STATUS=200");  // TODO: ?
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
+  env.push_back("HTTP_USER_AGENT=" + _request.getHeader("User-Agent"));
+
   env.push_back("REMOTE_ADDR=" + client.str());
   env.push_back("REMOTE_PORT=" + toString<in_port_t>(client.port()));
-  env.push_back("SCRIPT_FILENAME=" + pathname);
-  env.push_back("DOCUMENT_ROOT=" + _context->getDirective("root", true)[0][0]);
   std::string servername;
   if (_context->exists("server_name", true))
     servername = _context->getDirective("server_name", true)[0][0];
   env.push_back("SERVER_NAME=" + servername);
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
 
-  env.push_back("REDIRECT_STATUS=200");  // TODO: ?
-
   env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
   env.push_back("HTTP_COOKIE=" + _request.getHeader("Cookie"));
+  env.push_back("HTTPS=off");
 
   if (_request.getMethod() == "POST") {
     env.push_back("CONTENT_LENGTH=" +

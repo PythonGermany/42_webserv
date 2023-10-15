@@ -374,20 +374,31 @@ void AConnection::runCGI(std::string const &program,
     Poll::cleanUp();
     close(pipeInArray[0]);
     close(pipeOutArray[1]);
-    if (dup2(pipeInArray[1], STDOUT_FILENO) == -1) {
+    // if (dup2(pipeInArray[1], STDOUT_FILENO) == -1) {
+    //   close(pipeInArray[1]);
+    //   close(pipeOutArray[0]);
+    //   errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
+    //   exit(EXIT_FAILURE);
+    // }
+    // if (dup2(pipeOutArray[0], STDIN_FILENO) == -1) {
+    //   close(pipeOutArray[0]);
+    //   close(pipeInArray[1]);
+    //   errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
+    //   exit(EXIT_FAILURE);
+    // }
+
+    // TODO pyhon: Is it wrong to do it this way compared to before?
+    if (chdir(File(arg[0]).getDir().c_str()) == -1 ||
+        dup2(pipeInArray[1], STDOUT_FILENO) == -1 ||
+        dup2(pipeOutArray[0], STDIN_FILENO) == -1) {
       close(pipeInArray[1]);
       close(pipeOutArray[0]);
-      errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
-      exit(EXIT_FAILURE);
-    }
-    if (dup2(pipeOutArray[0], STDIN_FILENO) == -1) {
-      close(pipeOutArray[0]);
-      close(pipeInArray[1]);
       errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
       exit(EXIT_FAILURE);
     }
     close(pipeInArray[1]);
     close(pipeOutArray[0]);
+
     std::vector<char *> c_arg;
     std::vector<char *> c_env;
     c_arg.push_back(const_cast<char *>(program.c_str()));
