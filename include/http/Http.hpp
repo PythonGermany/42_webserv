@@ -55,7 +55,7 @@ class Http : public AConnection {
   void processPutData(const std::string& data);
   void processPostData(std::string& data);
   void getPutResponse(std::string uri);
-  void processOptions();
+  void processOptions(std::string uri);
   void processDelete(std::string uri);
   void processAutoindex(std::string uri);
   void processRedirect(std::string uri);

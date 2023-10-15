@@ -172,7 +172,7 @@ void Http::processRequest() {
     return;
   }
 
-  if (_request.getMethod() == "OPTIONS") return processOptions();
+  if (_request.getMethod() == "OPTIONS") return processOptions(_uri);
 
   if (_context->exists("redirect"))
     return processRedirect(_context->getDirective("redirect")[0][0]);
@@ -395,10 +395,10 @@ void Http::getPutResponse(std::string uri) {
   _response.setReady();
 }
 
-void Http::processOptions() {
+void Http::processOptions(std::string uri) {
   _response.init("HTTP/1.1", "200", "OK");
   _response.setHeader("Allow",
-                      concatenate(getAllowedMethods(_uri != "/*"), ", "));
+                      concatenate(getAllowedMethods(uri != "/*"), ", "));
   _response.setReady();
 }
 
