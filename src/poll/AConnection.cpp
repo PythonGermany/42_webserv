@@ -296,25 +296,28 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
   while (pollfd.events & POLLIN) {  // TODO python: Maybe implement automatic
                                     // readDelimiter selection based on state
 
-    if (_readState == STATUS) {  // TODO python: Change to switch maybe
-      pos = _readBuffer.find(readDelimiter);
-      if (pos == std::string::npos) break;
-      pos += readDelimiter.size();
-      OnStatusRecv(_readBuffer.substr(0, pos));
-    } else if (_readState == HEAD) {
-      pos = _readBuffer.find(readDelimiter);
-      if (pos == std::string::npos) break;
-      pos += readDelimiter.size();
-      OnHeadRecv(_readBuffer.substr(0, pos));
-    } else if (_readState == CHUNK_SIZE) {
-      pos = _readBuffer.find(readDelimiter);
-      if (pos == std::string::npos) break;
-      pos += readDelimiter.size();
-      OnChunkSizeRecv(_readBuffer.substr(0, pos));
-    } else {
-      if (_readBuffer.size() < bodySize) break;
-      pos = bodySize;
-      OnBodyRecv(_readBuffer.substr(0, pos));
+    pos = _readBuffer.find(readDelimiter);
+    if (pos == std::string::npos) break;
+    pos += readDelimiter.size();
+
+    switch (_readState) {
+      case STATUS:
+        OnStatusRecv(_readBuffer.substr(0, pos));
+        break;
+      case HEAD:
+        OnHeadRecv(_readBuffer.substr(0, pos));
+        break;
+      case CHUNK_SIZE:
+        OnChunkSizeRecv(_readBuffer.substr(0, pos));
+        break;
+      case BODY:
+        if (_readBuffer.size() < bodySize) return;
+        pos = bodySize;
+        OnBodyRecv(_readBuffer.substr(0, pos));
+        break;
+
+      default:
+        break;
     }
     _readBuffer.erase(0, pos);
   }
