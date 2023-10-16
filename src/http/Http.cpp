@@ -279,7 +279,6 @@ void Http::processCgi(std::string const &uri, File const &file,
   env.push_back(
       "REQUEST_URI=" +
       _request.getUri().getPath());  // TODO: INFO: that was the problem
-  env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
   env.push_back("REDIRECT_STATUS=200");
@@ -305,6 +304,8 @@ void Http::processCgi(std::string const &uri, File const &file,
   // Optional stuff to increase functionality
   env.push_back("HTTP_COOKIE=" + _request.getHeader("Cookie"));
   env.push_back("HTTP_USER_AGENT=" + _request.getHeader("User-Agent"));
+
+  env.push_back("HTTP_REFERER=" + _request.getHeader("Referer"));
 
   // Not used atm
   // env.push_back("PATH_TRANSLATED=" + File(pathname).getDir());
