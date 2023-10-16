@@ -317,7 +317,9 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
         break;
 
       default:
-        break;
+        throw std::runtime_error(
+            "passReadBuffer(): Undefined read state");  // TODO: Is throwing an
+                                                        // exeption here ok?
     }
     _readBuffer.erase(0, pos);
   }

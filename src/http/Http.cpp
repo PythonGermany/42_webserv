@@ -53,7 +53,6 @@ void Http::OnHeadRecv(std::string msg) {
          toString<Address &>(host);
 
   // If possible use host of absolute uri otherwise use host of header
-  // https://datatracker.ietf.org/doc/html/rfc2616#section-5.2
   std::string requestHost = _request.getHeader("Host");
   if (_request.getUri().getHost().size() > 0) {
     requestHost = _request.getUri().getHost();
@@ -234,7 +233,7 @@ void Http::processFile(std::string uri) {
   _response.init("HTTP/1.1", "200", "OK");
   _response.setBody(new std::ifstream(file.getPath().c_str()));
   int bodySize = file.size();
-  if (_response.getBody()->good() == false || bodySize == -1)
+  if (_response.getBody()->good() == false || bodySize < 0)
     return processError("500", "Internal Server Error");
   _response.setHeader("Content-Length", toString(bodySize));
   _response.setHeader("Last-modified",
@@ -249,7 +248,8 @@ void Http::processFile(std::string uri) {
 void Http::processCgi(std::string const &uri, File const &file,
                       std::string const &cgiPathname) {
   (void)uri;
-  std::string root = _context->getDirective("root", true)[0][0];
+  // std::string root = _context->getDirective("root", true)[0][0]; // TODO:
+  // remove if not needed
   std::string pathname = file.getPath();
   std::string cwd;
   try {
@@ -262,8 +262,8 @@ void Http::processCgi(std::string const &uri, File const &file,
   }
 
   if (!startsWith(pathname, "/")) pathname.insert(0, cwd);
-  // TODO: Test
-  if (!startsWith(root, "/")) root.insert(0, cwd);
+  // if (!startsWith(root, "/"))
+  //  root.insert(0, cwd);  // TODO: remove if not needed
   std::vector<std::string> env;
 
   // const values:
@@ -274,11 +274,9 @@ void Http::processCgi(std::string const &uri, File const &file,
   // request specific values:
 
   // Required amongst others for wordpress to function
-  env.push_back("DOCUMENT_ROOT=" + root);
+  // env.push_back("DOCUMENT_ROOT=" + root); // TODO: needed?
   env.push_back("SCRIPT_FILENAME=" + pathname);
-  env.push_back(
-      "REQUEST_URI=" +
-      _request.getUri().getPath());  // TODO: INFO: that was the problem
+  env.push_back("REQUEST_URI=" + _request.getUri().getPath());
   env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
@@ -311,10 +309,11 @@ void Http::processCgi(std::string const &uri, File const &file,
   // env.push_back("SERVER_ADDR=" + host.str());
   // env.push_back("SCRIPT_NAME=" + cgiTESTPATH); // cgiTESTPATH being an
   // absolute path to the cgi executable TODO: Check if it needs to be
-  // implemented this way
+  // implemented this way instead of SCRIPT_FILENAME
 
   std::vector<std::string> arg;
-  arg.push_back(pathname);
+  arg.push_back(pathname);  // TODO: Check how to make input file selection work
+                            // this way without having to use env variables
   runCGI(cgiPathname, arg, env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response.clear();
@@ -487,15 +486,14 @@ void Http::processError(std::string code, std::string reason, bool close) {
 
     // Search for matching custom error page
     for (size_t i = 0; i < pages.size(); i++) {
-      std::string pageCode = pages[i][0];
-      if (pageCode != code) continue;
+      if (pages[i][0] != code) continue;
       std::string path =
           _context->getDirective("root", true)[0][0] + pages[i][1];
       File file(path);
       if (file.exists() && file.file() && file.readable()) {
         _response.setBody(new std::ifstream(path.c_str()));
         size_t bodySize = file.size();
-        if (_response.getBody()->good() == false || bodySize == -1ul)
+        if (_response.getBody()->good() == false || bodySize < 0)
           return processError("500", "Internal Server Error");
         _response.setHeader("Content-Length", toString(bodySize));
 

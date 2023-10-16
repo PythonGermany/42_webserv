@@ -61,7 +61,8 @@ class File {
   bool writable() const;
   // Returns the size of the file
   // @exception No custom exceptions
-  size_t size() const;
+  // @return Negative on failure
+  long int size() const;
   // Returns the last time the file was modified
   // @exception No custom exceptions
   time_t getLastModified() const;
