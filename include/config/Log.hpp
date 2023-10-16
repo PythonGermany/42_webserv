@@ -50,8 +50,10 @@ class Log {
   bool _error;  // True if an error occured while writing to the log file
 
  public:
-  Log(std::string path);
+  Log();
   ~Log();
+
+  void init(std::string path);
 
   // Setters
   static void setLogToStdout(bool log, bool overwrite = false);

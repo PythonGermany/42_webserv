@@ -5,13 +5,17 @@ log_level_t Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
 std::string Log::_dateFormat = LOG_DATE_FORMAT;
 
-Log::Log(std::string path) {
-  File(path).createDirPath();
-  _path = path;
-  _file.open(path.c_str(), std::ios_base::app);
-}
+Log::Log() {}
 
 Log::~Log() {}
+
+void Log::init(std::string path) {
+  File(path).createDirPath();
+  _path = path;
+
+  if (_file.is_open()) _file.close();
+  _file.open(path.c_str(), std::ios_base::app);
+}
 
 void Log::setLogToStdout(bool log, bool overwrite) {
   static bool initialized = false;
@@ -49,8 +53,7 @@ void Log::write(std::string msg, log_level_t level, std::string color) {
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
   if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL) {
     if (color == RESET) color = getLevelColor(level);
-    std::cout << timeStamp << color << msg << RESET
-              << std::endl;
+    std::cout << timeStamp << color << msg << RESET << std::endl;
   }
   if (!_initialized) return;
   _file << timeStamp << msg << std::endl;

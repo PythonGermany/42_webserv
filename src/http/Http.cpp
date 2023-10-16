@@ -188,29 +188,6 @@ void Http::processRequest() {
   return processFile(_uri);
 }
 
-static std::string getcwd() {
-  size_t const sizeToExtend = 1024;
-  size_t size = 0;
-  char *local_buffer;
-
-  while (true) {
-    size += sizeToExtend;
-    local_buffer = new char[size];
-    if (getcwd(local_buffer, size) != NULL) {
-      try {
-        std::string cwd(local_buffer);
-        delete[] local_buffer;
-        return cwd;
-      } catch (std::bad_alloc const &) {
-        delete[] local_buffer;
-        throw;
-      }
-    }
-    delete[] local_buffer;
-    if (errno != ERANGE) throw std::runtime_error(std::strerror(errno));
-  }
-}
-
 void Http::processFile(std::string uri) {
   File file(_context->getDirective("root", true)[0][0] + uri);
 
@@ -251,17 +228,8 @@ void Http::processCgi(std::string const &uri, File const &file,
   // std::string root = _context->getDirective("root", true)[0][0]; // TODO:
   // remove if not needed
   std::string pathname = file.getPath();
-  std::string cwd;
-  try {
-    cwd = getcwd();
-    cwd.push_back('/');
-  } catch (const std::exception &e) {
-    errorLog_g.write(std::string("ERROR: getcwd(): ") + e.what(), DEBUG,
-                     YELLOW);
-    return processError("500", "Internal Server Error");
-  }
+  if (!startsWith(pathname, "/")) pathname.insert(0, cwd_g + "/");
 
-  if (!startsWith(pathname, "/")) pathname.insert(0, cwd);
   // if (!startsWith(root, "/"))
   //  root.insert(0, cwd);  // TODO: remove if not needed
   std::vector<std::string> env;

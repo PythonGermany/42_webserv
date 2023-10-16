@@ -8,6 +8,17 @@
 #include "argument.hpp"
 #include "global.hpp"
 
+void setupGlobals() {
+  cwd_g = getcwd();
+  if (cwd_g.empty()) throw std::runtime_error("getcwd(): Failed to init pwd");
+  try {
+    accessLog_g.init(LOG_PATH);
+    errorLog_g.init(LOG_ERROR_PATH);
+  } catch (...) {
+    throw std::runtime_error("Failed to init logfile defaults");
+  }
+}
+
 // Loads the config file into a Context object
 Context loadConfig(std::string path) {
   Context context("_", NULL);
@@ -19,6 +30,8 @@ Context loadConfig(std::string path) {
 
 int main(int argc, char** argv) {
   try {
+    setupGlobals();
+
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);
 

@@ -164,12 +164,21 @@ std::string getTime(std::string format, const time_t* timer) {
   while (true) {
     char buffer[size];
     timeinfo = std::gmtime(timer);
-    if (std::strftime(buffer, size, format.c_str(), timeinfo) == 0 &&
-        size < 256) {
-      size *= 2;
-      continue;
-    }
-    return std::string(buffer);
+    if (std::strftime(buffer, size, format.c_str(), timeinfo) != 0)
+      return std::string(buffer);
+    if (size > 256) return "";
+    size *= 2;
+  }
+}
+
+std::string getcwd() {
+  size_t size = 1024;
+
+  while (true) {
+    char buffer[size];
+    if (getcwd(buffer, size) != NULL) return buffer;
+    if (errno != ERANGE || size > PATH_MAX) return "";
+    size += 1024;
   }
 }
 

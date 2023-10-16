@@ -3,6 +3,7 @@
 
 #include <dirent.h>
 #include <fnmatch.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -115,6 +116,10 @@ std::string percentEncode(std::string str, std::string reserved);
 // Returns the current date as a string
 // @exception No custom exceptions
 std::string getTime(std::string format, const time_t* timer = NULL);
+
+// Gets current working directory
+// @return Empty string on failure
+std::string getcwd();
 
 // Returns the size until the end of the stream
 size_t getStreamBufferSize(std::istream& stream);
