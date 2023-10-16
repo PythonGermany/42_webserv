@@ -48,7 +48,7 @@ class Log {
   static std::string _dateFormat;
 
   bool _fileSet;      // True once file has been set
-  bool _initialized;  // Must be set to true in order to write to the log file
+  bool _initialized;  // Enables/Disables logfile functionality
 
   bool _error;  // True if an error occured while writing to the log file
 
@@ -66,6 +66,7 @@ class Log {
 
   // Getters
   static log_level_t getLevel();
+  bool getInitialized();
 
   // Writes a message to the log file and if enabled also to the _terminal
   // stream

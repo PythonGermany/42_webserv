@@ -48,6 +48,8 @@ void Log::setInitialized(bool initialized) { _initialized = initialized; }
 
 log_level_t Log::getLevel() { return _log_level; }
 
+bool Log::getInitialized() { return _initialized; }
+
 void Log::write(std::string msg, log_level_t level, std::string color) {
   if (level > _log_level) return;
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";

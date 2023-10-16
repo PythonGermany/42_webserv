@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);
 
-    int ret = 0;
-    ret |= printVersion(PRINT | UNSET);
+    int ret = printVersion(PRINT | UNSET);
     ret |= printHelp(PRINT | UNSET);
     if (ret) return 0;
 
@@ -49,6 +48,7 @@ int main(int argc, char** argv) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
+    if (errorLog_g.getInitialized() == false) Log::setLogToTerminal(true, true);
     errorLog_g.write(e.what(), ERROR);
     printHelp(PRINT);
     return 1;
