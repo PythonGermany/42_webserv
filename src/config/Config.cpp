@@ -112,8 +112,7 @@ std::string isCgi(std::string const &value, size_t index) {
   return isAbsolutePath(value, index);
 }
 
-Config::Config()
-    : _path(CONFIG_PATH), _includePath(File(CONFIG_PATH).getDir()) {}
+Config::Config() {}
 
 Config::Config(std::string path, std::string includePath) {
   _path = path.empty() ? CONFIG_PATH : path;
@@ -122,15 +121,15 @@ Config::Config(std::string path, std::string includePath) {
 
   File f(path);
   if (f.isSymLink() && f.resolveSymlink() != 0)
-    throw std::runtime_error("Config: Failed to resolve symlink '" + path +
+    throw std::runtime_error("Failed to resolve symlink '" + path +
                              "': " + std::strerror(errno));
-  std::ifstream fstream(f.getPath().c_str());
+  std::ifstream fstream(_path.c_str());
   if (fstream.is_open() == false)
-    throw std::runtime_error("Config: Failed to open file '" + path + "'");
+    throw std::runtime_error("Failed to open file '" + path + "'");
   std::stringstream stream;
   stream << fstream.rdbuf();
   if (stream.fail())
-    throw std::runtime_error("Config: Failed to read file '" + path + "'");
+    throw std::runtime_error("Failed to read file '" + path + "'");
   _config = stream.str();
 }
 
@@ -140,6 +139,7 @@ Config &Config::operator=(const Config &rhs) {
   if (this == &rhs) return *this;
   _path = rhs._path;
   _config = rhs._config;
+  _includePath = rhs._includePath;
   return *this;
 }
 
@@ -183,8 +183,11 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
         throwExeption(line, "Expected token ';' not found");
 
       // Process token value
-      if (token == "include")
-        processInclude(context, trim(cut(data, 0, nextEnd)));
+      if (token == "include") try {
+          processInclude(context, trim(cut(data, 0, nextEnd)));
+        } catch (const std::exception &e) {
+          throwExeption(line, e.what());
+        }
       else {
         checkError(line, validToAdd(context, token));
         std::vector<std::string> args =
