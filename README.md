@@ -46,7 +46,7 @@ This project is a webserver written in C++98. It's functionality is listed below
 | Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
 | Logs | Access log / Error log |
 | Configuration file context | [http](#http) / [location](#location) / [server](#server) |
-| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
 # Linux installation
 
 ## Requirements
@@ -64,7 +64,7 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-s|-l|-a|-e ARGUMENT] ...]
+./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-o|-l|-a|-e ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 
@@ -79,7 +79,7 @@ A flag overwrites the default setting as well as the ones that are configured in
 | v | Show version of webserv and exit | NONE
 | c | Show parsed config file structure and exit | NONE |
 | t | Check if the config file syntax is valid and exit | NONE |
-| s | Controls [log_to_stdout](#log_to_stdout) | on/off |
+| o | Controls [log_to_terminal](#log_to_terminal) | on/off |
 | l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 / 4 for `error` / `warning` / `info` / `debug` / `verbose`
 | a | Controls [access_log](#access_log) | PATH
 | e | Controls [error_log](#error_log) | PATH
@@ -106,7 +106,7 @@ http {
     }
 
     include PATH;
-    log_to_stdout [on|off];
+    log_to_terminal [on|off];
     log_level LEVEL;
     access_log PATH;
     error_log PATH;
@@ -117,7 +117,7 @@ http {
 }
 ```
 Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [access_log](#access_log) / [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_stdout](#log_to_stdout) / [server](#server) / [types](#types)
+**Allowed tokens:** [access_log](#access_log) / [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [server](#server) / [types](#types)
 
 ### Types
 ```nginx
@@ -251,11 +251,11 @@ Set the log level. Allowed log levels are `debug`, `info`, `warning`, `error` an
 Default: `info`  
 **Allowed in:** [Http](#http)
 
-### log_to_stdout
+### log_to_terminal
 ```nginx
-log_to_stdout [on|off];
+log_to_terminal [on|off];
 ```
-Sets whether logs should also be displayed on the standard output.  
+Sets whether logs should also be displayed on the terminal.  
 Default: `off`  
 **Allowed in:** [Http](#http)
 
@@ -313,7 +313,7 @@ types {
 http {
   include /etc/webserv/mime.types;
 
-  log_to_stdout off;
+  log_to_terminal off;
   log_level info;
   access_log /var/log/webserv/access.log;
   error_log /var/log/webserv/error.log;

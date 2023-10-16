@@ -1,11 +1,11 @@
 #include "Log.hpp"
 
-bool Log::_log_to_stdout = LOG_TO_STDOUT;
+bool Log::_log_to_terminal = LOG_TO_TERMINAL;
 log_level_t Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
 std::string Log::_dateFormat = LOG_DATE_FORMAT;
 
-Log::Log() {}
+Log::Log(std::ostream& terminal) : _terminal(terminal) {}
 
 Log::~Log() {}
 
@@ -17,10 +17,10 @@ void Log::init(std::string path) {
   _file.open(path.c_str(), std::ios_base::app);
 }
 
-void Log::setLogToStdout(bool log, bool overwrite) {
+void Log::setLogToTerminal(bool log, bool overwrite) {
   static bool initialized = false;
   if (overwrite || !initialized) {
-    _log_to_stdout = log;
+    _log_to_terminal = log;
     initialized = true;
   }
 }
@@ -51,9 +51,9 @@ log_level_t Log::getLevel() { return _log_level; }
 void Log::write(std::string msg, log_level_t level, std::string color) {
   if (level > _log_level) return;
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
-  if (_log_to_stdout || level <= LOG_STDOUT_OVERRIDE_LEVEL) {
+  if (_log_to_terminal) {
     if (color == RESET) color = getLevelColor(level);
-    std::cout << timeStamp << color << msg << RESET << std::endl;
+    _terminal << timeStamp << color << msg << RESET << std::endl;
   }
   if (!_initialized) return;
   _file << timeStamp << msg << std::endl;

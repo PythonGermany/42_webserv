@@ -45,11 +45,11 @@ arg_state_t setPrintVersion(const std::list<std::string> &values) {
   return SUCCESS;
 }
 
-arg_state_t setLogToStdout(const std::list<std::string> &values) {
+arg_state_t setLogToTerminal(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
   std::string value = values.front();
-  Log::setLogToStdout(value == "on");
+  Log::setLogToTerminal(value == "on");
   set = true;
   if (value == "on" || value == "off") return SUCCESS;
   return ARG_INVALID;

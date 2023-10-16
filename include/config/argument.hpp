@@ -26,7 +26,7 @@ arg_state_e setPrintHelp(const std::list<std::string> &values);
 arg_state_t setPrintConfigStructure(const std::list<std::string> &values);
 arg_state_t setPrintConfigValidation(const std::list<std::string> &values);
 arg_state_t setPrintVersion(const std::list<std::string> &values);
-arg_state_t setLogToStdout(const std::list<std::string> &values);
+arg_state_t setLogToTerminal(const std::list<std::string> &values);
 arg_state_t setLogLevel(const std::list<std::string> &values);
 arg_state_t setAccessLog(const std::list<std::string> &values);
 arg_state_t setErrorLog(const std::list<std::string> &values);
@@ -41,7 +41,7 @@ const arg_t args_g[9] = {{'i', 0, setPrintInfo},
                          {'v', 0, setPrintVersion},
                          {'c', 0, setPrintConfigStructure},
                          {'t', 0, setPrintConfigValidation},
-                         {'s', 1, setLogToStdout},
+                         {'s', 1, setLogToTerminal},
                          {'l', 1, setLogLevel},
                          {'a', 1, setAccessLog},
                          {'e', 1, setErrorLog}};

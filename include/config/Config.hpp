@@ -44,7 +44,7 @@ std::string isCgi(std::string const &value, size_t index);
  */
 const token_t tokens[30] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
-    {"log_to_stdout", "http", false, 0, 1, 1, 1, isBoolean},
+    {"log_to_terminal", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
     {"error_log", "http", false, 0, 1, 1, 1, NULL},
