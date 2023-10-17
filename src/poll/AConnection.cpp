@@ -13,8 +13,6 @@ AConnection::AConnection(Address const &serverAddress,
                          Address const &remoteAddress) {
   host = serverAddress;
   client = remoteAddress;
-  _readState = STATUS;
-  readDelimiter = "\r\n";
   gettimeofday(&lastTimeActive, NULL);
   bodySize = std::string::npos;
   _writeBufferPos = std::string::npos;
@@ -38,6 +36,32 @@ AConnection::~AConnection() {
                           " exit status: " + toString<int>(status) +
                           " reason: object destructed",
                       DEBUG, BLUE);
+  }
+}
+
+void AConnection::setReadState(state_t readState) {
+  _readState = readState;
+
+  switch (_readState) {
+    case STATUS:
+      readDelimiter = "\r\n";
+      break;
+
+    case HEAD:
+      readDelimiter = "\r\n\r\n";
+      break;
+
+    case BODY:
+      readDelimiter = "";
+      break;
+
+    case CHUNK_SIZE:
+      readDelimiter = "\r\n";
+      break;
+
+    default:
+      readDelimiter = "\r\n";
+      break;
   }
 }
 

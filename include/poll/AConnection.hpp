@@ -36,6 +36,8 @@ class AConnection : public IFileDescriptor {
   std::string readDelimiter;
   size_t _writeBufferPos;
 
+  void setReadState(state_t readState);
+
   virtual void OnStatusRecv(std::string msg) = 0;
   virtual void OnHeadRecv(std::string msg) = 0;
   virtual void OnChunkSizeRecv(std::string msg) = 0;

@@ -14,7 +14,6 @@
 
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
 #define HTTP_VERSION "1.1"
-#define HTTP_METHOD_COUNT 6
 #define HTTP_METHODS \
   { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
 #define HTTP_DEFAULT_METHOD_COUNT 3
@@ -22,6 +21,9 @@
   { "GET", "HEAD", "OPTIONS" }
 #define HTTP_DEFAULT_MIME "application/octet-stream"
 #define MAX_CLIENT_BODY_SIZE 1048576
+
+const std::string codes_g[] = {"200", "201", "204", "301", "400", "403", "404",
+                               "405", "411", "413", "500", "501", "505"};
 
 class Http : public AConnection {
   Request _request;

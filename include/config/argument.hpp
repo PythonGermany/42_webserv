@@ -36,15 +36,15 @@ arg_state_t setErrorLog(const std::list<std::string> &values);
  * Allowed argument input structure in the format: {flag, argCount,
  * validation-/initializationFunction}
  */
-const arg_t args_g[9] = {{'i', 0, setPrintInfo},
-                         {'h', 0, setPrintHelp},
-                         {'v', 0, setPrintVersion},
-                         {'c', 0, setPrintConfigStructure},
-                         {'t', 0, setPrintConfigValidation},
-                         {'s', 1, setLogToTerminal},
-                         {'l', 1, setLogLevel},
-                         {'a', 1, setAccessLog},
-                         {'e', 1, setErrorLog}};
+const arg_t args_g[] = {{'i', 0, setPrintInfo},
+                        {'h', 0, setPrintHelp},
+                        {'v', 0, setPrintVersion},
+                        {'c', 0, setPrintConfigStructure},
+                        {'t', 0, setPrintConfigValidation},
+                        {'s', 1, setLogToTerminal},
+                        {'l', 1, setLogLevel},
+                        {'a', 1, setAccessLog},
+                        {'e', 1, setErrorLog}};
 
 std::string loadArguments(int argc, char **argv);
 

@@ -7,6 +7,7 @@
 
 #include "Context.hpp"
 #include "File.hpp"
+#include "Http.hpp"
 #include "global.hpp"
 #include "utils.hpp"
 
@@ -42,7 +43,7 @@ std::string isCgi(std::string const &value, size_t index);
  * Allowed token input structure in the format: {name, parent, isContext,
  * minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
  */
-const token_t tokens[30] = {
+const token_t tokens_g[] = {
     {"http", "_", true, 1, 1, 0, 0, NULL},
     {"log_to_terminal", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},

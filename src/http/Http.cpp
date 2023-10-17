@@ -2,8 +2,7 @@
 
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
-  this->_readState = STATUS;
-  this->readDelimiter = "\r\n";
+  setReadState(STATUS);
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -23,34 +22,39 @@ Http::~Http() {
 void Http::OnStatusRecv(std::string msg) {
   accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
 
-  if (startsWith(msg, "\r\n")) return;
+  if (startsWith(msg, readDelimiter)) return;
   _request = Request();
 
   // TODO: Implement uri dot resolving somewhere here or maybe in the uri
   // class
   // -> uri class prob better
-  if (_request.parseStatus(msg) || _request.getUri().decode() ||
-      _request.getUri().pathOutOfBound())
+  bool parseRet = _request.parseStatus(msg) || _request.getUri().decode() ||
+                  _request.getUri().pathOutOfBound();
+
+  _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
+         _request.getUri().generate() + " " + _request.getVersion() + " -> " +
+         toString<Address &>(host);
+
+  if (parseRet)
     processError("400", "Bad Request");
   else if (isHttpVersionValid(_request.getVersion()) == false) {
     processError("505", "HTTP Version Not Supported");
     _response.setHeader("Upgrade", "HTTP/" HTTP_VERSION);
     _response.setHeader("Connection", "Upgrade");
-  }
+  } else if (isMehodImplemented(_request.getMethod()) == false)
+    processError("501", "Not Implemented");
   if (_response.isReady()) return sendResponse();
-  _readState = HEAD;
-  readDelimiter = "\r\n\r\n";
+  setReadState(HEAD);
 }
 
 void Http::OnHeadRecv(std::string msg) {
   accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
 
   // Parse request
-  if (_request.parseHeaderFields(msg))
-    return processError("400", "Bad Request");
-  _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
-         _request.getUri().generate() + " " + _request.getVersion() + " -> " +
-         toString<Address &>(host);
+  if (_request.parseHeaderFields(msg)) {
+    processError("400", "Bad Request");
+    sendResponse();
+  }
 
   // If possible use host of absolute uri otherwise use host of header
   std::string requestHost = _request.getHeader("Host");
@@ -84,8 +88,7 @@ void Http::OnChunkSizeRecv(std::string msg) {
   if (_response.isReady()) return sendResponse();
 
   bodySize += 2;
-  _readState = BODY;
-  readDelimiter = "";
+  setReadState(BODY);
 }
 
 void Http::OnBodyRecv(std::string msg) {
@@ -153,9 +156,6 @@ void Http::processRequest() {
     accessLog_g.write("VirtualHost: " + _virtualHost->getContext().getDirective(
                                             "server_name", true)[0][0],
                       DEBUG);
-
-  if (!isMehodImplemented(_request.getMethod()))
-    return processError("501", "Not Implemented");
 
   _uri = _request.getUri().getPath();
   _context = _virtualHost->matchLocation(_uri);
@@ -295,9 +295,7 @@ void Http::processBodyRequest() {
   if (_request.getHeader("Transfer-Encoding") != "") {
     if (_request.getHeader("Transfer-Encoding") != "chunked")
       return processError("501", "Not Implemented");
-    readDelimiter = "\r\n";
-    _readState = CHUNK_SIZE;
-    return;
+    return setReadState(CHUNK_SIZE);
   }
 
   // Check if body size is specified
@@ -310,8 +308,7 @@ void Http::processBodyRequest() {
     return processError("413", "Request Entity Too Large");
 
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
-  _readState = BODY;
-  readDelimiter = "";
+  setReadState(BODY);
 
   if (_request.getMethod() == "POST")
     return processFile(_uri);
@@ -337,9 +334,7 @@ void Http::processPutData(const std::string &data) {
 
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
     if (data.size() == 0) return getPutResponse(_uri);
-    readDelimiter = "\r\n";
-    _readState = CHUNK_SIZE;
-    return;
+    return setReadState(CHUNK_SIZE);
   }
 
   if (_currBodySize >= _expectedBodySize) return getPutResponse(_uri);
@@ -350,13 +345,8 @@ void Http::processPostData(std::string &data) {
   cgiSend(data);
   _currBodySize += data.size();
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (data.size() == 0) {
-      cgiCloseSendPipe();
-      return;
-    }
-    readDelimiter = "\r\n";
-    _readState = CHUNK_SIZE;
-    return;
+    if (data.size() == 0) return cgiCloseSendPipe();
+    return setReadState(CHUNK_SIZE);
   }
 
   if (_currBodySize >= _expectedBodySize) {
@@ -550,8 +540,7 @@ void Http::sendResponse() {
   if (_request.getMethod() != "HEAD") send(_response.resetBody());
 
   // Reset class variables
-  _readState = STATUS;
-  readDelimiter = "\r\n";
+  setReadState(STATUS);
 
   // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
@@ -581,8 +570,8 @@ std::string Http::getAbsoluteUri(std::string uri) const {
 }
 
 bool Http::isMehodImplemented(std::string method) const {
-  std::string methods[HTTP_METHOD_COUNT] = HTTP_METHODS;
-  for (size_t i = 0; i < HTTP_METHOD_COUNT; i++)
+  std::string methods[] = HTTP_METHODS;
+  for (size_t i = 0; i < sizeof(methods) / sizeof(std::string); i++)
     if (methods[i] == method) return true;
   return false;
 }
@@ -631,12 +620,13 @@ std::string Http::getCgiPath(std::string extension) const {
 std::vector<std::string> Http::getAllowedMethods(bool forUri) const {
   std::vector<std::string> ret;
   if (forUri == false) {
-    std::string methods[HTTP_METHOD_COUNT] = HTTP_METHODS;
-    for (size_t i = 0; i < HTTP_METHOD_COUNT; i++) ret.push_back(methods[i]);
+    std::string methods[] = HTTP_METHODS;
+    for (size_t i = 0; i < sizeof(methods) / sizeof(std::string); i++)
+      ret.push_back(methods[i]);
   } else if (_context->exists("allow", true))
     ret = _context->getDirective("allow", true)[0];
   else {
-    std::string methods[HTTP_DEFAULT_METHOD_COUNT] = HTTP_DEFAULT_METHODS;
+    std::string methods[] = HTTP_DEFAULT_METHODS;
     for (size_t i = 0; i < HTTP_DEFAULT_METHOD_COUNT; i++)
       ret.push_back(methods[i]);
   }

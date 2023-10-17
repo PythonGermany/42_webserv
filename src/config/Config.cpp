@@ -12,14 +12,8 @@ std::string isMimeType(std::string const &value, size_t index) {
 
 std::string isErrorPage(std::string const &value, size_t index) {
   if (index == 0) {
-    if (value == "100" || value == "101" || value == "300" || value == "400" ||
-        value == "401" || value == "402" || value == "403" || value == "404" ||
-        value == "405" || value == "406" || value == "407" || value == "408" ||
-        value == "409" || value == "410" || value == "411" || value == "412" ||
-        value == "413" || value == "414" || value == "415" || value == "416" ||
-        value == "417" || value == "500" || value == "501" || value == "502" ||
-        value == "503" || value == "504" || value == "505")
-      return "";
+    for (size_t i = 0; i < sizeof(codes_g) / sizeof(codes_g[0]); i++)
+      if (value == codes_g[i]) return "";
     return "Invalid error code";
   } else
     return isAbsolutePath(value, index);
@@ -45,9 +39,9 @@ std::string isMemorySize(std::string const &value, size_t index) {
 
 std::string isMethod(std::string const &value, size_t index) {
   (void)index;
-  if (value == "GET" || value == "HEAD" || value == "OPTIONS" ||
-      value == "PUT" || value == "POST" || value == "DELETE")
-    return "";
+  std::string methods[] = HTTP_METHODS;
+  for (size_t i = 0; i < sizeof(methods) / sizeof(std::string); i++)
+    if (value == methods[i]) return "";
   return "Invalid method";
 }
 
@@ -262,25 +256,25 @@ void Config::processInclude(Context &context, std::string path) {
 }
 
 bool Config::isValidContext(Context &context, std::string token) const {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
-    if (tokens[i].name == token && tokens[i].parent == context.getName() &&
-        tokens[i].isContext)
+  for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++)
+    if (tokens_g[i].name == token && tokens_g[i].parent == context.getName() &&
+        tokens_g[i].isContext)
       return true;
   return false;
 }
 
 bool Config::isValidDirective(Context &context, std::string token) const {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
-    if (tokens[i].name == token && tokens[i].parent == context.getName() &&
-        !tokens[i].isContext)
+  for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++)
+    if (tokens_g[i].name == token && tokens_g[i].parent == context.getName() &&
+        !tokens_g[i].isContext)
       return true;
   return false;
 }
 
 std::string Config::validToAdd(Context &context, std::string token) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++)
-    if (tokens[i].name == token && tokens[i].parent == context.getName())
-      return context.getTokenOccurence(token) < tokens[i].maxOccurence
+  for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++)
+    if (tokens_g[i].name == token && tokens_g[i].parent == context.getName())
+      return context.getTokenOccurence(token) < tokens_g[i].maxOccurence
                  ? ""
                  : "Token '" + token + "'has too many occurences";
   return "Token '" + token + "' not found";
@@ -288,18 +282,20 @@ std::string Config::validToAdd(Context &context, std::string token) {
 
 std::string Config::validArguments(Context &context, std::string token,
                                    std::vector<std::string> args) {
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++) {
-    if (tokens[i].name == token && tokens[i].parent == context.getName()) {
-      if (tokens[i].func != NULL) {
+  for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++) {
+    if (tokens_g[i].name == token && tokens_g[i].parent == context.getName()) {
+      if (tokens_g[i].func != NULL) {
         for (size_t j = 0; j < args.size(); j++) {
-          std::string error = tokens[i].func(args[j], j);
+          std::string error = tokens_g[i].func(args[j], j);
           if (error != "") return "Argument '" + args[j] + "': " + error;
         }
       }
-      if (tokens[i].minArgs <= args.size() && tokens[i].maxArgs >= args.size())
+      if (tokens_g[i].minArgs <= args.size() &&
+          tokens_g[i].maxArgs >= args.size())
         return "";
-      return "'" + token + "' requires between " + toString(tokens[i].minArgs) +
-             " and " + toString(tokens[i].maxArgs) + " arguments";
+      return "'" + token + "' requires between " +
+             toString(tokens_g[i].minArgs) + " and " +
+             toString(tokens_g[i].maxArgs) + " arguments";
     }
   }
   return "Token '" + token + "' not found";
@@ -308,12 +304,13 @@ std::string Config::validArguments(Context &context, std::string token,
 std::string Config::validate(Context &context, bool recursive) {
   accessLog_g.write("Context: '" + context.getName() + "' -> Validating",
                     DEBUG);
-  for (size_t i = 0; i < sizeof(tokens) / sizeof(token_t); i++) {
-    if (tokens[i].parent == context.getName() &&
-        context.getTokenOccurence(tokens[i].name) < tokens[i].minOccurence) {
-      if (tokens[i].isContext)
-        return "Context missing required context '" + tokens[i].name + "'";
-      return "Context missing required directive '" + tokens[i].name + "'";
+  for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++) {
+    if (tokens_g[i].parent == context.getName() &&
+        context.getTokenOccurence(tokens_g[i].name) <
+            tokens_g[i].minOccurence) {
+      if (tokens_g[i].isContext)
+        return "Context missing required context '" + tokens_g[i].name + "'";
+      return "Context missing required directive '" + tokens_g[i].name + "'";
     }
   }
   if (recursive) {
