@@ -72,7 +72,7 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   for (std::vector<VirtualHost *>::iterator it = possibleHosts.begin();
        it != possibleHosts.end(); ++it) {
     if ((*it)->getContext().exists("server_name")) {
-      std::vector<std::string> serverNames =
+      std::vector<std::string> &serverNames =
           (*it)->getContext().getDirective("server_name")[0];
       for (std::vector<std::string>::const_iterator itSn = serverNames.begin();
            itSn != serverNames.end(); ++itSn) {

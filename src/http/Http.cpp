@@ -33,12 +33,12 @@ void Http::OnStatusRecv(std::string msg) {
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
   parseRet |= _request.getUri().decode();
-  accessLog_g.write("Decoded URI path: " + _request.getUri().getPath(), DEBUG);
+  accessLog_g.write("Decoded URI: " + _request.getUri().generate(), DEBUG);
   parseRet |= _request.getUri().resolveDots();
-  accessLog_g.write("Resolved URI path: " + _request.getUri().getPath(), DEBUG);
+  accessLog_g.write("Resolved URI: " + _request.getUri().generate(), DEBUG);
 
   if (parseRet)
-    processError("400", "Bad Request");
+    processError("400", "Bad Request", true);
   else if (isHttpVersionValid(_request.getVersion()) == false) {
     processError("505", "HTTP Version Not Supported");
     _response.setHeader("Upgrade", "HTTP/" HTTP_VERSION);
@@ -54,7 +54,7 @@ void Http::OnHeadRecv(std::string msg) {
 
   // Parse request
   if (_request.parseHeaderFields(msg)) {
-    processError("400", "Bad Request");
+    processError("400", "Bad Request", true);
     sendResponse();
   }
 
@@ -71,7 +71,7 @@ void Http::OnHeadRecv(std::string msg) {
     _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
     processRequest();
   } else
-    processError("400", "Bad Request");
+    processError("400", "Bad Request", true);
 
   if (_response.isReady()) sendResponse();
 }
@@ -153,10 +153,6 @@ void Http::OnCgiError() {
 
 void Http::processRequest() {
   if (_virtualHost == NULL) return processError("500", "Internal Server Error");
-  if (_virtualHost->getContext().exists("server_name", true))
-    accessLog_g.write("VirtualHost: " + _virtualHost->getContext().getDirective(
-                                            "server_name", true)[0][0],
-                      DEBUG);
 
   _uri = _request.getUri().getPath();
   _context = _virtualHost->matchLocation(_uri);
@@ -179,7 +175,7 @@ void Http::processRequest() {
 
   if (_context->exists("alias"))
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
-  accessLog_g.write("Resource URI: '" + _uri + "'", DEBUG);
+  accessLog_g.write("Resource URI path: '" + _uri + "'", DEBUG);
 
   if (_request.getMethod() == "DELETE") return processDelete(_uri);
 
@@ -264,6 +260,9 @@ void Http::processCgi(std::string const &uri, File const &file,
     if (_request.getHeader("Content-type") != "")
       env.push_back("CONTENT_TYPE=" + _request.getHeader("Content-type"));
   }
+
+  // TODO: Implement correct server name selection if there are multiple server
+  // names set in the listen directive. Check if according to cgi
   std::string servername;
   if (_context->exists("server_name", true))
     servername = _context->getDirective("server_name", true)[0][0];
@@ -561,7 +560,9 @@ void Http::sendResponse() {
 }
 
 std::string Http::getAbsoluteUri(std::string uri) const {
-  Uri ret(uri);
+  Uri ret;
+
+  ret.load(uri);
   if (ret.getScheme().empty()) ret.setScheme("http");
   if (ret.getHost().empty()) {
     std::string host = _request.getHeader("Host");

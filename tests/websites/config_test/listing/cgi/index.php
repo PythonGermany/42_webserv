@@ -9,7 +9,8 @@ if (!is_dir($folder)) {
 
 // Open the directory
 if ($handle = opendir($folder)) {
-    echo "<h2>Files in $folder:</h2>";
+    $uri = $_SERVER['REQUEST_URI'];
+    echo "<h2>Files in $uri:</h2>";
     echo "<table style='border-collapse: collapse; width: 100%;'>";
     echo "<tr><th style='border: 1px solid black; padding: 8px;'>File</th><th style='border: 1px solid black; padding: 8px;'>Last Modified</th><th style='border: 1px solid black; padding: 8px;'>File Size</th></tr>";
     // Loop through the directory

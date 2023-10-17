@@ -54,10 +54,9 @@ int Request::parseStatus(std::string line) {
       split<std::vector<std::string> >(line, " ");
   if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
-  _uri = Uri(requestLineTokens[1]);
   _version = requestLineTokens[2];
   if (!startsWith(_version, "HTTP/")) return 1;
-  return 0;
+  return _uri.load(requestLineTokens[1]);
 }
 
 int Request::parseHeaderFields(std::string fields) {

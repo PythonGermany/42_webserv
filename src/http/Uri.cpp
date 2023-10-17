@@ -1,8 +1,6 @@
 #include "Uri.hpp"
 
-Uri::Uri() : _path("/") {}
-
-Uri::Uri(std::string uri) : _path("/") { load(uri); }
+Uri::Uri() {}
 
 Uri::Uri(const Uri &rhs) { *this = rhs; }
 
@@ -18,7 +16,7 @@ Uri &Uri::operator=(const Uri &rhs) {
 
 Uri::~Uri() {}
 
-void Uri::load(std::string uri) {
+int Uri::load(std::string uri) {
   size_t pos;
 
   // Find scheme end
@@ -26,34 +24,33 @@ void Uri::load(std::string uri) {
   if (pos != std::string::npos) {
     _scheme = uri.substr(0, pos);
     uri = uri.substr(pos + 3);
-  }
 
-  // Find host end
-  pos = uri.find(":");
-  if (pos != std::string::npos) {
-    _host = uri.substr(0, pos);
-    uri = uri.substr(pos + 1);
-
-    // Find port end
-    pos = uri.find("/");
-    if (pos != std::string::npos) {
-      _port = uri.substr(0, pos);
-      uri = uri.substr(pos);
-    } else {
-      _port = uri;
-      uri = "";
-    }
-  } else {
     // Find host end
-    pos = uri.find("/");
+    pos = uri.find(":");
     if (pos != std::string::npos) {
       _host = uri.substr(0, pos);
-      uri = uri.substr(pos);
+      uri = uri.substr(pos + 1);
+
+      // Find port end
+      pos = uri.find("/");
+      if (pos != std::string::npos) {
+        _port = uri.substr(0, pos);
+        uri = uri.substr(pos);
+      } else
+        return 1;
     } else {
-      _host = uri;
-      uri = "";
+      // Find host end
+      pos = uri.find("/");
+      if (pos != std::string::npos) {
+        _host = uri.substr(0, pos);
+        uri = uri.substr(pos);
+      } else
+        return 1;
     }
   }
+  pos = uri.find("/");
+  if (pos != 0) return 1;
+
   // Find query start
   pos = uri.find("?");
   if (pos != std::string::npos) {
@@ -65,6 +62,8 @@ void Uri::load(std::string uri) {
   // Transform required fields to lowercase
   std::transform(_scheme.begin(), _scheme.end(), _scheme.begin(), ::tolower);
   std::transform(_host.begin(), _host.end(), _host.begin(), ::tolower);
+
+  return 0;
 }
 
 void Uri::setScheme(std::string scheme) { _scheme = scheme; }

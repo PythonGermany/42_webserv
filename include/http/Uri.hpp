@@ -15,12 +15,13 @@ class Uri {
 
  public:
   Uri();
-  Uri(std::string uri);
   Uri(const Uri &rhs);
   Uri &operator=(const Uri &rhs);
   ~Uri();
 
-  void load(std::string uri);
+  // Splits an uri into its sections
+  // @return Non-zero on error
+  int load(std::string uri);
 
   void setScheme(std::string scheme);
   void setHost(std::string host);
