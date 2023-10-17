@@ -431,7 +431,7 @@ void AConnection::runCGI(std::string const &program,
       close(pipeInArray[1]);
       close(pipeOutArray[0]);
       errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
-      exit(EXIT_FAILURE);
+      exit(2);
     }
     close(pipeInArray[1]);
     close(pipeOutArray[0]);
@@ -450,7 +450,7 @@ void AConnection::runCGI(std::string const &program,
     execve(program.c_str(), c_arg.data(), c_env.data());
     std::cerr << "webserv: " << BRIGHT_RED << "error: execve(): " << program
               << ": " << std::strerror(errno) << RESET << std::endl;
-    exit(EXIT_FAILURE);
+    exit(2);
   }
   close(pipeInArray[1]);
   close(pipeOutArray[0]);
