@@ -39,11 +39,24 @@ std::string& trimStart(std::string& str, std::string chars = " \f\n\r\t\v");
 // @exception No custom exceptions
 std::string cut(std::string& str, int start, int end);
 
-// Splits a string into a vector of strings
+// Splits a string by its delimiter characters
 // @param str The string to split
 // @param delim The delimiter characters
-// @return The vector of strings
-std::vector<std::string> split(const std::string& str, std::string delim);
+// @return A container of strings
+template <typename T>
+T split(const std::string& str, std::string delim, bool allowEmpty = false) {
+  T tokens;
+  size_t start = 0;
+  size_t end = str.find_first_of(delim);
+  while (end != std::string::npos) {
+    if (start < end || allowEmpty)
+      tokens.push_back(str.substr(start, end - start));
+    start = end + 1;
+    end = str.find_first_of(delim, start);
+  }
+  if (start < str.length() || allowEmpty) tokens.push_back(str.substr(start));
+  return tokens;
+}
 
 // Concatenates a vector of strings into a single string
 // @param values The vector of strings
@@ -131,7 +144,7 @@ void addSets(std::set<T>& a, const std::set<T> b) {
     a.insert(*it);
 }
 
-// Converts a string from a string with an optional suffix to its byte size
+// Converts a string with an optional suffix to its byte size
 // @param size The size to convert
 // @param baseFactor The base factor e.g. 1000 or 1024
 size_t toBytes(std::string size, size_t baseFactor = 1024);

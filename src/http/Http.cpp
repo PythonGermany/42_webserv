@@ -22,19 +22,20 @@ Http::~Http() {
 void Http::OnStatusRecv(std::string msg) {
   accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
 
-  if (startsWith(msg, getReadDelimiter())) return;
+  const std::string &delim = getReadDelimiter();
+  if (startsWith(msg, delim)) return;
   _request = Request();
 
-  // TODO: Implement uri dot resolving somewhere here or maybe in the uri
-  // class
-  // -> uri class prob better
-  msg.erase(msg.size() - 2, 2);
-  bool parseRet = _request.parseStatus(msg) || _request.getUri().decode() ||
-                  _request.getUri().pathOutOfBound();
+  msg.erase(msg.size() - delim.size(), delim.size());
+  bool parseRet = _request.parseStatus(msg);
 
   _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
+  parseRet |= _request.getUri().decode();
+  accessLog_g.write("Decoded URI path: " + _request.getUri().getPath(), DEBUG);
+  parseRet |= _request.getUri().resolveDots();
+  accessLog_g.write("Resolved URI path: " + _request.getUri().getPath(), DEBUG);
 
   if (parseRet)
     processError("400", "Bad Request");
@@ -584,10 +585,11 @@ bool Http::isMehodImplemented(std::string method) const {
 bool Http::isHttpVersionValid(std::string version) const {
   if (startsWith(version, "HTTP/"))
     version.erase(0, std::string("HTTP/").size());
-  std::vector<std::string> in = split(version, ".");
+  std::vector<std::string> in = split<std::vector<std::string> >(version, ".");
   if (in.size() < 1 || in.size() > 2) return false;
 
-  std::vector<std::string> reqired = split(HTTP_VERSION, ".");
+  std::vector<std::string> reqired =
+      split<std::vector<std::string> >(HTTP_VERSION, ".");
   if (reqired.size() < 1 || reqired.size() > 2 || in.size() != reqired.size())
     return false;
 

@@ -186,8 +186,8 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
         }
       else {
         checkError(line, validToAdd(context, token));
-        std::vector<std::string> args =
-            split(cut(data, 0, nextEnd), " \f\n\r\t\v");
+        std::vector<std::string> args = split<std::vector<std::string> >(
+            cut(data, 0, nextEnd), " \f\n\r\t\v");
         checkError(line, validArguments(context, token, args));
         context.addDirective(token, args);
       }
@@ -211,8 +211,8 @@ void Config::processContext(Context &context, std::string &data,
     throwExeption(line, "Expected token '{' not found");
 
   // Parse, validate and add
-  std::vector<std::string> args =
-      split(trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
+  std::vector<std::string> args = split<std::vector<std::string> >(
+      trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
   checkError(line, validArguments(context, token, args));
   child.setArgs(args);
 

@@ -19,20 +19,6 @@ std::string cut(std::string& str, int start, int end) {
   return cut;
 }
 
-std::vector<std::string> split(const std::string& str, std::string delim) {
-  std::vector<std::string> tokens;
-  size_t start = 0;
-  size_t end = str.find_first_of(delim);
-  while (end != std::string::npos) {
-    if (start != end) tokens.push_back(str.substr(start, end - start));
-    start = end + 1;
-    end = str.find_first_of(delim, start);
-  }
-  if (start < str.length() && start != end)
-    tokens.push_back(str.substr(start, end - start));
-  return tokens;
-}
-
 std::string concatenate(const std::vector<std::string>& values,
                         std::string separator) {
   std::string value;

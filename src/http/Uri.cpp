@@ -120,27 +120,34 @@ std::string Uri::generate() const {
   return uri;
 }
 
+#include <iostream>
+int Uri::resolveDots() {
+  std::list<std::string> blocks =
+      split<std::list<std::string> >(_path, "/", true);
+
+  std::list<std::string>::iterator it = blocks.begin();
+  while (it != blocks.end()) {
+    if (*it == ".")
+      it = blocks.erase(it);
+    else if (*it == "..") {
+      if (it == blocks.begin() || --it == blocks.begin()) return 1;
+      it = blocks.erase(it);
+      it = blocks.erase(it);
+    } else
+      it++;
+  }
+
+  std::string newPath;
+  it = blocks.begin();
+  for (; it != blocks.end(); it++) {
+    if (it->empty() && it != --blocks.end()) continue;
+    newPath += "/" + *it;
+  }
+  _path = newPath;
+  return 0;
+}
+
 bool Uri::compare(const Uri &rhs) const {
   return _scheme == rhs._scheme && _host == rhs._host && _port == rhs._port &&
          _path == rhs._path && _query == rhs._query;
-}
-
-bool Uri::pathOutOfBound() const {
-  std::string path = _path;
-  int depth = 0;
-  size_t pos;
-  while (path.size() > 0) {
-    pos = path.find("/");
-    if (pos != 0) {
-      if ((startsWith(path, "..") && path.size() == 2) ||
-          startsWith(path, "../"))
-        depth--;
-      else
-        depth++;
-      if (depth < 0) return true;
-    }
-    if (pos == std::string::npos) return false;
-    path.erase(0, pos + 1);
-  }
-  return false;
 }

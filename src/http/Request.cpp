@@ -50,7 +50,8 @@ void Request::deleteHeaderField(std::string key, std::string value) {
 }
 
 int Request::parseStatus(std::string line) {
-  std::vector<std::string> requestLineTokens = split(line, " ");
+  std::vector<std::string> requestLineTokens =
+      split<std::vector<std::string> >(line, " ");
   if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _uri = Uri(requestLineTokens[1]);
