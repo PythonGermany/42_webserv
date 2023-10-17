@@ -491,9 +491,12 @@ void Http::addIndexToPath(File &file, std::string &uri) {
     std::vector<std::string> indexes = _context->getDirective("index", true)[0];
     for (size_t i = 0; i < indexes.size(); i++) {
       file = File(path + indexes[i]);
-      uri = file.getPath();
-      if (file.exists() && file.file() && file.readable()) break;
+      if (file.exists() && file.file() && file.readable()) {
+        uri += indexes[i];
+        return;
+      }
     }
+    file = File(path);
   }
 }
 
