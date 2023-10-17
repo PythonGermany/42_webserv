@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     volumes:
       - ../conf:/etc/webserv
+      - ../logs:/var/log/webserv
       - ../tests/websites/:/tests/websites
     ports:
       - 4242:4242

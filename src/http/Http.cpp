@@ -225,7 +225,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   // std::string root = _context->getDirective("root", true)[0][0]; // TODO:
   // remove if not needed
   std::string pathname = file.getPath();
-  if (!startsWith(pathname, "/")) pathname.insert(0, cwd_g + "/");
+  if (!startsWith(pathname, "/")) pathname.insert(0, cwd_g);
 
   // if (!startsWith(root, "/"))
   //  root.insert(0, cwd);  // TODO: remove if not needed
