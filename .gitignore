@@ -12,6 +12,7 @@ perf.*
 #executables
 test
 webserv
+!webserv/
 cgi/cgi
 tools/transformer
 
@@ -24,3 +25,7 @@ conf/sites-enabled/*
 
 tests/websites/config_test/uploaded/*
 !tests/websites/config_test/uploaded/empty.txt
+
+# Docker stuff
+docker/webserv/source
+database/

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  webserv:
+    container_name: webserv
+    build:
+      context: ./webserv
+    restart: unless-stopped
+    volumes:
+      - ../conf:/etc/webserv
+      - ../tests/websites/:/tests/websites
+    ports:
+      - 4242:4242
+      - 8079:8079
+      - 8080:8080
+      - 8081:8081
+      - 8082:8082
+    networks:
+      - docker-network
+
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 12345
+    volumes:
+      - ../database:/var/lib/mysql
+    networks:
+      - docker-network
+
+networks:
+  docker-network:
+    driver: bridge
