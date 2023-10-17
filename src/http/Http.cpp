@@ -306,7 +306,7 @@ void Http::processBodyRequest() {
 
   // Check if body size is too large
   if (isBodySizeValid(_expectedBodySize) == false)
-    return processError("413", "Request Entity Too Large");
+    return processError("413", "Request Entity Too Large", true);
 
   bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
   setReadState(BODY);
