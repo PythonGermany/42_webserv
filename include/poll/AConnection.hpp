@@ -25,18 +25,18 @@ class AConnection : public IFileDescriptor {
   virtual void OnCgiError() = 0;
 
  protected:
+  typedef enum state_e { STATUS, HEAD, BODY, CHUNK_SIZE } state_t;
+
   Address client;
   Address host;
 
-  typedef enum state_e { STATUS, HEAD, BODY, CHUNK_SIZE } state_t;
-  state_t _readState;
-
   std::string::size_type headSizeLimit;
   std::string::size_type bodySize;
-  std::string readDelimiter;
   size_t _writeBufferPos;
 
   void setReadState(state_t readState);
+
+  std::string const &getReadDelimiter() const;
 
   virtual void OnStatusRecv(std::string msg) = 0;
   virtual void OnHeadRecv(std::string msg) = 0;
@@ -50,6 +50,9 @@ class AConnection : public IFileDescriptor {
   void stopReceiving();
 
  private:
+  state_t _readState;
+  std::string readDelimiter;
+
   std::queue<std::istream *> _writeStreams;
   char _writeBuffer[BUFFER_SIZE];
   size_t _writeBufferSize;

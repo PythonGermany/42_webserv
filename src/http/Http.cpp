@@ -22,7 +22,7 @@ Http::~Http() {
 void Http::OnStatusRecv(std::string msg) {
   accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
 
-  if (startsWith(msg, readDelimiter)) return;
+  if (startsWith(msg, getReadDelimiter())) return;
   _request = Request();
 
   // TODO: Implement uri dot resolving somewhere here or maybe in the uri
@@ -77,11 +77,10 @@ void Http::OnHeadRecv(std::string msg) {
 
 void Http::OnChunkSizeRecv(std::string msg) {
   accessLog_g.write("HTTP chunk size: '" + msg + "'", VERBOSE);
-  size_t end = msg.find(';');
-  if (end == std::string::npos) end = msg.size() - readDelimiter.size();
 
+  msg.substr(0, msg.find(';'));
   bodySize = 0;
-  if (std::sscanf(msg.substr(0, end).c_str(), "%lx", &bodySize) == EOF) {
+  if (std::sscanf(msg.substr(0, msg.size()).c_str(), "%lx", &bodySize) == EOF) {
     errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG, BRIGHT_RED);
     processError("500", "Internal server error", true);
   } else if (isBodySizeValid(_currBodySize + bodySize) == false)

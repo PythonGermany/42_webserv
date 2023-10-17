@@ -1,14 +1,12 @@
 #include <csignal>
 
 #include "Config.hpp"
-#include "Http.hpp"
 #include "Init.hpp"
-#include "ListenSocket.hpp"
 #include "Poll.hpp"
 #include "argument.hpp"
 #include "global.hpp"
 
-void setupGlobals() {
+static void initGlobals() {
   cwd_g = getcwd();
   if (cwd_g.empty()) throw std::runtime_error("getcwd(): Failed to init pwd");
   try {
@@ -20,7 +18,7 @@ void setupGlobals() {
 }
 
 // Loads the config file into a Context object
-Context loadConfig(std::string path) {
+static Context loadConfig(std::string path) {
   Context context("_", NULL);
   Config config(path);
   config.removeComments();
@@ -30,7 +28,7 @@ Context loadConfig(std::string path) {
 
 int main(int argc, char** argv) {
   try {
-    setupGlobals();
+    initGlobals();
 
     std::string path = loadArguments(argc, argv);
     printInfo(PRINT | UNSET);

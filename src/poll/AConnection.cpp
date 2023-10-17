@@ -65,6 +65,10 @@ void AConnection::setReadState(state_t readState) {
   }
 }
 
+std::string const &AConnection::getReadDelimiter() const {
+  return readDelimiter;
+}
+
 void AConnection::send(std::istream *msg) {
   if (msg == NULL) return;
   if (_writeStreams.empty()) Poll::addPollEvent(POLLOUT, this);

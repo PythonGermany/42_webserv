@@ -7,6 +7,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 
 # TODO
 
+- [ ] Replace c function for wildcard pattern matching with own function
 - [ ] Implement resolving of . and .. for request uri (also updates context accordingly since this will happen before context selection)
 - [ ] Investigate random closing of program without any notice after sending a first request
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
