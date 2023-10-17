@@ -245,7 +245,12 @@ void Http::processCgi(std::string const &uri, File const &file,
   // Required amongst others for wordpress to function
   // env.push_back("DOCUMENT_ROOT=" + root); // TODO: needed?
   env.push_back("SCRIPT_FILENAME=" + pathname);
-  env.push_back("REQUEST_URI=" + _request.getUri().getPath());
+
+  const Uri &uriRef = _request.getUri();
+  std::string requestUri = uriRef.getPath();
+  if (uriRef.getQuery() != "") requestUri += "?" + uriRef.getQuery();
+  env.push_back("REQUEST_URI=" + requestUri);
+
   env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
