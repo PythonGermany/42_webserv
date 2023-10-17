@@ -32,10 +32,10 @@ AConnection::~AConnection() {
     if (kill(_cgiPid, SIGKILL) == -1)
       errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
     waitpid(_cgiPid, &status, 0);
-    accessLog_g.write("reaped CGI process: " + toString<int>(_cgiPid) +
-                          " exit status: " + toString<int>(status) +
-                          " reason: object destructed",
-                      DEBUG, BLUE);
+    accessLog_g.write(
+        "reaped CGI process: " + toString<int>(_cgiPid) + " exit status: " +
+            toString<int>(WEXITSTATUS(status)) + " reason: object destructed",
+        DEBUG, BLUE);
   }
 }
 
@@ -229,10 +229,11 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
     waitpid(_cgiPid, &status, 0);  // TODO: error checking?
     pid_t tmp = _cgiPid;
     _cgiPid = -1;
-    accessLog_g.write("reaped CGI process: " + toString<int>(tmp) +
-                          " exit status: " + toString<int>(status) +
-                          " reason: process closed stdout",
-                      DEBUG, BLUE);
+    accessLog_g.write(
+        "reaped CGI process: " + toString<int>(tmp) +
+            " exit status: " + toString<int>(WEXITSTATUS(status)) +
+            " reason: process closed stdout",
+        DEBUG, BLUE);
     if (WEXITSTATUS(status) != 0 && WEXITSTATUS(status) != 1) {
       errorLog_g.write("ignore output (crash): \n" + _cgiReadBuffer, VERBOSE,
                        RED);
@@ -254,7 +255,7 @@ void AConnection::KillCgi() {
   pid_t tmp = _cgiPid;
   _cgiPid = -1;
   accessLog_g.write("reaped CGI process: " + toString<int>(tmp) +
-                        " exit status: " + toString<int>(status) +
+                        " exit status: " + toString<int>(WEXITSTATUS(status)) +
                         " reason: process killed",
                     DEBUG, BLUE);
   _cgiReadBuffer.clear();
@@ -430,7 +431,7 @@ void AConnection::runCGI(std::string const &program,
       close(pipeInArray[1]);
       close(pipeOutArray[0]);
       errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
-      exit(EXIT_FAILURE);
+      exit(2);
     }
     close(pipeInArray[1]);
     close(pipeOutArray[0]);
@@ -449,7 +450,7 @@ void AConnection::runCGI(std::string const &program,
     execve(program.c_str(), c_arg.data(), c_env.data());
     std::cerr << "webserv: " << BRIGHT_RED << "error: execve(): " << program
               << ": " << std::strerror(errno) << RESET << std::endl;
-    exit(EXIT_FAILURE);
+    exit(2);
   }
   close(pipeInArray[1]);
   close(pipeOutArray[0]);
