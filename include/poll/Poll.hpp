@@ -39,7 +39,8 @@ class Poll {
   int timeout;
   pid_t pid;
   // size_t pos;
-  struct sigaction originalSigAction;
+  struct sigaction originalSigIntAction;
+  struct sigaction originalSigTermAction;
   std::vector<CallbackPointer> callbackObjects;
   std::vector<struct pollfd> pollfds;
 

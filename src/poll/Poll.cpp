@@ -91,7 +91,8 @@ Poll::Poll() {
   struct sigaction sigAction = {};
 
   sigAction.sa_handler = Poll::signalHandler;
-  sigaction(SIGINT, &sigAction, &originalSigAction);
+  sigaction(SIGINT, &sigAction, &originalSigIntAction);
+  sigaction(SIGTERM, &sigAction, &originalSigTermAction);
   timeout = -1;
   stop = false;
   pid = -1;
@@ -119,7 +120,8 @@ void Poll::cleanUp() {
   }
   poll.callbackObjects.clear();
   poll.pollfds.clear();
-  sigaction(SIGINT, &poll.originalSigAction, NULL);
+  sigaction(SIGINT, &poll.originalSigIntAction, NULL);
+  sigaction(SIGTERM, &poll.originalSigTermAction, NULL);
 }
 
 Poll::~Poll() { cleanUp(); }
