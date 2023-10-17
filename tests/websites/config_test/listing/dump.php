@@ -4,5 +4,4 @@ echo "_POST:\r\n";
 var_dump($_POST);
 echo "_SERVER:\r\n";
 var_dump($_SERVER);
-echo "end of script\r\n";
 ?>

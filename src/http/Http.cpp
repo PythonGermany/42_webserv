@@ -519,7 +519,8 @@ void Http::checkResourceValidity(const File &file, const std::string &uri) {
 std::string Http::getDefaultBody(std::string code, std::string reason) const {
   return "<html>\r\n<head><title>" + code + " " + reason +
          "</title></head>\r\n<body>\r\n<center><h1>" + code + " " + reason +
-         "</h1></center>\r\n<hr><center>webserv</center>\r\n</body>\r\n</"
+         "</h1></center>\r\n<hr><center>" WEBSERV_ID
+         "</center>\r\n</body>\r\n</"
          "html>\r\n";
 }
 
