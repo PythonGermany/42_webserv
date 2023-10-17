@@ -1,0 +1,1 @@
+make -C source && /source/webserv

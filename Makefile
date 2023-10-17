@@ -118,14 +118,8 @@ wordpress:
 	unzip latest.zip -d tests/websites/
 	rm -f latest.zip
 
-container:
-	rm -rf docker/webserv/source
-	mkdir -p docker/webserv/source
-	cp -r src/ docker/webserv/source/
-	cp -r include/ docker/webserv/source/
-	cp -r Makefile docker/webserv/source/
-	@(cd docker/ && sudo docker compose up -d)
-	rm -rf docker/webserv/source
+compose:
+	sudo docker compose -f docker/docker-compose.yml up -d
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 

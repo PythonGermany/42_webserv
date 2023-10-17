@@ -12,7 +12,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 - [ ] Figure out why resolving symlinks doesnt work
 - [ ] Figure out why login for wordpress doesn't work
 
-- [ ] (Does not occur anymore without actively trying to fix it) Investigate random closing of program without any notice after sending a first request
+- [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
 - [x] Implement cgi support
 - [x] Fix issue of cases like /uploaded/../listing/index.php where restrictions of one context can be bypassed
