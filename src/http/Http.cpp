@@ -28,6 +28,7 @@ void Http::OnStatusRecv(std::string msg) {
   // TODO: Implement uri dot resolving somewhere here or maybe in the uri
   // class
   // -> uri class prob better
+  msg.erase(msg.size() - 2, 2);
   bool parseRet = _request.parseStatus(msg) || _request.getUri().decode() ||
                   _request.getUri().pathOutOfBound();
 
