@@ -8,7 +8,6 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 # TODO
 
 - [ ] Implement resolving of . and .. for request uri (also updates context accordingly since this will happen before context selection)
-- [ ] Implement request parsing with updated context in case of alias;
 - [ ] Investigate random closing of program without any notice after sending a first request
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
 - [ ] Figure out why resolving symlinks doesnt work
