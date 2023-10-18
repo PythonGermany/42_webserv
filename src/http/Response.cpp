@@ -32,6 +32,10 @@ void Response::setHeaders(std::map<std::string, std::string> &headers) {
   _headers = headers;
 }
 
+void Response::setCookie(const std::string &cookie) {
+  _cookies.push_back(cookie);
+}
+
 void Response::setBody(std::istream *body) {
   delete _body;
   _body = body;
@@ -41,7 +45,10 @@ void Response::setReady(bool ready) { _ready = ready; }
 
 void Response::setHeader(std::string key, std::string value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  _headers[key] = value;
+  if (_headers.find(key) != _headers.end())
+    _headers[key] += ", " + value;
+  else
+    _headers[key] = value;
 }
 
 std::string Response::getVersion() const { return _version; }
@@ -72,6 +79,10 @@ std::string Response::generateHead() {
   for (std::map<std::string, std::string>::iterator it = _headers.begin();
        it != _headers.end(); ++it) {
     response += it->first + ": " + it->second + "\r\n";
+  }
+  for (std::list<std::string>::iterator it = _cookies.begin();
+       it != _cookies.end(); ++it) {
+    response += "set-cookie: " + *it + "\r\n";
   }
   response += "\r\n";
   return response;

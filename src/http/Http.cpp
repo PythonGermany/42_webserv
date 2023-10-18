@@ -136,6 +136,8 @@ void Http::OnCgiRecv(std::string msg) {
       _response.setStatus(status);
       std::getline(ss, status);
       _response.setReason(status);
+    } else if (name == "set-cookie") {
+      _response.setCookie(line);
     } else
       _response.setHeader(name, line);
   }

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <istream>
+#include <list>
 #include <map>
 #include <string>
 
@@ -12,6 +13,7 @@ class Response {
   std::string _status;
   std::string _reason;
   std::map<std::string, std::string> _headers;
+  std::list<std::string> _cookies;
   std::istream *_body;
 
   bool _ready;
@@ -29,6 +31,7 @@ class Response {
   void setStatus(std::string status);
   void setReason(std::string reason);
   void setHeaders(std::map<std::string, std::string> &headers);
+  void setCookie(const std::string &cookie);
   void setBody(std::istream *body);
   void setReady(bool ready = true);
 
