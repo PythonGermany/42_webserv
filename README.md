@@ -8,7 +8,7 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 # TODO
 
 - [ ] Replace c function for wildcard pattern matching with own function
-- [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
+- [ ] Investigate NS_ERROR_NET_RESET error for put request 404 and 413 response
 - [ ] Figure out why resolving symlinks doesnt work
 
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
@@ -68,7 +68,7 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-o|-l|-a|-e ARGUMENT] ...]
+./webserv [configuration_file] [[[-i|-h|-v|-c|-t]|-o|-l|-a|-e ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 

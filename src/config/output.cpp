@@ -25,23 +25,22 @@ int printHelp(int flags) {
   int ret = 0;
   if (getBit(SET, flags)) isSet = true;
   if (isSet && getBit(PRINT, flags)) {
-    std::cout
-        << BRIGHT_YELLOW << "Usage: " << RESET
-        << "./webserv [configuration_file] [-i|-h|-v|-c|-t] [ [-s|-l|-a|-e "
-           "ARGUMENT] ...]\r\n"
-        << BRIGHT_YELLOW << "Flags:\r\n"
-        << RESET
-        << "  -i Show info block when starting the server\r\n"
-           "  -h Show this help message and exit\r\n"
-           "  -v Show version of webserv and exit\r\n"
-           "  -c Show parsed config file structure and exit\r\n"
-           "  -t Check if the config file syntax is valid and exit\r\n"
-           "  -o Turn terminal output 'on' or 'off'\r\n"
-           "  -l set the log level using '0/1/2/3' for "
-           "error/warning/info/debug\r\n"
-           "  -a Sets the path for the access log file\r\n"
-           "  -e Sets the path for the error log file"
-        << std::endl;
+    std::cout << BRIGHT_YELLOW << "Usage: " << RESET
+              << "./webserv [configuration_file] "
+                 "[[[-i|-h|-v|-c|-t]|-o|-l|-a|-e ARGUMENT] ...]\r\n"
+              << BRIGHT_YELLOW << "Flags:\r\n"
+              << RESET
+              << "  -i Show info block when starting the server\r\n"
+                 "  -h Show this help message and exit\r\n"
+                 "  -v Show version of webserv and exit\r\n"
+                 "  -c Show parsed config file structure and exit\r\n"
+                 "  -t Check if the config file syntax is valid and exit\r\n"
+                 "  -o Turn terminal output 'on' or 'off'\r\n"
+                 "  -l set the log level using '0/1/2/3' for "
+                 "error/warning/info/debug\r\n"
+                 "  -a Sets the path for the access log file\r\n"
+                 "  -e Sets the path for the error log file"
+              << std::endl;
     ret = 1;
   }
   if (getBit(UNSET, flags)) isSet = false;
