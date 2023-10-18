@@ -10,10 +10,10 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 - [ ] Replace c function for wildcard pattern matching with own function
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 response
 - [ ] Figure out why resolving symlinks doesnt work
-- [ ] Figure out why login for wordpress doesn't work
 
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
+- [x] Figure out why login for wordpress doesn't work
 - [x] Implement cgi support
 - [x] Fix issue of cases like /uploaded/../listing/index.php where restrictions of one context can be bypassed
 - [x] Implement resolving of . and .. for request uri (also updates context accordingly since this will happen before context selection)
