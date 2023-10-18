@@ -29,3 +29,4 @@ tests/websites/config_test/uploaded/*
 # Docker stuff
 docker/webserv/source
 database/
+.env

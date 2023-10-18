@@ -113,25 +113,8 @@ jmeter:
 	fi
 	./tests/jmeter/bin/jmeter
 
-wordpress:
-	wget https://wordpress.org/latest.zip
-	unzip latest.zip -d tests/websites/
-	rm -f latest.zip
-
-compose:
-	sudo docker compose -f docker/docker-compose.yml up -d
-
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
-
-transformer:
-	c++ tools/transformer.cpp -o tools/transformer
-
-tr:
-	./tools/transformer r include/* src/* src/*/* include/*/*
-
-tj:
-	./tools/transformer j include/* src/* src/*/* include/*/*
 
 .PHONY: all clean fclean re
 
@@ -147,8 +130,4 @@ help:
 	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
 	@echo "  flamegraph   : Generate flamegraph profiling SVG"
 	@echo "  jmeter       : Download and run Apache JMeter"
-	@echo "  wordpress    : Download the latest WordPress"
 	@echo "  lines        : Count lines of code in source files"
-	@echo "  transformer  : Build the 'transformer' tool"
-	@echo "  tr           : Run 'transformer' tool to replace includes with local paths"
-	@echo "  tj           : Run 'transformer' tool to revert includes to original paths"

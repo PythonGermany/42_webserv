@@ -284,10 +284,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   // absolute path to the cgi executable TODO: Check if it needs to be
   // implemented this way instead of SCRIPT_FILENAME
 
-  std::vector<std::string> arg;
-  arg.push_back(pathname);  // TODO: Check how to make input file selection work
-                            // this way without having to use env variables
-  runCGI(cgiPathname, arg, env);
+  runCGI(cgiPathname, std::vector<std::string>(1, pathname), env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response.clear();
 }

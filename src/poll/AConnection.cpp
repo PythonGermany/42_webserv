@@ -322,9 +322,7 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
 void AConnection::passReadBuffer(struct pollfd &pollfd) {
   std::string::size_type pos;
 
-  while (pollfd.events & POLLIN) {  // TODO python: Maybe implement automatic
-                                    // readDelimiter selection based on state
-
+  while (pollfd.events & POLLIN) {
     pos = _readBuffer.find(readDelimiter);
     if (pos == std::string::npos) break;
     pos += readDelimiter.size();
@@ -346,9 +344,7 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
         break;
 
       default:
-        throw std::runtime_error(
-            "passReadBuffer(): Undefined read state");  // TODO: Is throwing an
-                                                        // exeption here ok?
+        throw std::runtime_error("passReadBuffer(): Undefined read state");
     }
     _readBuffer.erase(0, pos);
   }
@@ -411,20 +407,7 @@ void AConnection::runCGI(std::string const &program,
     Poll::cleanUp();
     close(pipeInArray[0]);
     close(pipeOutArray[1]);
-    // if (dup2(pipeInArray[1], STDOUT_FILENO) == -1) {
-    //   close(pipeInArray[1]);
-    //   close(pipeOutArray[0]);
-    //   errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
-    //   exit(EXIT_FAILURE);
-    // }
-    // if (dup2(pipeOutArray[0], STDIN_FILENO) == -1) {
-    //   close(pipeOutArray[0]);
-    //   close(pipeInArray[1]);
-    //   errorLog_g.write("ERROR: dup2()", DEBUG, BRIGHT_RED);
-    //   exit(EXIT_FAILURE);
-    // }
 
-    // TODO pyhon: Is it wrong to do it this way compared to before?
     if (chdir(File(arg[0]).getDir().c_str()) == -1 ||
         dup2(pipeInArray[1], STDOUT_FILENO) == -1 ||
         dup2(pipeOutArray[0], STDIN_FILENO) == -1) {

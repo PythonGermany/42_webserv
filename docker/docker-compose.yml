@@ -6,11 +6,19 @@ services:
     build:
       context: ./webserv
     restart: unless-stopped
+    environment:
+      WEBSERV_ARGS: ${WEBSERV_ARGS}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_URL: ${WORDPRESS_URL}
+      WORDPRESS_TITLE: ${WORDPRESS_TITLE}
+      WORDPRESS_USER: ${WORDPRESS_USER}
+      WORDPRESS_PASSWORD: ${WORDPRESS_PASSWORD}
+      WORDPRESS_EMAIL: ${WORDPRESS_EMAIL}
     volumes:
-      - ../conf:/etc/webserv
-      - ../logs:/var/log/webserv
-      - ../:/source
-      - ../tests/websites/:/tests/websites
+      - ../:/webserv
     ports:
       - 4242:4242
       - 8079:8079
@@ -21,13 +29,14 @@ services:
       - docker-network
 
   mariadb:
-    image: mariadb
-    container_name: mariadb
+    image: mariadb:latest
+    container_name: ${MYSQL_HOST}
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: user
-      MYSQL_PASSWORD: 12345
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ../database:/var/lib/mysql
     networks:
