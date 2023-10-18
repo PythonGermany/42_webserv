@@ -8,7 +8,7 @@
 
 static void initGlobals() {
   cwd_g = getcwd();
-  if (cwd_g.empty()) throw std::runtime_error("getcwd(): Failed to init pwd");
+  if (cwd_g.empty()) throw std::runtime_error("getcwd(): Failed to init cwd");
   if (!endsWith(cwd_g, "/")) cwd_g.append("/");
   try {
     accessLog_g.init(LOG_PATH);
