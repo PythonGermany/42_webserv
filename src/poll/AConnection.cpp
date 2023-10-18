@@ -164,7 +164,7 @@ void AConnection::cgiSend(std::string const &src) {
     else
       Poll::addPollEvent(POLLOUT, pipeOut);
   }
-  accessLog_g.write("cgiSend(\n" + src + ")", VERBOSE);
+  accessLog_g.write("CGI: in '" + src + "'", VERBOSE);
   _cgiWriteBuffer += src;
 }
 
@@ -211,7 +211,7 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
   ssize_t ret = ::read(pollfd.fd, tmp, BUFFER_SIZE);
   if (ret > 0) {
     try {
-      _cgiReadBuffer += std::string(tmp, ret);
+      _cgiReadBuffer.append(tmp, ret);
       return;
     } catch (...) {
       KillCgi();
