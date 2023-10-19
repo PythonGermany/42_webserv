@@ -1,10 +1,6 @@
 [![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
 [![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
 
-HTTP RFC: https://datatracker.ietf.org/doc/html/rfc2616  
-Cookie RFC: https://datatracker.ietf.org/doc/html/rfc2965  
-CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
-
 # TODO
 
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 and 413 response
@@ -42,15 +38,17 @@ CGI RFC: https://datatracker.ietf.org/doc/html/rfc3875
 
 # Introduction
 
-This project is a webserver written in C++98. It's functionality is listed below:
+This project is a basic HTTP server written in C++98.
 
-| Functionality | Description |
-| --- | --- |
-| Http | Http/1.1 |
-| Methods | GET / HEAD / OPTIONS / POST / PUT / DELETE |
-| Logs | Access log / Error log |
-| Configuration file context | [http](#http) / [location](#location) / [server](#server) |
-| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
+| Functionality | Description | External info
+| --- | --- | --- | 
+| HTTP | HTTP/1.1 | [RFC 2616](https://datatracker.ietf.org/doc/html/rfc2616) |
+| CGI | CGI/1.1 (Tested with php-cgi, using wordpress, and python cgi) | [RFC 3875](https://datatracker.ietf.org/doc/html/rfc3875) |
+| Implemented methods | GET / HEAD / OPTIONS / POST / PUT / DELETE | [RFC 2616 section 5.1.1](https://datatracker.ietf.org/doc/html/rfc2616#section-5.1.1) |
+| Basic cookie support | Tested with wordpress | [RFC 2965](https://datatracker.ietf.org/doc/html/rfc2965) | # TODO: RFC right external info?
+| Argument flags | [To description](#flags) | - |
+| Configuration file | [To description](#configuration) | - |
+
 # Linux installation
 
 ## Requirements
@@ -68,7 +66,7 @@ make [debug]
 
 # Usage
 ```
-./webserv [configuration_file] [[[-i|-h|-v|-c|-t]|-o|-l|-a|-e ARGUMENT] ...]
+./webserv [configuration_file] [ [-i|-h|-v|-c|-t] | [-o|-l|-a|-e ARGUMENT] ...]
 ```
 Default configuration file: `/etc/webserv/webserv.conf`
 
@@ -99,6 +97,11 @@ You can look at the parsing debug output by setting the flag `s` to `on` and the
 # Configuration
 
 The configuration file is used to define the global configuration of the webserver. It is composed of multiple contexts. Each context can contain multiple directives. A directive is composed of a name arguments and a value. The value can be a string, a number or a block. A block is a list of directives.
+
+| Config type | Options |
+| --- | --- |
+| Configuration file context | [http](#http) / [location](#location) / [server](#server) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
 
 ## Contexts
 
@@ -230,7 +233,7 @@ Sets a custom error page for the given status code.
 ```nginx
 include PATH;
 ```
-Include another configuration file.  
+Include other configuration files. Supports `*` wildcard character
 **Allowed in:** [Cgi](#cgi) / [Http](#http) / [Location](#location) / [Server](#server)
 
 ### index
