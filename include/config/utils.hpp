@@ -2,7 +2,6 @@
 #define UTILS_HPP
 
 #include <dirent.h>
-#include <fnmatch.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -106,12 +105,15 @@ T fromString(std::string str) {
 // Converts a character to a hex string
 std::string toHexString(unsigned char c);
 
+// Checks if name matches wildard pattern. Only supports * wildcard character
+bool wildcardMatch(std::string pattern, std::string name);
+
 // Expands all the wildcards in a path into a set of expanded paths
 // matching the wildcard patterns of the path
 // @param path The full path with wildcard patterns
 // @return A set of paths matching the wildcard path
 // @exception std::runtime_error if a function call fails
-std::set<std::string> processWildcard(std::string path);
+std::set<std::string> processWildcardPath(std::string path);
 
 // Decodes percent encoding
 // @param str The string to decode

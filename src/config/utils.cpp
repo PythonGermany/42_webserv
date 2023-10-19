@@ -46,7 +46,24 @@ std::string toHexString(unsigned char c) {
   return hex;
 }
 
-std::set<std::string> processWildcard(std::string path) {
+bool wildcardMatch(std::string pattern, std::string name) {
+  std::list<std::string> blocks =
+      split<std::list<std::string> >(pattern, "*", true);
+
+  size_t next;
+  std::list<std::string>::iterator it = blocks.begin();
+  if (it->empty()) it = blocks.erase(it);
+  while (it != blocks.end()) {
+    next = name.find(*it);
+    if (next == std::string::npos) return false;
+    name.erase(0, next + it->size());
+    bool empty = it++->empty();
+    if (empty && it == blocks.end()) return true;
+  }
+  return name.size() == 0;
+}
+
+std::set<std::string> processWildcardPath(std::string path) {
   std::list<std::string> fs(1, path);
   std::set<std::string> ret;
 
@@ -85,19 +102,21 @@ std::set<std::string> processWildcard(std::string path) {
       if (ent == NULL) break;
       if (ent->d_name == std::string(".") || ent->d_name == std::string(".."))
         continue;
+
+      // This is needed in order to only match files in a subdirectory for
+      // patterns like */*
       if (ent->d_type != DT_DIR &&
           prefix.find_first_of("*/") != std::string::npos)
         continue;
-      int ret = fnmatch(pattern.c_str(), ent->d_name, 0);
-      if (ret == 0) {
+      if (wildcardMatch(pattern, ent->d_name))
         fs.insert(itr, path + ent->d_name + prefix);
-      } else if (ret != FNM_NOMATCH)
-        throw std::runtime_error("fnmatch: " + std::string(strerror(errno)));
     }
 
     // Cleanup directory
-    if (errno != 0)
+    if (errno != 0) {
+      closedir(dir);
       throw std::runtime_error("readdir: " + std::string(strerror(errno)));
+    }
     if (closedir(dir) == -1)
       throw std::runtime_error("closedir: " + std::string(strerror(errno)));
   }

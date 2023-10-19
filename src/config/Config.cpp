@@ -242,7 +242,7 @@ void Config::processInclude(Context &context, std::string path) {
     includePath = _includePath + path;
 
   // Get file list
-  std::set<std::string> files = processWildcard(includePath);
+  std::set<std::string> files = processWildcardPath(includePath);
   std::set<std::string>::iterator itr = files.begin();
   for (; itr != files.end(); itr++) {
     accessLog_g.write(
