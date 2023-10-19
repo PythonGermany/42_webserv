@@ -35,7 +35,7 @@ class Response {
   void setBody(std::istream *body);
   void setReady(bool ready = true);
 
-  void setHeader(std::string key, std::string value);
+  void setHeader(std::string key, std::string value, bool overwrite = false);
 
   std::string getVersion() const;
   std::string getStatus() const;

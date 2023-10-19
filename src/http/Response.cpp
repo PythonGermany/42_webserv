@@ -43,9 +43,9 @@ void Response::setBody(std::istream *body) {
 
 void Response::setReady(bool ready) { _ready = ready; }
 
-void Response::setHeader(std::string key, std::string value) {
+void Response::setHeader(std::string key, std::string value, bool overwrite) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  if (_headers.find(key) != _headers.end())
+  if (_headers.find(key) != _headers.end() && overwrite == false)
     _headers[key] += ", " + value;
   else
     _headers[key] = value;

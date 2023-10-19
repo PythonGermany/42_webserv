@@ -165,7 +165,9 @@ void Http::processRequest() {
     accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
   if (isMethodValid() == false) {
-    processError("405", "Method Not Allowed");
+    bool bodyRequest =
+        _request.getMethod() == "POST" || _request.getMethod() == "PUT";
+    processError("405", "Method Not Allowed", bodyRequest);
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
     return;
   }
@@ -198,7 +200,7 @@ void Http::processFile(std::string uri) {
   if (cgiPath.size() > 0)
     return processCgi(uri, file, cgiPath);
   else if (_request.getMethod() == "POST") {
-    processError("405", "Method Not Allowed");
+    processError("405", "Method Not Allowed", true);
     std::vector<std::string> allowed = getAllowedMethods();
     allowed.erase(std::find(allowed.begin(), allowed.end(), "POST"));
     _response.setHeader("Allow", concatenate(allowed, ", "));
@@ -491,11 +493,7 @@ void Http::addIndexToPath(File &file, std::string &uri) {
 }
 
 void Http::checkResourceValidity(const File &file, const std::string &uri) {
-  if (!file.exists()) {
-    if (!endsWith(file.getPath(), "/") && file.getExtension() == "")
-      return processRedirect(uri + "/");
-    return processError("404", "Not Found");
-  }
+  if (!file.exists()) return processError("404", "Not Found");
   if (file.dir()) {
     if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
@@ -523,7 +521,7 @@ void Http::sendResponse() {
   // Set default header values
   _response.setHeader("Server", WEBSERV_ID);
   if (_response.getHeader("Content-Length").empty())
-    _response.setHeader("Content-Length", toString(0));
+    _response.setHeader("Content-Length", "0");
   if (_response.getHeader("Content-type").empty())
     _response.setHeader("Content-type", HTTP_DEFAULT_MIME);
 
@@ -533,7 +531,7 @@ void Http::sendResponse() {
   // Check if connection should be kept alive
   if (_request.getHeader("Connection") != "close" &&
       _response.getHeader("Connection") == "")
-    _response.setHeader("Connection", "keep-alive");
+    _response.setHeader("Connection", "keep-alive", true);
 
   // Send response
   send(new std::istringstream(_response.generateHead()));
