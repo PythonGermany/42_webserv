@@ -309,7 +309,7 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   }
   _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
-  if ((_readState == STATUS || _readState == HEAD) &&
+  if (pollfd.events & POLLIN && (_readState == STATUS || _readState == HEAD) &&
       _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;

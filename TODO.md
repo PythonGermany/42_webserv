@@ -1,11 +1,12 @@
 # TODO
 
-- [ ] Needed? -> Implement so that and alias updating an uri also updates context
-- [ ] Investigate NS_ERROR_NET_RESET error for put request 404 and 413 response
-- [ ] Figure out why resolving symlinks doesnt work
+- [ ] chunked POST
+- [ ] fcntl subject
+- [ ] remove inet_ntop
 
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
+- [x] Figure out why resolving symlinks doesnt work
 - [x] Replace c function for wildcard pattern matching with own function
 - [x] Figure out why login for wordpress doesn't work
 - [x] Implement cgi support
