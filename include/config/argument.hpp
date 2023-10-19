@@ -41,7 +41,7 @@ const arg_t args_g[] = {{'i', 0, setPrintInfo},
                         {'v', 0, setPrintVersion},
                         {'c', 0, setPrintConfigStructure},
                         {'t', 0, setPrintConfigValidation},
-                        {'s', 1, setLogToTerminal},
+                        {'o', 1, setLogToTerminal},
                         {'l', 1, setLogLevel},
                         {'a', 1, setAccessLog},
                         {'e', 1, setErrorLog}};
