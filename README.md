@@ -1,19 +1,6 @@
 [![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
 [![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
 
-# Contents
-
-- [Introduction](#introduction)
-- [Linux installation](#linux-installation)
-  - [Requirements](#requirements)
-  - [Compilation](#compilation)
-- [Usage](#usage)
-  - [Flags](#flags)
-- [Configuration](#configuration)
-  - [Contexts](#contexts)
-  - [Directives](#directives)
-  - [Example](#example)
-
 # Introduction
 
 This project is a basic HTTP server written in C++98.
@@ -26,6 +13,18 @@ This project is a basic HTTP server written in C++98.
 | Basic cookie support | Tested with wordpress | [RFC 2965](https://datatracker.ietf.org/doc/html/rfc2965) | # TODO: RFC right external info?
 | Argument flags | [To description](#flags) | - |
 | Configuration file | [To description](#configuration) | - |
+
+# List of Sections
+
+- [Linux installation](#linux-installation)
+  - [Requirements](#requirements)
+  - [Compilation](#compilation)
+- [Usage](#usage)
+  - [Flags](#flags)
+- [Configuration](#configuration)
+  - [Contexts](#contexts)
+  - [Directives](#directives)
+  - [Example](#example)
 
 # Linux installation
 
