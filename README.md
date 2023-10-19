@@ -14,7 +14,7 @@ This project is a basic HTTP server written in C++98.
 | Argument flags | [To description](#flags) | - |
 | Configuration file | [To description](#configuration) | - |
 
-# List of Sections
+# Table of Contents
 
 - [Linux installation](#linux-installation)
   - [Requirements](#requirements)
