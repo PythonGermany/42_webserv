@@ -143,7 +143,7 @@ void Http::OnCgiRecv(std::string msg) {
   }
 
   if (_response.getBody()->good() == false) return OnCgiError();
-  _response.setHeader("Content-Length", toString(bodySize));
+  _response.setHeader("Content-Length", toString(bodySize), true);
   _response.setReady();
   sendResponse();
 }
