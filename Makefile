@@ -83,11 +83,6 @@ fclean: clean
 
 re: fclean all
 
-cgi: cgi/cgi
-
-cgi/cgi:
-	$(CXX) $(CXXFLAGS) cgi/cgi.cpp -o $@
-
 performance:
 	make CXXFLAGS="-O3 $(CXXFLAGS)"
 
@@ -116,8 +111,6 @@ jmeter:
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 
-.PHONY: all clean fclean re
-
 help:
 	@echo "Available Makefile rules:"
 	@echo "  all          : Build the webserv binary"
@@ -131,3 +124,5 @@ help:
 	@echo "  flamegraph   : Generate flamegraph profiling SVG"
 	@echo "  jmeter       : Download and run Apache JMeter"
 	@echo "  lines        : Count lines of code in source files"
+
+.PHONY: all clean fclean re performance debug fsanitize custom flamegraph jmeter lines help
