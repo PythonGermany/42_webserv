@@ -1,9 +1,6 @@
 obj/
 logs/
 
-tests/googletest/build
-tests/obj/
-tests/jmeter/
 *.log
 
 *.out
@@ -14,17 +11,16 @@ test
 webserv
 !webserv/
 cgi/cgi
-tools/transformer
 
 #wordpress
-tests/websites/wordpress/
+websites/wordpress/
 
 #webserv conf
 conf/sites-enabled/*
 !conf/sites-enabled/config_test.conf
 
-tests/websites/config_test/uploaded/*
-!tests/websites/config_test/uploaded/empty.txt
+websites/config_test/uploaded/*
+!websites/config_test/uploaded/empty.txt
 
 # Docker stuff
 docker/webserv/source
