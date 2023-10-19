@@ -297,20 +297,20 @@ void Http::processBodyRequest() {
   if (_request.getHeader("Transfer-Encoding") != "") {
     if (_request.getHeader("Transfer-Encoding") != "chunked")
       return processError("501", "Not Implemented");
-    return setReadState(CHUNK_SIZE);
+    setReadState(CHUNK_SIZE);
+  } else {
+    // Check if body size is specified
+    std::string bodySizeStr = _request.getHeader("Content-Length");
+    if (bodySizeStr.empty()) return processError("411", "Length Required");
+    _expectedBodySize = fromString<size_t>(bodySizeStr);
+
+    // Check if body size is too large
+    if (isBodySizeValid(_expectedBodySize) == false)
+      return processError("413", "Request Entity Too Large", true);
+
+    bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
+    setReadState(BODY);
   }
-
-  // Check if body size is specified
-  std::string bodySizeStr = _request.getHeader("Content-Length");
-  if (bodySizeStr.empty()) return processError("411", "Length Required");
-  _expectedBodySize = fromString<size_t>(bodySizeStr);
-
-  // Check if body size is too large
-  if (isBodySizeValid(_expectedBodySize) == false)
-    return processError("413", "Request Entity Too Large", true);
-
-  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
-  setReadState(BODY);
 
   if (_request.getMethod() == "POST")
     return processFile(_uri);
