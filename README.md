@@ -3,6 +3,7 @@
 
 # TODO
 
+- [ ] Needed? -> Implement so that and alias updating an uri also updates context
 - [ ] Investigate NS_ERROR_NET_RESET error for put request 404 and 413 response
 - [ ] Figure out why resolving symlinks doesnt work
 
@@ -331,8 +332,7 @@ http {
 ```nginx
 # File -> /etc/webserv/sites-enabled/server.conf
 server {
-  listen localhost:8080;
-  server_name localhost:8080;
+  listen 8080;
   root /var/www/html;
   index index.html index.htm;
   autoindex on;
@@ -342,16 +342,16 @@ server {
   cgi php /usr/bin/php-cgi;
 
   location /example {
-    alias /www; # Request: GET /example/file -> root/www/file
+    alias /www; # Request: GET /example/file -> ROOT/www/file
     index example.html;
     allow GET HEAD OPTIONS PUT DELETE;
     autoindex off;
   }
   location /redirect {
-    redirect http://www.duckduckgo.com;
+    redirect https://www.duckduckgo.com;
   }
 }
 ```
 ```
-./webserv -i
+./webserv [-i]
 ```
