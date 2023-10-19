@@ -64,12 +64,6 @@ bool File::file() const {
   return S_ISREG(buf.st_mode);
 }
 
-bool File::isSymLink() const {
-  struct stat buf;
-  if (lstat(_path.c_str(), &buf) == -1) return false;
-  return S_ISLNK(buf.st_mode);
-}
-
 bool File::dir() const {
   struct stat buf;
   if (stat(_path.c_str(), &buf) == -1) return false;
@@ -103,13 +97,6 @@ time_t File::getLastModified() const {
 std::string File::lastModified(std::string format) const {
   time_t buf = getLastModified();
   return getTime(format, &buf);
-}
-
-int File::resolveSymlink() {
-  char resolvedPath[PATH_MAX];
-  if (realpath(_path.c_str(), resolvedPath) == NULL) return -1;
-  _path = std::string(resolvedPath);
-  return 0;
 }
 
 int File::createDirPath() {
