@@ -187,10 +187,17 @@ void Http::processFile(std::string uri) {
   checkResourceValidity(file, uri);
   if (_response.isReady()) return;
 
-  std::string cgiPath = getCgiPath(file.getExtension());
-  if (cgiPath.size() > 0)
-    return processCgi(uri, file, cgiPath);
-  else if (_request.getMethod() == "POST") {
+  cgiProgramPathname = getCgiPath(file.getExtension());
+  if (cgiProgramPathname.size() > 0) {
+    cgiFilePathname = file.getPath();
+    if (_request.getMethod() == "POST" &&
+        _request.getHeader("Transfer-Encoding") == "chunked") {
+      cgiChunkedBody.clear();
+      setReadState(CHUNK_SIZE);
+      return;
+    }
+    return processCgi();
+  } else if (_request.getMethod() == "POST") {
     processError("405", "Method Not Allowed", true);
     std::vector<std::string> allowed = getAllowedMethods();
     allowed.erase(std::find(allowed.begin(), allowed.end(), "POST"));
@@ -214,10 +221,8 @@ void Http::processFile(std::string uri) {
   _response.setReady();
 }
 
-void Http::processCgi(std::string const &uri, File const &file,
-                      std::string const &cgiPathname) {
-  (void)uri;
-  std::string pathname = file.getPath();
+void Http::processCgi(std::string contentLength) {
+  std::string pathname(cgiFilePathname);
   if (!startsWith(pathname, "/")) pathname.insert(0, cwd_g);
 
   std::vector<std::string> env;
@@ -244,9 +249,10 @@ void Http::processCgi(std::string const &uri, File const &file,
   // Required amongst others to comply with CGI/1.1
   env.push_back("SCRIPT_NAME=" + pathname);
   if (_request.getMethod() == "POST") {
-    env.push_back("CONTENT_LENGTH=" +
-                  _request.getHeader(
-                      "Content-length"));  // TODO: What if request is chunked?
+    if (contentLength.empty())
+      env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
+    else
+      env.push_back("CONTENT_LENGTH=" + contentLength);
     if (_request.getHeader("Content-type") != "")
       env.push_back("CONTENT_TYPE=" + _request.getHeader("Content-type"));
   }
@@ -269,7 +275,7 @@ void Http::processCgi(std::string const &uri, File const &file,
   // env.push_back("PATH_INFO=" ...); // TODO: Implement
   // env.push_back("PATH_TRANSLATED=" ...);
 
-  runCGI(cgiPathname, std::vector<std::string>(1, pathname), env);
+  runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
   if (_request.getMethod() != "POST") cgiCloseSendPipe();
   _response.clear();
 }
@@ -329,13 +335,17 @@ void Http::processPutData(const std::string &data) {
 }
 
 void Http::processPostData(std::string &data) {
-  cgiSend(data);
   _currBodySize += data.size();
   if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (data.size() == 0) return cgiCloseSendPipe();
+    if (data.size() == 0) {
+      processCgi(toString(_currBodySize));
+      cgiSend(cgiChunkedBody);
+      return cgiCloseSendPipe();
+    }
+    cgiChunkedBody.append(data);
     return setReadState(CHUNK_SIZE);
   }
-
+  cgiSend(data);
   if (_currBodySize >= _expectedBodySize) {
     cgiCloseSendPipe();
     return;

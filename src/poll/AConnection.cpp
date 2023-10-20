@@ -378,9 +378,11 @@ void AConnection::onNoPollEvent(struct pollfd &) {
 }
 
 /**
- * CGI
+ * The http object is destroyed after calling fork(). The parameters must still
+ * remain valid. program cannot be a reference to Http::cgiProgramPathname
+ * because this is a member variable of the Http object, which is destroyed.
  */
-void AConnection::runCGI(std::string const &program,
+void AConnection::runCGI(std::string program,
                          std::vector<std::string> const &arg,
                          std::vector<std::string> const &env) {
   int pipeInArray[2];

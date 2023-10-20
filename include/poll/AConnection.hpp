@@ -53,7 +53,7 @@ class AConnection : public IFileDescriptor {
   void send(std::istream *msg);
   void cgiSend(std::string const &msg);
   void cgiCloseSendPipe();
-  void runCGI(std::string const &program, std::vector<std::string> const &arg,
+  void runCGI(std::string program, std::vector<std::string> const &arg,
               std::vector<std::string> const &env);
   void stopReceiving();
 

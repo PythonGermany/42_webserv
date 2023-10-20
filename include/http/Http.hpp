@@ -39,6 +39,10 @@ class Http : public AConnection {
 
   std::string _log;
 
+  std::string cgiProgramPathname;
+  std::string cgiFilePathname;
+  std::string cgiChunkedBody;
+
  public:
   Http(Address const& client, Address const& host);
   ~Http();
@@ -62,8 +66,7 @@ class Http : public AConnection {
   void processAutoindex(std::string uri);
   void processRedirect(std::string uri);
   void processError(std::string code, std::string reason, bool close = false);
-  void processCgi(std::string const& uri, File const& file,
-                  std::string const& cgiPathname);
+  void processCgi(std::string contentLength = "");
 
   void addIndexToPath(File& file, std::string& uri);
   void checkResourceValidity(const File& file, const std::string& uri);
