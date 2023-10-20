@@ -127,9 +127,7 @@ void Http::OnCgiRecv(std::string msg) {
     }
     for (std::string::iterator it = name.begin(); it != name.end(); ++it)
       *it = std::tolower(*it);
-    if (name == "x-powered-by")
-      continue;  // TODO: server_tokens ?
-    else if (name == "status") {
+    if (name == "status") {
       std::istringstream ss(line);
       std::string status;
       std::getline(ss, status, ' ');

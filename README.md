@@ -10,7 +10,7 @@ This project is a basic HTTP server written in C++98.
 | HTTP | HTTP/1.1 | [RFC 2616](https://datatracker.ietf.org/doc/html/rfc2616) |
 | CGI | CGI/1.1 (Tested with php-cgi, using wordpress, and python cgi) | [RFC 3875](https://datatracker.ietf.org/doc/html/rfc3875) |
 | Implemented methods | GET / HEAD / OPTIONS / POST / PUT / DELETE | [RFC 2616 section 5.1.1](https://datatracker.ietf.org/doc/html/rfc2616#section-5.1.1) |
-| Basic cookie support | Tested with wordpress | [RFC 2109](https://datatracker.ietf.org/doc/html/rfc2109) | # TODO: RFC right external info?
+| Basic cookie support | Tested with wordpress | [RFC 2109](https://datatracker.ietf.org/doc/html/rfc2109) |
 | Argument flags | [To description](#flags) | - |
 | Configuration file | [To description](#configuration) | - |
 

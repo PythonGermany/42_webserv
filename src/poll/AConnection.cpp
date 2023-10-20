@@ -368,7 +368,7 @@ void AConnection::onNoPollEvent(struct pollfd &) {
   gettimeofday(&currentTime, NULL);
   delta = currentTime - lastTimeActive;
   timeout = _connectionTimeout - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
-  if (timeout <= 0) {  // TODO: Will cgi also be closed?
+  if (timeout <= 0) {
     std::ostringstream oss;
     oss << client << ": Connection Timed Out";
     throw std::runtime_error(oss.str());
