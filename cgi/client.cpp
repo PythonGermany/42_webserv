@@ -27,16 +27,19 @@ int main(int, char **, char **) {
   }
   std::cout << "connected to: 127.0.0.1:8080" << std::endl;
   std::string msg;
-  msg += "PUT /tmp.file HTTP/1.1\r\n";
+  msg += "POST /dump.php HTTP/1.1\r\n";
   msg += "Host: 127.0.0.1\r\n";
   msg += "Transfer-Encoding: chunked\r\n";
+  msg += "Content-Type: application/x-www-form-urlencoded\r\n";
   msg += "\r\n";
 
   std::vector<std::string> body;
-  body.push_back("hello world\r\n");
-  body.push_back("\r\n");
-  body.push_back("does it\r\n");
-  body.push_back("work ???????????????????????????????????");
+  body.push_back("hello=world");
+  body.push_back("&bla=blup");
+  body.push_back("&newline=some text with a newline\r\nin the middle");
+  // body.push_back("does it\r\n");
+  // body.push_back("work ???????????????????????????????????");
+
   write(fd, msg.c_str(), msg.size());
 
   for (size_t i = 0; i < body.size(); ++i) {
