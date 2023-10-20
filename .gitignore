@@ -15,10 +15,6 @@ cgi/cgi
 #wordpress
 websites/wordpress/
 
-#webserv conf
-conf/sites-enabled/*
-!conf/sites-enabled/config_test.conf
-
 websites/config_test/uploaded/*
 !websites/config_test/uploaded/empty.txt
 
