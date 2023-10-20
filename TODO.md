@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] chunked POST
+- [x] chunked POST
 - [ ] fcntl subject
 - [ ] remove inet_ntop
 
