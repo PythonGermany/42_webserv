@@ -34,8 +34,17 @@ This project is a basic HTTP server written in C++98.
 
 ## Compilation
 
+### Native
+
 ```
 make [performance|debug|fsanitize]
+```
+
+### Docker
+
+This will create a mariadb docker container for the database another container which will setup wordpress, compile webserv execute it. To populate the container env credentials you can make a copy of the [.env-example](docker/.env-example) file and rename it to `.env`, make sure to change the default values according to your needs.
+```
+make -C docker up
 ```
 
 # Usage
@@ -70,7 +79,7 @@ You can look at the parsing debug output by setting the flag `o` to `on` and the
 
 # Configuration
 
-The configuration file is used to define the configuration of the webserver. It is composed of directives. A directive is composed of a name arguments and a value. The value can be a string or a block. A block is a list of directives.
+The configuration file is used to define the configuration of the webserver. It is composed of directives. A directive is composed of a name arguments and a value. The value can be a string or a block. A block is a list of directives. The file [webserv.conf](conf/webserv.conf) demonstrates the default configuration of the webserv executable.
 
 | Config type | Options |
 | --- | --- |
@@ -110,7 +119,7 @@ types {
   type MIME_TYPE EXTENSION [EXTENSION ...];
 }
 ```
-Types context. It contains the mime types of the server.  
+Types context. It contains the mime types of the server. The file [mime.types](conf/mime.types) provides an extensive default configuration for this context.  
 **Allowed tokens:** [type](#type)
 
 ### Server
