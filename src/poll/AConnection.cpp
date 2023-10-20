@@ -53,7 +53,7 @@ void AConnection::setReadState(state_t readState) {
   _readState = readState;
 
   switch (_readState) {
-    case STATUS:
+    case REQUEST_LINE:
       readDelimiter = "\r\n";
       break;
 
@@ -319,7 +319,8 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   }
   _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
-  if (pollfd.events & POLLIN && (_readState == STATUS || _readState == HEAD) &&
+  if (pollfd.events & POLLIN &&
+      (_readState == REQUEST_LINE || _readState == HEAD) &&
       _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;
@@ -338,8 +339,8 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
     pos += readDelimiter.size();
 
     switch (_readState) {
-      case STATUS:
-        OnStatusRecv(_readBuffer.substr(0, pos));
+      case REQUEST_LINE:
+        OnRequestRecv(_readBuffer.substr(0, pos));
         break;
       case HEAD:
         OnHeadRecv(_readBuffer.substr(0, pos));

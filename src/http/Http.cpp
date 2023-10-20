@@ -2,7 +2,7 @@
 
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
-  setReadState(STATUS);
+  setReadState(REQUEST_LINE);
   this->headSizeLimit = 8192;
   this->_virtualHost = NULL;
   this->_context = NULL;
@@ -19,7 +19,7 @@ Http::~Http() {
       DEBUG);
 }
 
-void Http::OnStatusRecv(std::string msg) {
+void Http::OnRequestRecv(std::string msg) {
   accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
 
   const std::string &delim = getReadDelimiter();
@@ -52,11 +52,9 @@ void Http::OnStatusRecv(std::string msg) {
 void Http::OnHeadRecv(std::string msg) {
   accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
 
-  // Parse request
   if (_request.parseHeaderFields(msg))
     processError("400", "Bad Request", true);
   else {
-    // If possible use host of absolute uri otherwise use host of header
     std::string requestHost = _request.getHeader("Host");
     if (_request.getUri().getHost().size() > 0)
       requestHost = _request.getUri().getHost();
@@ -525,7 +523,7 @@ void Http::sendResponse() {
   if (_request.getMethod() != "HEAD") send(_response.resetBody());
 
   // Reset class variables
-  setReadState(STATUS);
+  setReadState(REQUEST_LINE);
 
   // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||

@@ -33,7 +33,7 @@ class AConnection : public IFileDescriptor {
   virtual void OnCgiError() = 0;
 
  protected:
-  typedef enum state_e { STATUS, HEAD, BODY, CHUNK_SIZE } state_t;
+  typedef enum state_e { REQUEST_LINE, HEAD, BODY, CHUNK_SIZE } state_t;
 
   Address client;
   Address host;
@@ -46,7 +46,7 @@ class AConnection : public IFileDescriptor {
 
   std::string const &getReadDelimiter() const;
 
-  virtual void OnStatusRecv(std::string msg) = 0;
+  virtual void OnRequestRecv(std::string msg) = 0;
   virtual void OnHeadRecv(std::string msg) = 0;
   virtual void OnChunkSizeRecv(std::string msg) = 0;
   virtual void OnBodyRecv(std::string msg) = 0;

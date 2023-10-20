@@ -4,6 +4,7 @@
 - [ ] fcntl subject
 - [ ] remove inet_ntop
 
+- [ ] (Optional) Implement try_files or similar
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
 - [x] Figure out why resolving symlinks doesnt work

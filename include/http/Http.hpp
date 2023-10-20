@@ -43,7 +43,7 @@ class Http : public AConnection {
   Http(Address const& client, Address const& host);
   ~Http();
 
-  void OnStatusRecv(std::string msg);
+  void OnRequestRecv(std::string msg);
   void OnHeadRecv(std::string msg);
   void OnChunkSizeRecv(std::string msg);
   void OnBodyRecv(std::string msg);

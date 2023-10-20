@@ -33,12 +33,12 @@ requests_data = [
         "content_file": "",
     },
     {
-        "url": "/redirect",
+        "url": "/redirect/",
         "expected_response": 200,
         "content_file": "",
     },
     {
-        "url": "/redirect2",
+        "url": "/redirect2/",
         "expected_response": 200,
         "content_file": "",
     },
