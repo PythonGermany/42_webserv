@@ -114,9 +114,6 @@ Config::Config(std::string path, std::string includePath) {
       includePath.empty() ? File(_path).getDir() : File(includePath).getDir();
 
   File f(path);
-  if (f.isSymLink() && f.resolveSymlink() != 0)
-    throw std::runtime_error("Failed to resolve symlink '" + path +
-                             "': " + std::strerror(errno));
   if (f.exists() == false)
     throw std::runtime_error("File '" + path + "' does not exist");
   std::ifstream fstream(_path.c_str());

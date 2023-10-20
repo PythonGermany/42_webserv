@@ -47,9 +47,6 @@ class File {
   // Checks if the file is a regular file
   // @exception No custom exceptions
   bool file() const;
-  // Checks if the file is a symbolic link
-  // @exception No custom exceptions
-  bool isSymLink() const;
   // Checks if the file is a directory
   // @exception No custom exceptions
   bool dir() const;
@@ -69,8 +66,6 @@ class File {
   // Returns the last time the file was modified
   // @exception No custom exceptions
   std::string lastModified(std::string format) const;
-
-  int resolveSymlink();
 
   int createDirPath();
 };
