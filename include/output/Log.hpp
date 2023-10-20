@@ -71,7 +71,8 @@ class Log {
   // Writes a message to the log file and if enabled also to the _terminal
   // stream
   // @exception No custom exceptions
-  void write(std::string msg, log_level_t level, std::string color = RESET);
+  void write(std::string const& msg, log_level_t level,
+             std::string color = RESET);
 
  private:
   std::string getLevelColor(log_level_t level);

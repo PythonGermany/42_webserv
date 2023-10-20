@@ -5,7 +5,7 @@ log_level_t Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
 std::string Log::_dateFormat = LOG_DATE_FORMAT;
 
-Log::Log(std::ostream& terminal) : _terminal(terminal) {}
+Log::Log(std::ostream &terminal) : _terminal(terminal) {}
 
 Log::~Log() {}
 
@@ -50,7 +50,7 @@ log_level_t Log::getLevel() { return _log_level; }
 
 bool Log::getInitialized() { return _initialized; }
 
-void Log::write(std::string msg, log_level_t level, std::string color) {
+void Log::write(std::string const &msg, log_level_t level, std::string color) {
   if (level > _log_level) return;
   std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
   if (_log_to_terminal) {
