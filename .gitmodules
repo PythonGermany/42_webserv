@@ -1,6 +1,3 @@
-[submodule "tests/googletest"]
-	path = tests/googletest
-	url = git@github.com:google/googletest.git
-[submodule "tests/websites/myceel"]
-	path = tests/websites/myceel
+[submodule "websites/myceel"]
+	path = websites/myceel
 	url = git@github.com:PythonGermany/myceel.git

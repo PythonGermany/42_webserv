@@ -19,5 +19,3 @@
 
 - [ ] <del>Maybe use streambufs instead of streams https://gcc.gnu.org/onlinedocs/libstdc++/manual/fstreams.html#std.io.filestreams.binary</del>
 - [ ] <del>Maybe implement configurable default mime</del>
-
-- [ ] Remove unwanted submodules and config once ready for evaluation
