@@ -1,6 +1,6 @@
 set -e
 
-folder="/webserv/tests/websites/wordpress"
+folder="/webserv/websites/wordpress"
 if [ ! -d "$folder" ] || [ -z "$(ls -A "$folder")" ]; then
   mkdir -p $folder
   wp core download --path=$folder
