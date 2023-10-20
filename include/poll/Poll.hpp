@@ -48,8 +48,6 @@ class Poll {
   void remove(size_t pos);
   void release(CallbackPointer const *callback, struct pollfd const *pollfd,
                size_t size);
-  void handleAddingAttempts();  // TODO: Still needed, since it doesnt seem to
-                                // be implemented?
 };
 
 #endif  // POLL_HPP
