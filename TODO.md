@@ -4,6 +4,7 @@
 - [ ] fcntl subject
 - [ ] remove inet_ntop
 
+- [ ] (Optional) Fix problem of no server response in case of connection being destructed due to timeout, in every case but especially if cgi is active
 - [ ] (Optional) Implement try_files or similar
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
