@@ -78,30 +78,34 @@ The configuration file is used to define the global configuration of the webserv
 | Config type | Options |
 | --- | --- |
 | Configuration file context | [http](#http) / [location](#location) / [server](#server) |
-| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
 
 ## Contexts
 
 ### Http
 ```nginx
 http {
-    types {
-        [directives]
-    }
+  include PATH;
 
-    include PATH;
-    log_to_terminal [on|off];
-    log_level LEVEL;
-    access_log PATH;
-    error_log PATH;
+  types {
+    [directives]
+  }
 
-    server {
-        [directives]
-    }
+  cgi_timeout NUMBER;
+  client_timeout NUMBER;
+
+  access_log PATH;
+  error_log PATH;
+  log_to_terminal [on|off];
+  log_level LEVEL;
+
+  server {
+    [directives]
+  }
 }
 ```
 Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [access_log](#access_log) / [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [server](#server) / [types](#types)
+**Allowed tokens:** [access_log](#access_log) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout)/ [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [server](#server) / [types](#types)
 
 ### Types
 ```nginx
@@ -115,20 +119,20 @@ Types context. It contains the mime types of the server.
 ### Server
 ```nginx
 server {
-    listen HOST:PORT;
-    server_name NAME [NAME ...];
-    root PATH;
-    index FILE [FILE ...];
+  listen HOST:PORT;
+  server_name NAME [NAME ...];
+  root PATH;
+  index FILE [FILE ...];
 
-    autoindex [on|off];
-    max_client_body_size SIZE[k|m];
-    allow METHOD [METHOD ...];
-    error_page CODE PATH;
-    cgi EXTENSION PATH;
+  autoindex [on|off];
+  max_client_body_size SIZE[k|m];
+  allow METHOD [METHOD ...];
+  error_page CODE PATH;
+  cgi EXTENSION PATH;
 
-    location PATH {
-        [directives]
-    }
+  location PATH {
+    [directives]
+  }
 }
 ```
 Virtual server context. It contains the configuration of a virtual server.  
@@ -137,15 +141,15 @@ Virtual server context. It contains the configuration of a virtual server.
 ### Location
 ```nginx
 location PATH {
-    alias PATH;
-    root PATH;
-    index FILE [FILE ...];
-    
-    allow METHOD [METHOD ...];
-    autoindex [on|off];
-    redirect URL;
-    max_client_body_size SIZE;
-    cgi EXTENSTION PATH;
+  alias PATH;
+  root PATH;
+  index FILE [FILE ...];
+  
+  allow METHOD [METHOD ...];
+  autoindex [on|off];
+  redirect URL;
+  max_client_body_size SIZE;
+  cgi EXTENSTION PATH;
 }
 ```
 Location context for `PATH`. It contains the configuration of a location.  
@@ -188,8 +192,24 @@ Default: `off`
 ```nginx
 cgi EXTENSTION PATH;
 ```
-Sets the cgi EXECUTABLE to path for EXTENSION.    
+Sets the cgi EXECUTABLE to path for EXTENSION.  
 **Allowed in:** [Location](#location) / [Server](#server)
+
+### cgi_timeout
+```nginx
+cgi_timeout NUMBER;
+```
+Sets the cgi timeout in milliseconds.  
+Default: `30000`  
+**Allowed in:** [Http](#http)
+
+### client_timout
+```nginx
+client_timout NUMBER;
+```
+Sets the client timeout in milliseconds.  
+Default: `30000`  
+**Allowed in:** [Http](#http)
 
 ### error_log
 ```nginx
@@ -296,6 +316,9 @@ types {
 # File -> /etc/webserv/webserv.conf
 http {
   include /etc/webserv/mime.types;
+
+  cgi_timeout 30000;
+  client_timeout 30000;
 
   log_to_terminal off;
   log_level info;

@@ -11,6 +11,11 @@
 #include "timeval.hpp"
 
 // WEBSERV_CONFIG ----------- ACONNECTION VALUES -------------------
+/**
+ * close connections if they are TIMEOUT milliseconds inactive
+ */
+#define CONNECTION_TIMEOUT 30000
+#define CGI_TIMEOUT 30000
 #define BUFFER_SIZE 65536
 
 class AConnection : public IFileDescriptor {
@@ -20,6 +25,9 @@ class AConnection : public IFileDescriptor {
   AConnection(AConnection const &other);
   virtual ~AConnection();
   AConnection &operator=(AConnection const &other);
+
+  static void initConnectionTimeout(int connectionTimeout);
+  static void initCgiTimout(int cgiTimout);
 
   virtual void OnCgiRecv(std::string msg) = 0;
   virtual void OnCgiError() = 0;
@@ -50,6 +58,7 @@ class AConnection : public IFileDescriptor {
   void stopReceiving();
 
  private:
+  static int _connectionTimeout;
   state_t _readState;
   std::string readDelimiter;
 
@@ -62,6 +71,8 @@ class AConnection : public IFileDescriptor {
   struct pollfd *_newPollfd;
 
   // cgi vars
+  static int _cgiTimout;
+
   int pipeIn;
   int pipeOut;
   std::string _cgiReadBuffer;

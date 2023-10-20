@@ -18,6 +18,7 @@ class Init {
   static void initLogDefaults(Context& context);
   static void initMimeTypes(Context& context);
   static void initVirtualHosts(Context& context);
+  static void initAConnection(Context& context);
   static void initPoll();
 };
 

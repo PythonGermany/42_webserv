@@ -9,6 +9,10 @@
 #include "Poll.hpp"
 #include "global.hpp"
 
+int AConnection::_connectionTimeout = CONNECTION_TIMEOUT;
+
+int AConnection::_cgiTimout = CGI_TIMEOUT;
+
 AConnection::AConnection(Address const &serverAddress,
                          Address const &remoteAddress) {
   host = serverAddress;
@@ -19,7 +23,7 @@ AConnection::AConnection(Address const &serverAddress,
   pipeIn = -1;
   pipeOut = -1;
   _cgiPid = -1;
-  Poll::setTimeout(CONNECTION_TIMEOUT);
+  Poll::setTimeout(_connectionTimeout);
 }
 
 AConnection::~AConnection() {
@@ -38,6 +42,12 @@ AConnection::~AConnection() {
         DEBUG, BLUE);
   }
 }
+
+void AConnection::initConnectionTimeout(int connectionTimeout) {
+  _connectionTimeout = connectionTimeout;
+}
+
+void AConnection::initCgiTimout(int cgiTimout) { _cgiTimout = cgiTimout; }
 
 void AConnection::setReadState(state_t readState) {
   _readState = readState;
@@ -105,7 +115,7 @@ void AConnection::onPollEvent(struct pollfd &pollfd,
   if (pollfd.revents & POLLIN) onPollIn(pollfd);
   if (pollfd.revents & POLLOUT) onPollOut(pollfd);
   gettimeofday(&lastTimeActive, NULL);
-  if (pollfd.events) Poll::setTimeout(CONNECTION_TIMEOUT);
+  if (pollfd.events) Poll::setTimeout(_connectionTimeout);
 }
 
 void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
@@ -195,7 +205,7 @@ void AConnection::onPipeInNoPollEvent(struct pollfd &pollfd) {
 
   gettimeofday(&currentTime, NULL);
   delta = currentTime - lastTimeActive;
-  timeout = CGI_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
+  timeout = _cgiTimout - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
   if (timeout <= 0) {
     pollfd.events = 0;
     KillCgi();
@@ -357,8 +367,8 @@ void AConnection::onNoPollEvent(struct pollfd &) {
 
   gettimeofday(&currentTime, NULL);
   delta = currentTime - lastTimeActive;
-  timeout = CONNECTION_TIMEOUT - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
-  if (timeout <= 0) {
+  timeout = _connectionTimeout - (delta.tv_sec * 1000 + delta.tv_usec / 1000);
+  if (timeout <= 0) {  // TODO: Will cgi also be closed?
     std::ostringstream oss;
     oss << client << ": Connection Timed Out";
     throw std::runtime_error(oss.str());

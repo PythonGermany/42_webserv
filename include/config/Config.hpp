@@ -49,6 +49,8 @@ const token_t tokens_g[] = {
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
     {"error_log", "http", false, 0, 1, 1, 1, NULL},
+    {"cgi_timeout", "http", false, 0, 1, 1, 1, isNumeric},
+    {"client_timeout", "http", false, 0, 1, 1, 1, isNumeric},
 
     // Mime type context
     {"types", "http", true, 1, 1, 0, 0, NULL},
