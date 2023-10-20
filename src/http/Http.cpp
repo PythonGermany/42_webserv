@@ -53,25 +53,20 @@ void Http::OnHeadRecv(std::string msg) {
   accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
 
   // Parse request
-  if (_request.parseHeaderFields(msg)) {
+  if (_request.parseHeaderFields(msg))
     processError("400", "Bad Request", true);
-    sendResponse();
-  }
+  else {
+    // If possible use host of absolute uri otherwise use host of header
+    std::string requestHost = _request.getHeader("Host");
+    if (_request.getUri().getHost().size() > 0)
+      requestHost = _request.getUri().getHost();
 
-  // If possible use host of absolute uri otherwise use host of header
-  std::string requestHost = _request.getHeader("Host");
-  if (_request.getUri().getHost().size() > 0) {
-    requestHost = _request.getUri().getHost();
-    std::string port = _request.getUri().getPort();
-    if (port.size() > 0 && port != "80")
-      requestHost += ":" + _request.getUri().getPort();
+    if (_request.getHeader("Host").size() > 0) {
+      _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
+      processRequest();
+    } else
+      processError("400", "Bad Request", true);
   }
-
-  if (_request.getHeader("Host").size() > 0) {
-    _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
-    processRequest();
-  } else
-    processError("400", "Bad Request", true);
 
   if (_response.isReady()) sendResponse();
 }
