@@ -1,6 +1,3 @@
-[![ubuntu](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/ubuntu.yml)
-[![macos](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/macos.yml)
-
 # Introduction
 
 This project is a basic HTTP server written in C++98.
@@ -32,8 +29,8 @@ This project is a basic HTTP server written in C++98.
 
 | Requirement | Installation |
 | --- | --- |
-| C++98 | sudo apt-get install clang |
-| Make | sudo apt-get install make |
+| C++98 | apt install clang |
+| Make | apt install make |
 
 ## Compilation
 
@@ -67,13 +64,13 @@ A flag overwrites the default setting as well as the ones that are configured in
 
 ### Example:
 ```
-./webserv [configuration_file] -s on -l 3 -a PATH
+./webserv [configuration_file] -s on -l 2 -a PATH
 ```
-You can look at the parsing debug output by setting the flag `s` to `on` and the flag `l` to `3` or higher, this will override the default setting before the config has been read, parsed and applied. If you also want to write the parsing log messages to a file the flag `a` needs to be set to the `path` you want the log file to be. Those steps are necessary because even if you specify all the previous flag settings in the config file they will only be applied after having successfully loaded your config settings, which will, of course, happen after the config file has been parsed.
+You can look at the parsing debug output by setting the flag `o` to `on` and the flag `l` to `3` or higher, this will override the default setting before the config has been read, parsed and applied. If you also want to write the parsing log messages to a file the flag `a` needs to be set to the `PATH` you want the log file to be. Those steps are necessary because even if you specify all the previous flag settings in the config file they will only be applied after having successfully loaded your config settings, which will, of course, happen after the config file has been parsed.
 
 # Configuration
 
-The configuration file is used to define the global configuration of the webserver. It is composed of multiple contexts. Each context can contain multiple directives. A directive is composed of a name arguments and a value. The value can be a string, a number or a block. A block is a list of directives.
+The configuration file is used to define the configuration of the webserver. It is composed of directives. A directive is composed of a name arguments and a value. The value can be a string or a block. A block is a list of directives.
 
 | Config type | Options |
 | --- | --- |
@@ -169,7 +166,7 @@ Default: `/var/log/webserv/access.log`
 ```nginx
 alias PATH;
 ```
-Set an alias path. Example request for alias PATH: `GET /alias/file` -> `root/PATH/file`  
+Set an alias path. Example request for alias PATH: `GET /LOCATION_CONTEXT_PATH/file` -> `ROOT/PATH/file`  
 **Allowed in:** [Location](#location)
 
 ### allow
@@ -267,7 +264,7 @@ Default: `off`
 ```nginx
 max_client_body_size SIZE[k|m];
 ```
-Sets the maximum body size for a client request message.  
+Sets the maximum body size for a client request message. 1k is 1024 bytes, 1m is 1024k.  
 Default: `1m`  
 **Allowed in:** [Location](#location) / [Server](#server)
 
