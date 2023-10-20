@@ -47,9 +47,13 @@ int main(int argc, char** argv) {
       if (!Poll::poll()) break;
     }
   } catch (const std::exception& e) {
-    if (errorLog_g.getInitialized() == false) Log::setLogToTerminal(true, true);
-    errorLog_g.write(e.what(), ERROR);
-    printHelp(PRINT);
+    try {
+      if (errorLog_g.getInitialized() == false)
+        Log::setLogToTerminal(true, true);
+      errorLog_g.write(e.what(), ERROR);
+      printHelp(PRINT);
+    } catch (...) {
+    }
     return 1;
   }
   return 0;

@@ -73,7 +73,10 @@ bool Poll::poll() {
     throw std::runtime_error(std::string("Poll::poll(): ") +
                              std::strerror(errno));
 
-  if (ready == 0) errorLog_g.write("Poll: no revents", DEBUG, BRIGHT_RED);
+  if (ready == 0) try {
+      errorLog_g.write("Poll: no revents", DEBUG, BRIGHT_RED);
+    } catch (...) {
+    }
   poll.timeout = -1;
   poll.iterate();
   return true;
@@ -166,7 +169,10 @@ void Poll::iterate() {
         ++i;
       }
     } catch (std::exception const &e) {
-      accessLog_g.write(std::string(e.what()), DEBUG);
+      try {
+        accessLog_g.write(std::string(e.what()), DEBUG);
+      } catch (...) {
+      }
       remove(callbackObjects[i].ptr);
       release(newCallbackObject, newPollfd,
               sizeof(newPollfd) / sizeof(*newPollfd));

@@ -33,13 +33,15 @@ AConnection::~AConnection() {
   }
   if (_cgiPid != -1 && Poll::lastForkPid() != 0) {
     int status;
-    if (kill(_cgiPid, SIGKILL) == -1)
-      errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
+    kill(_cgiPid, SIGKILL);
     waitpid(_cgiPid, &status, 0);
-    accessLog_g.write(
-        "reaped CGI process: " + toString<int>(_cgiPid) + " exit status: " +
-            toString<int>(WEXITSTATUS(status)) + " reason: object destructed",
-        DEBUG, BLUE);
+    try {
+      accessLog_g.write(
+          "reaped CGI process: " + toString<int>(_cgiPid) + " exit status: " +
+              toString<int>(WEXITSTATUS(status)) + " reason: object destructed",
+          DEBUG, BLUE);
+    } catch (...) {
+    }
   }
 }
 
@@ -259,8 +261,7 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
 void AConnection::KillCgi() {
   int status;
 
-  if (kill(_cgiPid, SIGKILL) == -1)
-    errorLog_g.write("ERROR: kill()", DEBUG, BRIGHT_RED);
+  kill(_cgiPid, SIGKILL);
   waitpid(_cgiPid, &status, 0);
   pid_t tmp = _cgiPid;
   _cgiPid = -1;
@@ -377,6 +378,34 @@ void AConnection::onNoPollEvent(struct pollfd &) {
   Poll::setTimeout(timeout);
 }
 
+static bool initPipes(int a[2], int b[2]) {
+  static int const fdsize = 4;
+  int fd[fdsize];
+  int flags[fdsize];
+
+  if (pipe(&(fd[0])) == -1) return false;
+  if (pipe(&(fd[2])) == -1) {
+    close(fd[0]);
+    close(fd[1]);
+    return false;
+  }
+  for (int i = 0; i < fdsize; ++i) {
+    flags[i] = fcntl(fd[i], F_GETFL, 0);
+    if (flags[i] == -1 || fcntl(fd[i], F_SETFL, flags[i] | O_NONBLOCK) == -1) {
+      close(fd[0]);
+      close(fd[1]);
+      close(fd[2]);
+      close(fd[3]);
+      return false;
+    }
+  }
+  a[0] = fd[0];
+  a[1] = fd[1];
+  b[0] = fd[2];
+  b[1] = fd[3];
+  return true;
+}
+
 /**
  * The http object is destroyed after calling fork(). The parameters must still
  * remain valid. program cannot be a reference to Http::cgiProgramPathname
@@ -388,16 +417,9 @@ void AConnection::runCGI(std::string program,
   int pipeInArray[2];
   int pipeOutArray[2];
 
-  if (pipe(pipeInArray) == -1) {
-    errorLog_g.write("ERROR: pipe()", DEBUG, BRIGHT_RED);
-    OnCgiError();
-    return;
-  }
-
-  if (pipe(pipeOutArray)) {
-    errorLog_g.write("ERROR: pipe()", DEBUG, BRIGHT_RED);
-    close(pipeInArray[0]);
-    close(pipeInArray[1]);
+  if (initPipes(pipeInArray, pipeOutArray) == false) {
+    errorLog_g.write(std::string("initPipes(): ") + std::strerror(errno),
+                     ERROR);
     OnCgiError();
     return;
   }

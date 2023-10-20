@@ -1,6 +1,8 @@
 #ifndef ACONNECTION_HPP
 #define ACONNECTION_HPP
 
+#include <fcntl.h>
+
 #include <istream>
 #include <queue>
 #include <string>

@@ -97,7 +97,9 @@ void ListenSocket::onPollEvent(struct pollfd &pollfd,
   } catch (std::bad_alloc const &e) {
     close(newPollfd->fd);
     newPollfd->fd = -1;
-    errorLog_g.write("Failed to accept client: ENOMEM", DEBUG,
-                     BRIGHT_RED);  // TODO: implement counter
+    try {
+      errorLog_g.write("Failed to accept client: ENOMEM", DEBUG, BRIGHT_RED);
+    } catch (...) {
+    }
   }
 }

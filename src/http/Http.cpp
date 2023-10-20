@@ -14,9 +14,12 @@ Http::Http(Address const &client, Address const &host)
 }
 
 Http::~Http() {
-  accessLog_g.write(
-      toString<Address &>(host) + " -> delete: " + toString<Address &>(client),
-      DEBUG);
+  try {
+    accessLog_g.write(toString<Address &>(host) +
+                          " -> delete: " + toString<Address &>(client),
+                      DEBUG);
+  } catch (...) {
+  }
 }
 
 void Http::OnRequestRecv(std::string msg) {
