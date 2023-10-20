@@ -14,7 +14,7 @@
  * close connections if they are TIMEOUT milliseconds inactive
  */
 #define CONNECTION_TIMEOUT 30000
-#define CGI_TIMEOUT 3000
+#define CGI_TIMEOUT 30000
 
 class Poll {
  public:
