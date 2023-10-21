@@ -27,10 +27,15 @@ This project is a basic HTTP server written in C++98. The standards listed below
 
 ## Requirements
 
-| Requirement | Installation |
-| --- | --- |
-| C++98 | apt install clang |
-| Make | apt install make |
+[Docker](https://docs.docker.com/engine/install/) or
+
+```
+apt install make
+```
+
+```
+apt install clang
+```
 
 ## Compilation
 
