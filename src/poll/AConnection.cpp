@@ -378,31 +378,28 @@ void AConnection::onNoPollEvent(struct pollfd &) {
   Poll::setTimeout(timeout);
 }
 
-static bool initPipes(int a[2], int b[2]) {
-  static int const fdsize = 4;
-  int fd[fdsize];
-  int flags[fdsize];
-
-  if (pipe(&(fd[0])) == -1) return false;
-  if (pipe(&(fd[2])) == -1) {
-    close(fd[0]);
-    close(fd[1]);
+/**
+ * @param pipeIn pipe to receive output of cgi
+ * @param pipOut pipe to send data from server to cgi
+ */
+static bool initPipes(int pipeIn[2], int pipeOut[2]) {
+  if (pipe(pipeIn) == -1) return false;
+  if (pipe(pipeOut) == -1) {
+    close(pipeIn[0]);
+    close(pipeIn[1]);
     return false;
   }
-  for (int i = 0; i < fdsize; ++i) {
-    flags[i] = fcntl(fd[i], F_GETFL, 0);
-    if (flags[i] == -1 || fcntl(fd[i], F_SETFL, flags[i] | O_NONBLOCK) == -1) {
-      close(fd[0]);
-      close(fd[1]);
-      close(fd[2]);
-      close(fd[3]);
-      return false;
-    }
+  int flagsIn = fcntl(pipeIn[0], F_GETFL, 0);
+  int flagsOut = fcntl(pipeOut[1], F_GETFL, 0);
+  if (flagsIn == -1 || fcntl(pipeIn[0], F_SETFL, flagsIn | O_NONBLOCK) == -1 ||
+      flagsOut == -1 ||
+      fcntl(pipeOut[1], F_SETFL, flagsOut | O_NONBLOCK) == -1) {
+    close(pipeIn[0]);
+    close(pipeIn[1]);
+    close(pipeOut[0]);
+    close(pipeOut[1]);
+    return false;
   }
-  a[0] = fd[0];
-  a[1] = fd[1];
-  b[0] = fd[2];
-  b[1] = fd[3];
   return true;
 }
 
