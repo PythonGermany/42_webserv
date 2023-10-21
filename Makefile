@@ -35,7 +35,6 @@ HEADERS		+= webserv.hpp
 HEADERS		+= global.hpp
 
 HEADERS		+= config/argument.hpp
-HEADERS		+= config/colors.hpp
 HEADERS		+= config/Config.hpp
 HEADERS		+= config/Context.hpp
 HEADERS		+= config/Init.hpp
@@ -53,6 +52,7 @@ HEADERS		+= http/Request.hpp
 HEADERS		+= http/Response.hpp
 HEADERS		+= http/VirtualHost.hpp
 
+HEADERS		+= output/colors.hpp
 HEADERS		+= output/Log.hpp
 HEADERS		+= output/output.hpp
 
