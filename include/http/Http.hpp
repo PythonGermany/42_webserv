@@ -13,6 +13,7 @@
 #include "webserv.hpp"
 
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
+#define PROTOCOL "HTTP"
 #define HTTP_VERSION "1.1"
 #define HTTP_METHODS \
   { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }

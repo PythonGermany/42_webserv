@@ -1,6 +1,6 @@
 # Introduction
 
-This project is a basic HTTP server written in C++98. The standards below (HTTP/CGI) are not completely implemented and were rather seen as a guideline to implement a usable server than a "to be followed requirement".
+This project is a basic HTTP server written in C++98. The standards listed below (HTTP/CGI) are not completely implemented and were rather seen as a guideline to implement a usable server than a "to be followed requirement".
 
 | Functionality | Description | External info
 | --- | --- | --- | 

@@ -46,11 +46,11 @@ void Http::OnRequestRecv(std::string msg) {
   if (parseRet || !validPath)
     processError("400", "Bad Request", true);
   else if (isHttpVersionValid(_request.getVersion()) == false) {
-    processError("505", "HTTP Version Not Supported");
-    _response.setHeader("Upgrade", "HTTP/" HTTP_VERSION);
+    processError("505", "HTTP Version Not Supported", true);
+    _response.setHeader("Upgrade", PROTOCOL "/" HTTP_VERSION);
     _response.setHeader("Connection", "Upgrade");
   } else if (isMehodImplemented(_request.getMethod()) == false)
-    processError("501", "Not Implemented");
+    processError("501", "Not Implemented", true);
   if (_response.isReady()) return sendResponse();
   setReadState(HEAD);
 }
@@ -129,7 +129,7 @@ void Http::OnBodyRecv(std::string msg) {
 
 void Http::OnCgiRecv(std::string msg) {
   accessLog_g.write("CGI out: \"" + msg + "\"", VERBOSE);
-  _response.init("HTTP/1.1", "200", "OK");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "200", "OK");
   int bodySize = msg.size();
   _response.setBody(new std::istringstream(msg));
 
@@ -233,7 +233,7 @@ void Http::processFile(std::string uri) {
   }
 
   // Load the file
-  _response.init("HTTP/1.1", "200", "OK");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "200", "OK");
   _response.setBody(new std::ifstream(file.getPath().c_str()));
   int bodySize = file.size();
   if (_response.getBody()->good() == false || bodySize < 0)
@@ -256,7 +256,7 @@ void Http::processCgi(std::string contentLength) {
   // const values:
   env.push_back("GATEWAY_INTERFACE=CGI/1.1");
   env.push_back("SERVER_SOFTWARE=" WEBSERV_ID);
-  env.push_back("SERVER_PROTOCOL=HTTP/" HTTP_VERSION);
+  env.push_back("SERVER_PROTOCOL=" PROTOCOL "/" HTTP_VERSION);
 
   // request specific values:
 
@@ -378,15 +378,15 @@ void Http::processPostData(const std::string &data) {
 
 void Http::getPutResponse(std::string uri) {
   if (_newFile)
-    _response.init("HTTP/1.1", "201", "Created");
+    _response.init(PROTOCOL "/" HTTP_VERSION, "201", "Created");
   else
-    _response.init("HTTP/1.1", "204", "No Content");
+    _response.init(PROTOCOL "/" HTTP_VERSION, "204", "No Content");
   _response.setHeader("Location", getAbsoluteUri(uri));
   _response.setReady();
 }
 
 void Http::processOptions(std::string uri) {
-  _response.init("HTTP/1.1", "200", "OK");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "200", "OK");
   _response.setHeader("Allow",
                       concatenate(getAllowedMethods(uri != "*"), ", "));
   _response.setReady();
@@ -401,12 +401,12 @@ void Http::processDelete(std::string uri) {
   if (!file.readable()) return processError("403", "Forbidden");
   if (std::remove(file.getPath().c_str()) != 0)
     return processError("500", "Internal Server Error");
-  _response.init("HTTP/1.1", "204", "No Content");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "204", "No Content");
   _response.setReady();
 }
 
 void Http::processAutoindex(std::string uri) {
-  _response.init("HTTP/1.1", "200", "OK");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "200", "OK");
   _response.setBody(new std::stringstream("<html>\r\n<head><title>Index of " +
                                           uri + "</title></head>\r\n<body>"));
   std::stringstream *body = (std::stringstream *)_response.getBody();
@@ -450,13 +450,13 @@ void Http::processAutoindex(std::string uri) {
 }
 
 void Http::processRedirect(std::string uri) {
-  _response.init("HTTP/1.1", "301", "Moved Permanently");
+  _response.init(PROTOCOL "/" HTTP_VERSION, "301", "Moved Permanently");
   _response.setHeader("Location", getAbsoluteUri(uri));
   _response.setReady();
 }
 
 void Http::processError(std::string code, std::string reason, bool close) {
-  _response.init("HTTP/1.1", code, reason);
+  _response.init(PROTOCOL "/" HTTP_VERSION, code, reason);
 
   if (_virtualHost && _virtualHost->getContext().exists("error_page")) {
     std::vector<std::vector<std::string> > &pages =
@@ -595,13 +595,13 @@ bool Http::isMehodImplemented(std::string method) const {
 }
 
 bool Http::isHttpVersionValid(std::string version) const {
-  if (startsWith(version, "HTTP/"))
-    version.erase(0, std::string("HTTP/").size());
+  if (startsWith(version, PROTOCOL "/"))
+    version.erase(0, std::string(PROTOCOL "/").size());
   std::vector<std::string> in = split<std::vector<std::string> >(version, ".");
   if (in.size() < 1 || in.size() > 2) return false;
 
   std::vector<std::string> reqired =
-      split<std::vector<std::string> >(HTTP_VERSION, ".");
+      split<std::vector<std::string> >(HTTP_VERSION, ".", true);
   if (reqired.size() < 1 || reqired.size() > 2 || in.size() != reqired.size())
     return false;
 

@@ -26,7 +26,7 @@ void Request::setHeaderField(std::string key, const std::string &value) {
 
 void Request::setHeaderFieldValue(std::string key, const std::string &value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  _headers[key].push_back(trimStart(value, " \t"));
+  _headers[key].push_back(trim(value, WHITESPACE));
 }
 
 std::string Request::getMethod() const { return _method; }
