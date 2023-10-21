@@ -14,7 +14,12 @@ void write(int fd, std::string data) {
   std::cout << data;
 }
 
-int main(int, char **, char **) {
+int main(int argc, char **argv, char **) {
+  if (argc != 2) {
+    std::cerr << "usage ./client resource_to_request\n";
+    return 1;
+  }
+
   int fd;
 
   struct sockaddr_in addr;
@@ -32,7 +37,7 @@ int main(int, char **, char **) {
   }
   std::cout << "connected to: 127.0.0.1:8080" << std::endl;
   std::string msg;
-  msg += "POST /listing/cgi/dump.php HTTP/1.1\r\n";
+  msg += "POST " + std::string(argv[1]) + " HTTP/1.1\r\n";
   msg += "Host: 127.0.0.1\r\n";
   msg += "Transfer-Encoding: chunked\r\n";
   msg += "\r\n";
