@@ -15,13 +15,18 @@ Request &Request::operator=(const Request &rhs) {
 
 Request::~Request() {}
 
-void Request::setHeader(std::string key, std::string value) {
+void Request::setHeaderField(std::string key, const std::string &value) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  trimStart(value, " \t");
-  if (_headers.find(key) != _headers.end())
-    _headers[key] += ", " + value;
-  else
-    _headers[key] = value;
+  _headers[key].clear();
+  std::list<std::string> values = split<std::list<std::string> >(value, ",");
+  for (std::list<std::string>::iterator it = values.begin(); it != values.end();
+       ++it)
+    setHeaderFieldValue(key, *it);
+}
+
+void Request::setHeaderFieldValue(std::string key, const std::string &value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  _headers[key].push_back(trimStart(value, " \t"));
 }
 
 std::string Request::getMethod() const { return _method; }
@@ -30,28 +35,42 @@ Uri &Request::getUri() { return _uri; }
 
 std::string Request::getVersion() const { return _version; }
 
-std::string Request::getHeader(std::string key) const {
+std::string Request::getHeaderField(std::string key) const {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  std::map<std::string, std::string>::const_iterator it = _headers.find(key);
+  std::map<std::string, std::list<std::string> >::const_iterator it =
+      _headers.find(key);
   if (it == _headers.end()) return "";
-  return it->second;
+  return concatenate<std::list<std::string> >(it->second, ", ");
 }
 
-void Request::deleteHeaderField(std::string key, std::string value) {
+void Request::removeHeader(std::string key) {
   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-  std::map<std::string, std::string>::iterator it = _headers.find(key);
-  if (it == _headers.end()) return;
-  std::string &field = it->second;
-  size_t pos = field.find(value);
-  if (pos == std::string::npos) return;
-  field.erase(pos, value.size());
-  trim(field, ", ");
-  if (field.empty()) _headers.erase(it);
+  _headers.erase(key);
+}
+
+void Request::removeHeaderValue(std::string key, const std::string &value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  if (_headers.find(key) != _headers.end()) {
+    std::list<std::string>::iterator it =
+        std::find(_headers[key].begin(), _headers[key].end(), value);
+    if (it != _headers[key].end()) _headers[key].erase(it);
+  }
+}
+
+bool Request::isMethod(const std::string &method) { return _method == method; }
+
+bool Request::hasHeaderFieldValue(std::string key, const std::string &value) {
+  std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+  std::map<std::string, std::list<std::string> >::const_iterator it =
+      _headers.find(key);
+  if (it == _headers.end()) return false;
+  return std::find(it->second.begin(), it->second.end(), value) !=
+         it->second.end();
 }
 
 int Request::parseStatus(std::string line) {
   std::vector<std::string> requestLineTokens =
-      split<std::vector<std::string> >(line, " ");
+      split<std::vector<std::string> >(line, " ", true);
   if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _version = requestLineTokens[2];
@@ -62,14 +81,13 @@ int Request::parseStatus(std::string line) {
 int Request::parseHeaderFields(std::string fields) {
   size_t end = fields.find("\r\n");
 
-  while (end != std::string::npos) {
+  while (end != 0 && end != std::string::npos) {
     std::string line = fields.substr(0, end);
-    if (line.empty()) break;
     size_t colon = line.find(":");
     if (colon == std::string::npos) return 1;
     std::string key = line.substr(0, colon);
     std::string value = line.substr(colon + 1);
-    setHeader(key, value);
+    setHeaderField(key, value);
     fields.erase(0, line.size() + 2);
     end = fields.find("\r\n");
   }

@@ -1,11 +1,9 @@
 #ifndef INIT_HPP
 #define INIT_HPP
 
-#include <vector>
-
-#include "../poll/ListenSocket.hpp"
-#include "../poll/Poll.hpp"
+#include "ListenSocket.hpp"
 #include "Log.hpp"
+#include "Poll.hpp"
 #include "VirtualHost.hpp"
 
 class Init {

@@ -4,10 +4,12 @@
 - [ ] fcntl subject
 - [ ] remove inet_ntop
 
+- [ ] Is is possible for client to send data whilst cgi is processing?
 - [ ] (Optional) Fix problem of no server response in case of connection being destructed due to timeout, in every case but especially if cgi is active
 - [ ] (Optional) Implement try_files or similar
 - [ ] (Does not occur anymore without having actively tried to fix it) Investigate random closing of program without any notice after sending a first request
 
+- [x] Implement and fix chunked request trailer parsing
 - [x] Figure out why resolving symlinks doesnt work
 - [x] Replace c function for wildcard pattern matching with own function
 - [x] Figure out why login for wordpress doesn't work

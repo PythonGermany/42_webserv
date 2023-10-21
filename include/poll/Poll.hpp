@@ -1,8 +1,6 @@
 #ifndef POLL_HPP
 #define POLL_HPP
 
-#include <sys/time.h>
-
 #include <csignal>
 #include <vector>
 

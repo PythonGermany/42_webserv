@@ -30,6 +30,8 @@ std::string trim(const std::string& str, std::string chars = " \f\n\r\t\v");
 // @exception No custom exceptions
 std::string& trimStart(std::string& str, std::string chars = " \f\n\r\t\v");
 
+std::string trimStart(const std::string& str, std::string chars);
+
 // Cuts a string from start to end
 // @param str The string to cut from
 // @param start The start index
@@ -57,13 +59,21 @@ T split(const std::string& str, std::string delim, bool allowEmpty = false) {
   return tokens;
 }
 
-// Concatenates a vector of strings into a single string
-// @param values The vector of strings
+// Concatenates a container of strings into a single string
+// @param values The container of strings
 // @param separator The separator to use
 // @return The concatenated string
 // @exception No custom exceptions
-std::string concatenate(const std::vector<std::string>& values,
-                        std::string separator);
+template <typename T>
+std::string concatenate(const T& values, std::string separator) {
+  std::string value;
+  typename T::const_iterator it = values.begin();
+  for (; it != values.end(); it++) {
+    if (it != values.begin()) value += separator;
+    value += *it;
+  }
+  return value;
+}
 
 // Checks if a string starts with a prefix
 // @param str The string to check

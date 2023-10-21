@@ -58,17 +58,16 @@ void Http::OnHeadRecv(std::string msg) {
   if (_request.parseHeaderFields(msg))
     processError("400", "Bad Request", true);
   else {
-    std::string requestHost = _request.getHeader("Host");
+    std::string requestHost = _request.getHeaderField("Host");
     if (_request.getUri().getHost().size() > 0)
       requestHost = _request.getUri().getHost();
 
-    if (_request.getHeader("Host").size() > 0) {
+    if (_request.getHeaderField("Host").size() > 0) {
       _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
       processRequest();
     } else
       processError("400", "Bad Request", true);
   }
-
   if (_response.isReady()) sendResponse();
 }
 
@@ -83,20 +82,43 @@ void Http::OnChunkSizeRecv(std::string msg) {
   } else if (isBodySizeValid(_currBodySize + bodySize) == false)
     processError("413", "Request Entity Too Large", true);
   if (_response.isReady()) return sendResponse();
+  if (bodySize == 0)
+    setReadState(TRAILER);
+  else {
+    bodySize += 2;
+    setReadState(BODY);
+  }
+}
 
-  bodySize += 2;
-  setReadState(BODY);
+void Http::OnTrailerRecv(std::string msg) {
+  accessLog_g.write("HTTP trailer: '" + msg + "'", VERBOSE);
+
+  if (msg == getReadDelimiter()) {
+    if (_request.isMethod("PUT"))
+      getPutResponse(_uri);
+    else if (_request.isMethod("POST")) {
+      processCgi(toString(_currBodySize));
+      cgiSend(cgiChunkedBody);
+      cgiCloseSendPipe();
+    } else
+      errorLog_g.write(
+          "OnTrailerRecv() processed unknown method: " + _request.getMethod(),
+          ERROR);
+    _request.removeHeaderValue("Transfer-Encoding", "chunked");
+  } else if (_request.parseHeaderFields(msg))
+    processError("400", "Bad Request", true);
+  if (_response.isReady()) sendResponse();
 }
 
 void Http::OnBodyRecv(std::string msg) {
   accessLog_g.write("HTTP body: '" + msg + "'", VERBOSE);
-  if (_request.getHeader("Transfer-Encoding") == "chunked") {
+  if (_request.hasHeaderFieldValue("Transfer-Encoding", "chunked")) {
     if (!endsWith(msg, "\r\n")) return processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
   }
-  if (_request.getMethod() == "PUT")
+  if (_request.isMethod("PUT"))
     processPutData(msg);
-  else if (_request.getMethod() == "POST")
+  else if (_request.isMethod("POST"))
     processPostData(msg);
   if (_response.isReady()) sendResponse();
 }
@@ -159,14 +181,13 @@ void Http::processRequest() {
     accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
   if (isMethodValid() == false) {
-    bool bodyRequest =
-        _request.getMethod() == "POST" || _request.getMethod() == "PUT";
+    bool bodyRequest = _request.isMethod("POST") || _request.isMethod("PUT");
     processError("405", "Method Not Allowed", bodyRequest);
     _response.setHeader("Allow", concatenate(getAllowedMethods(), ", "));
     return;
   }
 
-  if (_request.getMethod() == "OPTIONS") return processOptions(_uri);
+  if (_request.isMethod("OPTIONS")) return processOptions(_uri);
 
   if (_context->exists("redirect"))
     return processRedirect(_context->getDirective("redirect")[0][0]);
@@ -175,9 +196,9 @@ void Http::processRequest() {
     _uri = getContextPath("alias") + _uri.substr(contextUri.size());
   accessLog_g.write("Resource URI path: '" + _uri + "'", DEBUG);
 
-  if (_request.getMethod() == "DELETE") return processDelete(_uri);
+  if (_request.isMethod("DELETE")) return processDelete(_uri);
 
-  if (_request.getMethod() == "PUT" || _request.getMethod() == "POST")
+  if (_request.isMethod("PUT") || _request.isMethod("POST"))
     return processBodyRequest();
 
   return processFile(_uri);
@@ -193,14 +214,14 @@ void Http::processFile(std::string uri) {
   cgiProgramPathname = getCgiPath(file.getExtension());
   if (cgiProgramPathname.size() > 0) {
     cgiFilePathname = file.getPath();
-    if (_request.getMethod() == "POST" &&
-        _request.getHeader("Transfer-Encoding") == "chunked") {
+    if (_request.isMethod("POST") &&
+        _request.hasHeaderFieldValue("Transfer-Encoding", "chunked")) {
       cgiChunkedBody.clear();
       setReadState(CHUNK_SIZE);
       return;
     }
     return processCgi();
-  } else if (_request.getMethod() == "POST") {
+  } else if (_request.isMethod("POST")) {
     processError("405", "Method Not Allowed", true);
     std::vector<std::string> allowed = getAllowedMethods();
     allowed.erase(std::find(allowed.begin(), allowed.end(), "POST"));
@@ -244,20 +265,21 @@ void Http::processCgi(std::string contentLength) {
   if (uriRef.getQuery() != "") requestUri += "?" + uriRef.getQuery();
   env.push_back("REQUEST_URI=" + requestUri);
 
-  env.push_back("HTTP_HOST=" + _request.getHeader("Host"));
+  env.push_back("HTTP_HOST=" + _request.getHeaderField("Host"));
   env.push_back("REQUEST_METHOD=" + _request.getMethod());
   env.push_back("QUERY_STRING=" + _request.getUri().getQuery());
   env.push_back("REDIRECT_STATUS=200");
 
   // Required amongst others to comply with CGI/1.1
   env.push_back("SCRIPT_NAME=" + pathname);
-  if (_request.getMethod() == "POST") {
+  if (_request.isMethod("POST")) {
     if (contentLength.empty())
-      env.push_back("CONTENT_LENGTH=" + _request.getHeader("Content-length"));
+      env.push_back("CONTENT_LENGTH=" +
+                    _request.getHeaderField("Content-length"));
     else
       env.push_back("CONTENT_LENGTH=" + contentLength);
-    if (_request.getHeader("Content-type") != "")
-      env.push_back("CONTENT_TYPE=" + _request.getHeader("Content-type"));
+    if (_request.getHeaderField("Content-type") != "")
+      env.push_back("CONTENT_TYPE=" + _request.getHeaderField("Content-type"));
   }
 
   // TODO: Implement correct server name selection if there are multiple server
@@ -266,35 +288,35 @@ void Http::processCgi(std::string contentLength) {
   if (_context->exists("server_name", true))
     servername = _context->getDirective("server_name", true)[0][0];
   else
-    servername = _request.getHeader("Host");
+    servername = _request.getHeaderField("Host");
   env.push_back("SERVER_NAME=" + servername);
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
   env.push_back("REMOTE_ADDR=" + client.str());
 
   // Optional stuff to increase functionality
-  env.push_back("HTTP_COOKIE=" + _request.getHeader("Cookie"));
-  env.push_back("HTTP_USER_AGENT=" + _request.getHeader("User-Agent"));
+  env.push_back("HTTP_COOKIE=" + _request.getHeaderField("Cookie"));
+  env.push_back("HTTP_USER_AGENT=" + _request.getHeaderField("User-Agent"));
 
   // env.push_back("PATH_INFO=" ...); // TODO: Implement
   // env.push_back("PATH_TRANSLATED=" ...);
 
   runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
-  if (_request.getMethod() != "POST") cgiCloseSendPipe();
+  if (_request.isMethod("POST") == false) cgiCloseSendPipe();
   _response.clear();
 }
 
 void Http::processBodyRequest() {
-  if (_request.getHeader("Content-Range") != "")
+  if (_request.getHeaderField("Content-Range") != "")
     return processError("501", "Not Implemented");
 
   _currBodySize = 0;
-  if (_request.getHeader("Transfer-Encoding") != "") {
-    if (_request.getHeader("Transfer-Encoding") != "chunked")
+  if (_request.getHeaderField("Transfer-Encoding") != "") {
+    if (_request.getHeaderField("Transfer-Encoding") != "chunked")
       return processError("501", "Not Implemented");
     setReadState(CHUNK_SIZE);
   } else {
     // Check if body size is specified
-    std::string bodySizeStr = _request.getHeader("Content-Length");
+    std::string bodySizeStr = _request.getHeaderField("Content-Length");
     if (bodySizeStr.empty()) return processError("411", "Length Required");
     _expectedBodySize = fromString<size_t>(bodySizeStr);
 
@@ -306,9 +328,9 @@ void Http::processBodyRequest() {
     setReadState(BODY);
   }
 
-  if (_request.getMethod() == "POST")
+  if (_request.isMethod("POST"))
     return processFile(_uri);
-  else if (_request.getMethod() == "PUT") {
+  else if (_request.isMethod("PUT")) {
     std::string path = _context->getDirective("root", true)[0][0] + _uri;
     _newFile = !File(path).exists();
 
@@ -328,23 +350,17 @@ void Http::processPutData(const std::string &data) {
     return processError("500", "Internal Server Error");
   _currBodySize += data.size();
 
-  if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (data.size() == 0) return getPutResponse(_uri);
+  if (_request.hasHeaderFieldValue("Transfer-Encoding", "chunked"))
     return setReadState(CHUNK_SIZE);
-  }
 
   if (_currBodySize >= _expectedBodySize) return getPutResponse(_uri);
-  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
+  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE),
+                      _expectedBodySize - _currBodySize);
 }
 
-void Http::processPostData(std::string &data) {
+void Http::processPostData(const std::string &data) {
   _currBodySize += data.size();
-  if (_request.getHeader("Transfer-Encoding") == "chunked") {
-    if (data.size() == 0) {
-      processCgi(toString(_currBodySize));
-      cgiSend(cgiChunkedBody);
-      return cgiCloseSendPipe();
-    }
+  if (_request.hasHeaderFieldValue("Transfer-Encoding", "chunked")) {
     cgiChunkedBody.append(data);
     return setReadState(CHUNK_SIZE);
   }
@@ -353,7 +369,8 @@ void Http::processPostData(std::string &data) {
     cgiCloseSendPipe();
     return;
   }
-  bodySize = std::min((size_t)BUFFER_SIZE, _expectedBodySize - _currBodySize);
+  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE),
+                      _expectedBodySize - _currBodySize);
 }
 
 void Http::getPutResponse(std::string uri) {
@@ -527,25 +544,25 @@ void Http::sendResponse() {
   _response.setHeader("Date", getTime("%a, %d %b %Y %H:%M:%S"));
 
   // Check if connection should be kept alive
-  if (_request.getHeader("Connection") != "close" &&
+  if (_request.getHeaderField("Connection") != "close" &&
       _response.getHeader("Connection") == "")
     _response.setHeader("Connection", "keep-alive", true);
 
   // Send response
   send(new std::istringstream(_response.generateHead()));
-  if (_request.getMethod() != "HEAD") send(_response.resetBody());
+  if (_request.isMethod("HEAD") == false) send(_response.resetBody());
 
   // Reset class variables
   setReadState(REQUEST_LINE);
 
   // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
-      _request.getHeader("Connection") == "close")
+      _request.hasHeaderFieldValue("Connection", "close"))
     stopReceiving();
 
   accessLog_g.write(_log + " -> " + _response.getVersion() + " " +
                         _response.getStatus() + " " + _response.getReason() +
-                        " " + _request.getHeader("User-Agent"),
+                        " " + _request.getHeaderField("User-Agent"),
                     INFO);
   _response.clear();
 }
@@ -556,7 +573,7 @@ std::string Http::getAbsoluteUri(std::string uri) const {
   ret.load(uri);
   if (ret.getScheme().empty()) ret.setScheme("http");
   if (ret.getHost().empty()) {
-    std::string host = _request.getHeader("Host");
+    std::string host = _request.getHeaderField("Host");
     size_t pos = host.find(":");
     if (pos != std::string::npos) {
       ret.setHost(host.substr(0, pos));
@@ -594,8 +611,9 @@ bool Http::isHttpVersionValid(std::string version) const {
 
 bool Http::isMethodValid() const {
   std::vector<std::string> allowedMethods = getAllowedMethods();
-  for (size_t i = 0; i < allowedMethods.size(); i++)
-    if (allowedMethods[i] == _request.getMethod()) return true;
+  std::vector<std::string>::const_iterator it = allowedMethods.begin();
+  for (; it != allowedMethods.end(); ++it)
+    if (_request.getMethod() == *it) return true;
   return false;
 }
 

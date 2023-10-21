@@ -14,7 +14,7 @@ class Request {
   std::string _method;
   Uri _uri;
   std::string _version;
-  std::map<std::string, std::string> _headers;
+  std::map<std::string, std::list<std::string> > _headers;
 
  public:
   Request();
@@ -22,14 +22,19 @@ class Request {
   Request &operator=(const Request &rhs);
   ~Request();
 
-  void setHeader(std::string key, std::string value);
+  void setHeaderField(std::string key, const std::string &value);
+  void setHeaderFieldValue(std::string key, const std::string &value);
 
   std::string getMethod() const;
   Uri &getUri();
   std::string getVersion() const;
-  std::string getHeader(std::string key) const;
+  std::string getHeaderField(std::string key) const;
 
-  void deleteHeaderField(std::string key, std::string value);
+  void removeHeader(std::string key);
+  void removeHeaderValue(std::string key, const std::string &value);
+
+  bool isMethod(const std::string &method);
+  bool hasHeaderFieldValue(std::string key, const std::string &value);
 
   int parseStatus(std::string line);
   int parseHeaderFields(std::string fields);

@@ -58,16 +58,16 @@ void AConnection::setReadState(state_t readState) {
     case REQUEST_LINE:
       readDelimiter = "\r\n";
       break;
-
     case HEAD:
       readDelimiter = "\r\n\r\n";
       break;
-
     case BODY:
       readDelimiter = "";
       break;
-
     case CHUNK_SIZE:
+      readDelimiter = "\r\n";
+      break;
+    case TRAILER:
       readDelimiter = "\r\n";
       break;
 
@@ -321,7 +321,8 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   _readBuffer.append(tmpbuffer, msglen);
   passReadBuffer(pollfd);
   if (pollfd.events & POLLIN &&
-      (_readState == REQUEST_LINE || _readState == HEAD) &&
+      (_readState == REQUEST_LINE || _readState == HEAD ||
+       _readState == TRAILER) &&
       _readBuffer.size() > headSizeLimit) {
     pollfd.events = 0;
     pollfd.revents = 0;
@@ -348,6 +349,9 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
         break;
       case CHUNK_SIZE:
         OnChunkSizeRecv(_readBuffer.substr(0, pos));
+        break;
+      case TRAILER:
+        OnTrailerRecv(_readBuffer.substr(0, pos));
         break;
       case BODY:
         if (_readBuffer.size() < bodySize) return;

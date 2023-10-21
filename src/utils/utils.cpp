@@ -13,20 +13,16 @@ std::string& trimStart(std::string& str, std::string chars) {
   return str.erase(0, first);
 }
 
+std::string trimStart(const std::string& str, std::string chars) {
+  size_t first = str.find_first_not_of(chars);
+  if (first == std::string::npos) first = str.length();
+  return str.substr(first);
+}
+
 std::string cut(std::string& str, int start, int end) {
   std::string cut = str.substr(start, end - start);
   str.erase(start, end - start);
   return cut;
-}
-
-std::string concatenate(const std::vector<std::string>& values,
-                        std::string separator) {
-  std::string value;
-  for (size_t i = 0; i < values.size(); i++) {
-    if (i != 0) value += separator;
-    value += values[i];
-  }
-  return value;
 }
 
 bool startsWith(std::string str, std::string prefix) {

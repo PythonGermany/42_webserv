@@ -50,6 +50,7 @@ class Http : public AConnection {
   void OnRequestRecv(std::string msg);
   void OnHeadRecv(std::string msg);
   void OnChunkSizeRecv(std::string msg);
+  void OnTrailerRecv(std::string msg);
   void OnBodyRecv(std::string msg);
   void OnCgiRecv(std::string msg);
   void OnCgiError();
@@ -59,7 +60,7 @@ class Http : public AConnection {
   void processFile(std::string uri);
   void processBodyRequest();
   void processPutData(const std::string& data);
-  void processPostData(std::string& data);
+  void processPostData(const std::string& data);
   void getPutResponse(std::string uri);
   void processOptions(std::string uri);
   void processDelete(std::string uri);
