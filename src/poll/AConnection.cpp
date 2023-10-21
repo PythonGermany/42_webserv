@@ -338,7 +338,7 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
   while (pollfd.events & POLLIN) {
     pos = _readBuffer.find(readDelimiter);
     if (pos == std::string::npos) break;
-    pos += readDelimiter.size();
+    size_t tmpReadDelim = readDelimiter.size();
 
     switch (_readState) {
       case REQUEST_LINE:
@@ -362,7 +362,7 @@ void AConnection::passReadBuffer(struct pollfd &pollfd) {
       default:
         throw std::runtime_error("passReadBuffer(): Undefined read state");
     }
-    _readBuffer.erase(0, pos);
+    _readBuffer.erase(0, pos + tmpReadDelim);
   }
 }
 

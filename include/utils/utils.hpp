@@ -16,19 +16,21 @@
 
 #include "colors.hpp"
 
+#define WHITESPACE " \f\n\r\t\v"
+
 // Trims start and end of a string
 // @param str The string to trim
 // @param chars The characters to trim
 // @return The trimmed string
 // @exception No custom exceptions
-std::string trim(const std::string& str, std::string chars = " \f\n\r\t\v");
+std::string trim(const std::string& str, std::string chars = WHITESPACE);
 
 // Trim the start of a string
 // @param str The string to trim
 // @param chars The characters to trim
 // @return The trimmed string
 // @exception No custom exceptions
-std::string& trimStart(std::string& str, std::string chars = " \f\n\r\t\v");
+std::string& trimStart(std::string& str, std::string chars = WHITESPACE);
 
 std::string trimStart(const std::string& str, std::string chars);
 

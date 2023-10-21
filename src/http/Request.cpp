@@ -74,22 +74,31 @@ int Request::parseRequestLine(std::string line) {
   if (requestLineTokens.size() != 3) return 1;
   _method = requestLineTokens[0];
   _version = requestLineTokens[2];
+
+  // https://datatracker.ietf.org/doc/html/rfc9112#name-method and
+  // https://datatracker.ietf.org/doc/html/rfc9112#name-http-version
+  if (_method.find_first_of(WHITESPACE) != std::string::npos ||
+      _version.find_first_of(WHITESPACE) != std::string::npos)
+    return 1;
   if (!startsWith(_version, "HTTP/")) return 1;
   return _uri.load(requestLineTokens[1]);
 }
 
 int Request::parseHeaderFields(std::string fields) {
-  size_t end = fields.find("\r\n");
-
-  while (end != 0 && end != std::string::npos) {
+  size_t end;
+  while (true) {
+    end = fields.find("\r\n");
+    if (end == std::string::npos) end = fields.size();
     std::string line = fields.substr(0, end);
     size_t colon = line.find(":");
     if (colon == std::string::npos) return 1;
+
     std::string key = line.substr(0, colon);
+    if (key.find_first_of(WHITESPACE) != std::string::npos) return 1;
+
     std::string value = line.substr(colon + 1);
     setHeaderField(key, value);
     fields.erase(0, line.size() + 2);
-    end = fields.find("\r\n");
+    if (fields.empty()) return 0;
   }
-  return 0;
 }

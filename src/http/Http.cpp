@@ -25,13 +25,11 @@ Http::~Http() {
 void Http::OnRequestRecv(std::string msg) {
   accessLog_g.write("HTTP status: '" + msg + "'", VERBOSE);
 
-  const std::string &delim = getReadDelimiter();
-  if (startsWith(msg, delim)) return;
+  // https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-6
+  if (msg.empty()) return;
+
   _request = Request();
-
-  msg.erase(msg.size() - delim.size(), delim.size());
   bool parseRet = _request.parseRequestLine(msg);
-
   _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
@@ -60,6 +58,7 @@ void Http::OnRequestRecv(std::string msg) {
 void Http::OnHeadRecv(std::string msg) {
   accessLog_g.write("HTTP head: '" + msg + "'", VERBOSE);
 
+  // https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
   if (_request.parseHeaderFields(msg))
     processError("400", "Bad Request", true);
   else {
@@ -98,7 +97,7 @@ void Http::OnChunkSizeRecv(std::string msg) {
 void Http::OnTrailerRecv(std::string msg) {
   accessLog_g.write("HTTP trailer: '" + msg + "'", VERBOSE);
 
-  if (msg == getReadDelimiter()) {
+  if (msg.empty()) {
     if (_request.isMethod("PUT"))
       getPutResponse(_uri);
     else if (_request.isMethod("POST")) {
