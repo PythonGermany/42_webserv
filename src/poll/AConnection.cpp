@@ -385,7 +385,7 @@ void AConnection::onNoPollEvent(struct pollfd &) {
 static bool initPipes(int a[2], int b[2]) {
   static int const fdsize = 4;
   int fd[fdsize];
-  int flags[fdsize];
+  // int flags;
 
   if (pipe(&(fd[0])) == -1) return false;
   if (pipe(&(fd[2])) == -1) {
@@ -393,16 +393,17 @@ static bool initPipes(int a[2], int b[2]) {
     close(fd[1]);
     return false;
   }
-  for (int i = 0; i < fdsize; ++i) {
-    flags[i] = fcntl(fd[i], F_GETFL, 0);
-    if (flags[i] == -1 || fcntl(fd[i], F_SETFL, flags[i] | O_NONBLOCK) == -1) {
-      close(fd[0]);
-      close(fd[1]);
-      close(fd[2]);
-      close(fd[3]);
-      return false;
-    }
-  }
+  // for (int i = 0; i < fdsize; ++i) { // TODO: Figure out why this breaks
+  // wordpress
+  //   flags = fcntl(fd[i], F_GETFL, 0);
+  //   if (flags == -1 || fcntl(fd[i], F_SETFL, flags | O_NONBLOCK) == -1) {
+  //     close(fd[0]);
+  //     close(fd[1]);
+  //     close(fd[2]);
+  //     close(fd[3]);
+  //     return false;
+  //   }
+  // }
   a[0] = fd[0];
   a[1] = fd[1];
   b[0] = fd[2];

@@ -1,0 +1,3 @@
+- [ ] Check if wordpress is working
+- [ ] Test with script [testResponses.py](websites/config_test/listing/testResponses.py)
+- [ ] Go through config_test website and test basic functionality of all links
