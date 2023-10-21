@@ -115,11 +115,12 @@ void Http::OnTrailerRecv(std::string msg) {
 }
 
 void Http::OnBodyRecv(std::string msg) {
-  accessLog_g.write("HTTP body: '" + msg + "'", VERBOSE);
   if (_request.hasHeaderFieldValue("Transfer-Encoding", "chunked")) {
     if (!endsWith(msg, "\r\n")) return processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
   }
+  accessLog_g.write("HTTP body: '" + msg + "'", VERBOSE);
+
   if (_request.isMethod("PUT"))
     processPutData(msg);
   else if (_request.isMethod("POST"))
