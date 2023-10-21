@@ -30,17 +30,22 @@ void Http::OnRequestRecv(std::string msg) {
   _request = Request();
 
   msg.erase(msg.size() - delim.size(), delim.size());
-  bool parseRet = _request.parseStatus(msg);
+  bool parseRet = _request.parseRequestLine(msg);
 
   _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
          toString<Address &>(host);
   parseRet |= _request.getUri().decode();
   accessLog_g.write("Decoded URI: " + _request.getUri().generate(), DEBUG);
-  parseRet |= _request.getUri().resolveDots();
+
+  bool validPath = !_request.getUri().resolveDots();
   accessLog_g.write("Resolved URI: " + _request.getUri().generate(), DEBUG);
 
-  if (parseRet)
+  const Uri &uriRef = _request.getUri();
+  validPath &= startsWith(uriRef.getPath(), "/") ||
+               (_request.isMethod("OPTIONS") && uriRef.getPath() == "*");
+
+  if (parseRet || !validPath)
     processError("400", "Bad Request", true);
   else if (isHttpVersionValid(_request.getVersion()) == false) {
     processError("505", "HTTP Version Not Supported");
@@ -177,8 +182,7 @@ void Http::processRequest() {
   if (_context == NULL) return processError("500", "Internal Server Error");
 
   std::string contextUri = getContextArgs();
-  if (Log::getLevel() >= DEBUG)
-    accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
+  accessLog_g.write("Context URI: '" + contextUri + "'", DEBUG);
 
   if (isMethodValid() == false) {
     bool bodyRequest = _request.isMethod("POST") || _request.isMethod("PUT");
@@ -385,7 +389,7 @@ void Http::getPutResponse(std::string uri) {
 void Http::processOptions(std::string uri) {
   _response.init("HTTP/1.1", "200", "OK");
   _response.setHeader("Allow",
-                      concatenate(getAllowedMethods(uri != "/*"), ", "));
+                      concatenate(getAllowedMethods(uri != "*"), ", "));
   _response.setReady();
 }
 

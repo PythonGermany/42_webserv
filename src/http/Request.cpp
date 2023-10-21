@@ -68,7 +68,7 @@ bool Request::hasHeaderFieldValue(std::string key, const std::string &value) {
          it->second.end();
 }
 
-int Request::parseStatus(std::string line) {
+int Request::parseRequestLine(std::string line) {
   std::vector<std::string> requestLineTokens =
       split<std::vector<std::string> >(line, " ", true);
   if (requestLineTokens.size() != 3) return 1;

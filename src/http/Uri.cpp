@@ -48,8 +48,6 @@ int Uri::load(std::string uri) {
         return 1;
     }
   }
-  pos = uri.find("/");
-  if (pos != 0) return 1;
 
   // Find query start
   pos = uri.find("?");
@@ -136,8 +134,8 @@ int Uri::resolveDots() {
       it++;
   }
 
-  std::string newPath;
   it = blocks.begin();
+  std::string newPath = *it++;
   for (; it != blocks.end(); it++) {
     if (it->empty() && it != --blocks.end()) continue;
     newPath += "/" + *it;

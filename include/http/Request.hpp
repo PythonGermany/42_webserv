@@ -36,7 +36,7 @@ class Request {
   bool isMethod(const std::string &method);
   bool hasHeaderFieldValue(std::string key, const std::string &value);
 
-  int parseStatus(std::string line);
+  int parseRequestLine(std::string line);
   int parseHeaderFields(std::string fields);
 };
 
