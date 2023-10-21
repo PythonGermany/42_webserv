@@ -49,7 +49,7 @@ int readStatusLine(int fd, int i, std::string requestLine) {
       split<std::vector<std::string> >(data, " ", true);
   if (statusLine[1] == tests_g[i].responseCode)
     std::cout << GREEN << "Success: " << requestLine
-              << " - > Got : " << tests_g[i].responseCode << RESET << std::endl;
+              << " -> Got : " << tests_g[i].responseCode << RESET << std::endl;
   else
     std::cout << RED << "Fail: " << requestLine
               << " - > Expected: " << tests_g[i].responseCode

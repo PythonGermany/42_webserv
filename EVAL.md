@@ -1,3 +1,5 @@
 - [ ] Check if wordpress is working
-- [ ] Test with script [testResponses.py](websites/config_test/listing/testResponses.py)
+- [ ] Test with script [testResponses.py](tests/testResponses.py)
+- [ ] Test with script [createChunkedRequest.py](tests/createChunkedRequest.py)
+- [ ] Test with script [testHeader.cpp](tests/testHeader.cpp)
 - [ ] Go through config_test website and test basic functionality of all links
