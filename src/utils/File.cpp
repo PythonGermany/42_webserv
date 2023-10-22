@@ -104,8 +104,9 @@ int File::createDirPath() {
   while (pos != std::string::npos) {
     std::string dir = _path.substr(0, pos);
     if (dir != "" && !File(dir).exists())
-      if (mkdir(dir.c_str(), 0755) != 0)
-        return -1;  // TODO: Possibly find alternative
+      if (mkdir(dir.c_str(), 0755) !=
+          0)  // Needed only for non subject bonus functionality
+        return -1;
     pos = _path.find_first_of('/', pos + 1);
   }
   return 0;
