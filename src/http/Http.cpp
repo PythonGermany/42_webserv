@@ -286,14 +286,7 @@ void Http::processCgi(std::string contentLength) {
       env.push_back("CONTENT_TYPE=" + _request.getHeaderField("Content-type"));
   }
 
-  // TODO: Implement correct server name selection if there are multiple server
-  // names set in the listen directive. Check if according to cgi
-  std::string servername;
-  if (_context->exists("server_name", true))
-    servername = _context->getDirective("server_name", true)[0][0];
-  else
-    servername = _request.getHeaderField("Host");
-  env.push_back("SERVER_NAME=" + servername);
+  env.push_back("SERVER_NAME=" + _request.getHeaderField("Host"));
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
   std::ostringstream oss;
   oss << "REMOTE_ADDR=" << client;
@@ -302,9 +295,6 @@ void Http::processCgi(std::string contentLength) {
   // Optional stuff to increase functionality
   env.push_back("HTTP_COOKIE=" + _request.getHeaderField("Cookie"));
   env.push_back("HTTP_USER_AGENT=" + _request.getHeaderField("User-Agent"));
-
-  // env.push_back("PATH_INFO=" ...); // TODO: Implement
-  // env.push_back("PATH_TRANSLATED=" ...);
 
   runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
   if (_request.isMethod("POST") == false) cgiCloseSendPipe();
