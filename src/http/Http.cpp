@@ -301,9 +301,6 @@ void Http::processCgi(std::string contentLength) {
   env.push_back("HTTP_COOKIE=" + _request.getHeaderField("Cookie"));
   env.push_back("HTTP_USER_AGENT=" + _request.getHeaderField("User-Agent"));
 
-  // env.push_back("PATH_INFO=" ...); // TODO: Implement
-  // env.push_back("PATH_TRANSLATED=" ...);
-
   runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
   if (_request.isMethod("POST") == false) cgiCloseSendPipe();
   _response.clear();
