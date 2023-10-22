@@ -76,7 +76,8 @@ VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
           (*it)->getContext().getDirective("server_name")[0];
       for (std::vector<std::string>::const_iterator itSn = serverNames.begin();
            itSn != serverNames.end(); ++itSn) {
-        if (*itSn == host) return *it;
+        int diff = std::strcmp(itSn->c_str(), host.c_str());
+        if (!diff || diff == ':' || -diff == ':') return *it;
       }
     }
   }
