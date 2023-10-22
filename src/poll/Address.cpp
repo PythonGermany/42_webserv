@@ -194,33 +194,89 @@ bool Address::operator==(Address const &other) const {
   }
 }
 
-std::string Address::str() const {
-  char buffer[INET6_ADDRSTRLEN];
-
-  if (!inet_ntop(_family, addr(), buffer, INET6_ADDRSTRLEN))
-    throw std::runtime_error(std::string("Address::str(): ") +
-                             std::strerror(errno));
-  if (_family == AF_INET6) {
-    std::string result("[");
-    result.append(buffer);
-    result.push_back(']');
-    return result;
-  }
-  return std::string(buffer);
+static std::ostream &operator<<(std::ostream &os, in_addr const &src) {
+  int32_t hostByteOrder = ntohl(src.s_addr);
+  os << (hostByteOrder >> 24 & 0xFF) << '.';
+  os << (hostByteOrder >> 16 & 0xFF) << '.';
+  os << (hostByteOrder >> 8 & 0xFF) << '.';
+  os << (hostByteOrder & 0xFF);
+  return os;
 }
 
-/**
- * @throw std::runtime_error() if addr.family() is not AF_INET or AF_INET6
- */
-std::ostream &operator<<(std::ostream &os, Address const &addr) {
-  char buffer[INET6_ADDRSTRLEN];
+static std::pair<unsigned int, unsigned int> allZeroFields(
+    unsigned char const *addr) {
+  unsigned int currentStart = 0;
+  unsigned int currentSize = 0;
+  std::pair<unsigned int, unsigned int> result;
+  unsigned int bestSize = 0;
 
-  if (!inet_ntop(addr.family(), addr.addr(), buffer, INET6_ADDRSTRLEN))
-    throw std::runtime_error(std::string("<<Address: ") + std::strerror(errno));
-  if (addr.family() == AF_INET) {
-    os << buffer << ":" << addr.port();
-  } else {
-    os << "[" << buffer << "]:" << addr.port();
+  for (unsigned int i = 0; i < 8; ++i) {
+    unsigned int pos = i * 2;
+    if (addr[pos] != 0 || addr[pos + 1] != 0) {
+      currentSize = 0;
+      continue;
+    }
+    if (currentSize == 0) {
+      currentSize = 1;
+      currentStart = pos;
+    } else {
+      ++currentSize;
+    }
+    if (currentSize > bestSize) {
+      bestSize = currentSize;
+      result.first = currentStart;
+    }
   }
+
+  if (bestSize) {
+    result.second = result.first + bestSize * 2;
+    result.second -= 1;
+    if (result.second - result.first == 1) result.second = 0;
+  }
+  return result;
+}
+
+static std::ostream &operator<<(std::ostream &os, in6_addr const &src) {
+  unsigned char const *addr = reinterpret_cast<unsigned char const *>(&src);
+
+  os << '[';
+  if ((IN6_IS_ADDR_V4COMPAT(addr) && (addr[12] != 0 || addr[13] != 0)) ||
+      IN6_IS_ADDR_V4MAPPED(addr)) {
+    addr[10] == 255 ? os << "::ffff:" : os << "::";
+    os << *reinterpret_cast<in_addr const *>(&addr[12]);
+    os << ']';
+    return os;
+  }
+
+  std::pair<unsigned int, unsigned int> zeroField = allZeroFields(addr);
+  std::ios_base::fmtflags flags =
+      os.setf(std::ios_base::hex, std::ios_base::basefield);
+
+  for (size_t i = 0; i < 16; ++i) {
+    bool first = (i % 2 == 0);
+
+    if (zeroField.second == 0 || i < zeroField.first || i > zeroField.second) {
+      if (!first) {
+        if (addr[i - 1] != 0) os << std::setw(2) << std::setfill('0');
+        os << (int)addr[i];
+        if (i != 15) os << ':';
+      } else if (addr[i] != 0) {
+        os << (int)addr[i];
+      }
+    } else if (i == zeroField.second || (i == 0 && zeroField.first == 0)) {
+      os << ':';
+    }
+  }
+  os.flags(flags);
+  os << ']';
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, Address const &addr) {
+  if (addr.family() == AF_INET6)
+    os << *reinterpret_cast<in6_addr const *>(addr.addr());
+  else
+    os << *reinterpret_cast<in_addr const *>(addr.addr());
+  os << ':' << addr.port();
   return os;
 }
