@@ -1,7 +1,6 @@
 #ifndef ADDRESS_HPP
 #define ADDRESS_HPP
 
-#include <arpa/inet.h>  //inet_*
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>  //AF_INET
@@ -9,6 +8,7 @@
 #include <cerrno>
 #include <cstdlib>  //atoi
 #include <cstring>
+#include <iomanip>
 #include <limits>
 #include <ostream>  //overload
 #include <set>
@@ -39,7 +39,6 @@ class Address {
   void size(socklen_t size);
   void port(in_port_t port);
   in_port_t port() const;
-  std::string str() const;
 
   bool operator<(Address const &other) const;
   static std::set<Address> resolveHost(std::string const &src);

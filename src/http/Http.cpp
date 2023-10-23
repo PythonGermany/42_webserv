@@ -288,7 +288,9 @@ void Http::processCgi(std::string contentLength) {
 
   env.push_back("SERVER_NAME=" + _request.getHeaderField("Host"));
   env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
-  env.push_back("REMOTE_ADDR=" + client.str());
+  std::ostringstream oss;
+  oss << "REMOTE_ADDR=" << client;
+  env.push_back(oss.str());
 
   // Optional stuff to increase functionality
   env.push_back("HTTP_COOKIE=" + _request.getHeaderField("Cookie"));

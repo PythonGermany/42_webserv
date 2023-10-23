@@ -92,9 +92,6 @@ void AConnection::send(std::istream *msg) {
   }
 }
 
-/**
- * TODO: callback function for POLLERR and POLLHUP?
- */
 void AConnection::onPollEvent(struct pollfd &pollfd,
                               CallbackPointer *newCallbackObject,
                               struct pollfd *newPollfd) {
@@ -133,7 +130,7 @@ void AConnection::onPipeOutPollEvent(struct pollfd &pollfd) {
   }
   if (pollfd.events == 0) {
     pipeOut = -1;
-    _cgiWriteBuffer.clear();  // TODO: unecessary?
+    _cgiWriteBuffer.clear();
   }
 }
 
@@ -238,7 +235,7 @@ void AConnection::onPipeInPollIn(struct pollfd &pollfd) {
   } else if (ret == 0) {
     int status;
 
-    waitpid(_cgiPid, &status, 0);  // TODO: error checking?
+    waitpid(_cgiPid, &status, 0);
     pid_t tmp = _cgiPid;
     _cgiPid = -1;
     accessLog_g.write(
