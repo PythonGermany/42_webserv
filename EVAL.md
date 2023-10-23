@@ -1,4 +1,5 @@
-- [ ] Check if wordpress is working
+- [ ] Check that docker container is working
+- [ ] Check that wordpress is working
 - [ ] Test with script [testResponses.py](tests/testResponses.py)
 - [ ] Test with script [createChunkedRequest.py](tests/createChunkedRequest.py)
 - [ ] Test with script [testHeader.cpp](tests/testHeader.cpp)
