@@ -240,8 +240,9 @@ static std::ostream &operator<<(std::ostream &os, in6_addr const &src) {
   unsigned char const *addr = reinterpret_cast<unsigned char const *>(&src);
 
   os << '[';
-  if ((IN6_IS_ADDR_V4COMPAT(addr) && (addr[12] != 0 || addr[13] != 0)) ||
-      IN6_IS_ADDR_V4MAPPED(addr)) {
+  if ((IN6_IS_ADDR_V4COMPAT((in6_addr *)addr) &&
+       (addr[12] != 0 || addr[13] != 0)) ||
+      IN6_IS_ADDR_V4MAPPED((in6_addr *)addr)) {
     addr[10] == 255 ? os << "::ffff:" : os << "::";
     os << *reinterpret_cast<in_addr const *>(&addr[12]);
     os << ']';
