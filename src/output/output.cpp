@@ -6,16 +6,17 @@ void printInfo(int flags) {
   static bool isSet = false;
   if (getBit(SET, flags)) isSet = true;
   if (isSet && getBit(PRINT, flags)) {
-    std::cout
-        << BRIGHT_GREEN
-        << "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\r\n"
-           "██ ▄ ██ ▄ ███ ███ █ ▄▄█ ▄▄▀█ ▄▄█ ▄▄█ ▄▄▀█ ███ █\r\n"
-           "█ ▀▀ ▀██▀▄███▄▀ ▀▄█ ▄▄█ ▄▄▀█▄▄▀█ ▄▄█ ▀▀▄██ ▀ ██\r\n"
-           "████ ██ ▀▀████▄█▄██▄▄▄█▄▄▄▄█▄▄▄█▄▄▄█▄█▄▄███▄███\r\n"
-           "\e[102m█ - An HTTP server with basic functionality - █\e[49m\r\n"
-           "\e[102m█ https://github.com/PythonGermany/42_webserv █\e[49m\r\n"
-           "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
-        << RESET << std::endl;
+    std::cout << BRIGHT_GREEN
+              << "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\r\n"
+                 "██ ▄ ██ ▄ ███ ███ █ ▄▄█ ▄▄▀█ ▄▄█ ▄▄█ ▄▄▀█ ███ █\r\n"
+                 "█ ▀▀ ▀██▀▄███▄▀ ▀▄█ ▄▄█ ▄▄▀█▄▄▀█ ▄▄█ ▀▀▄██ ▀ ██\r\n"
+                 "████ ██ ▀▀████▄█▄██▄▄▄█▄▄▄▄█▄▄▄█▄▄▄█▄█▄▄███▄███\r\n"
+                 "\033[102m█ - An HTTP server with basic functionality - "
+                 "█\033[49m\r\n"
+                 "\033[102m█ https://github.com/PythonGermany/42_webserv "
+                 "█\033[49m\r\n"
+                 "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
+              << RESET << std::endl;
   }
   if (getBit(UNSET, flags)) isSet = false;
 }

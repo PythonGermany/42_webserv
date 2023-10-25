@@ -10,7 +10,7 @@ typedef enum arg_state_e {
   SUCCESS,
   FLAG_UNKNOWN,
   FLAG_DUPLICATE,
-  ARG_INVALID,
+  ARG_INVALID
 } arg_state_t;
 
 typedef struct arg_s {

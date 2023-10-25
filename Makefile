@@ -63,7 +63,7 @@ OBJ			:= $(addprefix $(OBJ_DIR)/, $(SRC:%.cpp=%.o))
 DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 
 CXX			:= c++
-CXXFLAGS	:= -Wall -Wextra -Werror -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http -Iinclude/utils -Iinclude/output
+CXXFLAGS	:= -Wall -Wextra -Werror -Wpedantic -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http -Iinclude/utils -Iinclude/output
 
 all: $(NAME)
 

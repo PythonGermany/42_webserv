@@ -6,11 +6,7 @@
 #include "colors.hpp"
 #include "webserv.hpp"
 
-typedef enum output_flag_e {
-  SET = 0b1,
-  PRINT = 0b10,
-  UNSET = 0b100
-} output_flag_t;
+typedef enum output_flag_e { SET = 1, PRINT = 2, UNSET = 4 } output_flag_t;
 
 // Information output functions can be triggered through flags. They need to be
 // called once with set = true in order to print out any text should they be

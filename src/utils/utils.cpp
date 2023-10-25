@@ -163,21 +163,27 @@ std::string getTime(std::string format, const time_t* timer) {
   }
   if (!endsWith(format, " GMT")) format += " GMT";
   while (true) {
-    char buffer[size];
+    std::string buffer(size, '\0');
     timeinfo = std::gmtime(timer);
-    if (std::strftime(buffer, size, format.c_str(), timeinfo) != 0)
-      return std::string(buffer);
+    size_t ret = std::strftime(&buffer[0], size, format.c_str(), timeinfo);
+    if (ret != 0) {
+      buffer.resize(ret);
+      return buffer;
+    }
     if (size > 256) return "";
     size *= 2;
   }
 }
-
 std::string getcwd() {
   size_t size = 1024;
 
   while (true) {
-    char buffer[size];
-    if (getcwd(buffer, size) != NULL) return buffer;
+    std::string buffer(size, '\0');
+    if (getcwd(&buffer[0], size) != NULL) {
+      size_t end = buffer.find('\0');
+      if (end != std::string::npos) buffer.resize(end);
+      return buffer;
+    }
     if (errno != ERANGE || size > PATH_MAX) return "";
     size += 1024;
   }
