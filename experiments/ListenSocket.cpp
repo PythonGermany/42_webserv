@@ -55,3 +55,5 @@ void ListenSocket::in() {
 }
 
 void ListenSocket::out() {}
+
+void ListenSocket::process() {}

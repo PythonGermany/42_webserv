@@ -10,15 +10,13 @@ class ClientSocket : public AConnection {
   std::string _readBuffer;
   std::string _writeBuffer;
 
-  Address _client;
-  Address _host;
-
  public:
   ClientSocket(int fd, Address const &client, Address const &host);
   ~ClientSocket();
 
   void in();
   void out();
+  virtual void process();
 };
 
 #endif

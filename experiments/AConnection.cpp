@@ -40,4 +40,4 @@ void AConnection::clearStateBits(state_t bits) { _state &= ~bits; }
 
 bool AConnection::getStateBit(state_t bit) { return _state & bit; }
 
-bool AConnection::stale() { return _state & (ERROR | TIMEOUT); }
+bool AConnection::bad() { return _state & (ERROR | TIMEOUT); }

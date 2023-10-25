@@ -34,6 +34,7 @@ class AConnection {
 
   virtual void in() = 0;
   virtual void out() = 0;
+  virtual void process() = 0;
 
   bool listenIn();
   bool listenOut();
@@ -42,7 +43,7 @@ class AConnection {
   void clearStateBits(state_t bits);
   bool getStateBit(state_t bit);
 
-  bool stale();
+  bool bad();
 };
 
 #endif

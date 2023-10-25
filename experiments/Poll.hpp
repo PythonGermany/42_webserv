@@ -25,6 +25,8 @@ class Poll {
  private:
   void updateRequestedEvents();
   void processOccuredEvents();
+  void addConnectionQueue();
+  void destroyFailedConnections();
 };
 
 #endif

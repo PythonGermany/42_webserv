@@ -17,6 +17,7 @@ class ListenSocket : public AConnection {
 
   void in();
   void out();
+  void process();
 };
 
 #endif

@@ -42,26 +42,48 @@ int Poll::update() {
 
   int ret = poll(_pollfds.data(), _pollfds.size(), _timeout);
   if (ret == -1) {
-    std::cerr << "Poll::update(): Poll error" << std::endl;
+    std::cerr << "Poll::update(): Poll error\n";
     return 1;
   } else if (ret == 0)
-    std::cerr << "Poll::update(): No poll event" << std::endl;
-  else
+    std::cout << "Poll::update(): No poll event" << std::endl;
+  else {
     processOccuredEvents();
+    addConnectionQueue();
+    destroyFailedConnections();
+  }
   return 0;
 }
 
 void Poll::processOccuredEvents() {
   for (size_t i = 0; i < _connections.size(); i++) {
-    if (_pollfds[i].revents & (POLLERR | POLLHUP)) {
-      std::cerr << i << " Poll::processOccuredEvents(): POLLERR or POLLHUP\n";
+    try {
+      if (_pollfds[i].revents & (POLLERR | POLLHUP)) {
+        std::cerr << i << " Poll::processOccuredEvents(): POLLERR or POLLHUP\n";
+        throw std::exception();
+      } else {
+        if (_pollfds[i].revents & POLLIN) _connections[i]->in();
+        if (_pollfds[i].revents & POLLOUT) _connections[i]->out();
+        if (_connections[i]->bad() == false) _connections[i]->process();
+      }
+    } catch (...) {
       _connections[i]->setStateBits(AConnection::ERROR);
-      remove(i--);
-    } else {
-      if (_pollfds[i].revents & POLLIN) _connections[i]->in();
-      if (_pollfds[i].revents & POLLOUT) _connections[i]->out();
-      _pollfds[i].revents = 0;
-      if (_connections[i]->stale()) remove(i--);
     }
+    _pollfds[i].revents = 0;
   }
+}
+
+void Poll::addConnectionQueue() {
+  AConnection *connection = AConnection::popQueueFront();
+  while (connection != NULL) {
+    if (add(connection)) {
+      delete connection;
+      std::cerr << "Failed to add connection to poll\n";
+    }
+    connection = AConnection::popQueueFront();
+  }
+}
+
+void Poll::destroyFailedConnections() {
+  for (size_t i = 0; i < _connections.size(); i++)
+    if (_connections[i]->bad()) remove(i--);
 }
