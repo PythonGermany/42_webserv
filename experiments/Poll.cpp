@@ -63,7 +63,7 @@ void Poll::processOccuredEvents() {
       } else {
         if (_pollfds[i].revents & POLLIN) _connections[i]->in();
         if (_pollfds[i].revents & POLLOUT) _connections[i]->out();
-        if (_connections[i]->bad() == false) _connections[i]->process();
+        if (_connections[i]->remove() == false) _connections[i]->process();
       }
     } catch (...) {
       _connections[i]->setStateBits(AConnection::ERROR);
@@ -85,5 +85,5 @@ void Poll::addConnectionQueue() {
 
 void Poll::destroyFailedConnections() {
   for (size_t i = 0; i < _connections.size(); i++)
-    if (_connections[i]->bad()) remove(i--);
+    if (_connections[i]->remove()) remove(i--);
 }

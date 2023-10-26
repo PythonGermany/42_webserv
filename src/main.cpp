@@ -29,6 +29,7 @@ static Context loadConfig(std::string path) {
 
 int main(int argc, char** argv) {
   try {
+    Poll poll;
     initGlobals();
 
     std::string path = loadArguments(argc, argv);
@@ -42,9 +43,9 @@ int main(int argc, char** argv) {
     ret |= printConfigStructure(PRINT | UNSET, context.getStructure());
     ret |= printConfigValidation(PRINT | UNSET, path);
     if (ret) return 0;
-    Init::init(context);
+    Init::init(poll, context);
     while (true) {
-      if (!Poll::poll()) break;
+      if (poll.update()) break;
     }
   } catch (const std::exception& e) {
     try {

@@ -1,29 +1,23 @@
-
 #ifndef LISTENSOCKET_HPP
 #define LISTENSOCKET_HPP
 
-#include <string>
+#include <fcntl.h>
 
 #include "AConnection.hpp"
-#include "Address.hpp"
-#include "CallbackPointer.hpp"
-#include "global.hpp"
+#include "ClientSocket.hpp"
 
-class ListenSocket : public IFileDescriptor {
+#define BACKLOG 4096
+
+class ClientSocket;
+
+class ListenSocket : public AConnection {
  public:
-  ~ListenSocket();
-  void onPollEvent(struct pollfd &pollfd, CallbackPointer *newCallbackObject,
-                   struct pollfd *newPollfd);
-  static void create(Address const &addr, int backlog = SOMAXCONN);
-
- private:
-  Address _addr;
-  size_t acceptAttempts;
-
-  ListenSocket();
   ListenSocket(Address const &addr);
-  ListenSocket(ListenSocket const &);
-  ListenSocket &operator=(ListenSocket const &);
+  ~ListenSocket();
+
+  void in();
+  void out();
+  void process();
 };
 
-#endif  // LISTENSOCKET_HPP
+#endif

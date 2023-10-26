@@ -1,105 +1,59 @@
 #include "ListenSocket.hpp"
 
-#include <fcntl.h>
-
-#include "Http.hpp"
-#include "Poll.hpp"
-
-ListenSocket::ListenSocket(Address const &addr)
-    : _addr(addr), acceptAttempts(0) {}
-
-/**
- * LisetnSocket::ListenSocket(Address const &) = delete;
- * ListenSocket &ListenSocket::operator=(ListenSocket const &) = delete;
- */
-
-ListenSocket::~ListenSocket() {
-  accessLog_g.write("Stop listening: " + toString<Address &>(_addr), DEBUG);
-}
-
-void ListenSocket::create(Address const &addr, int backlog) {
-  struct pollfd pollfd;
-  CallbackPointer newInstance;
-
-  pollfd.fd = socket(addr.family(), SOCK_STREAM, 0);
-  if (pollfd.fd < 0)
-    throw std::runtime_error(std::string("ListenSocket(): socket(): ") +
-                             std::strerror(errno));
+ListenSocket::ListenSocket(Address const &addr) : AConnection(-1, true, false) {
   try {
-    int flags = fcntl(pollfd.fd, F_GETFL, 0);
-    if (flags == -1)
-      throw std::runtime_error(std::string("ListenSocket(): fcntl(): ") +
-                               std::strerror(errno));
-    if (fcntl(pollfd.fd, F_SETFL, flags | O_NONBLOCK) == -1)
-      throw std::runtime_error(std::string("ListenSocket(): fcntl(): ") +
-                               std::strerror(errno));
+    _fd = socket(addr.family(), SOCK_STREAM, 0);
+    if (_fd == -1) throw std::runtime_error("Failed to create socket");
+
+    int flags = fcntl(_fd, F_GETFL, 0);
+    if (flags == -1 || fcntl(_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+      throw std::runtime_error("Failed to set socket options");
 
     int reuse = 1;
-    if (setsockopt(pollfd.fd, SOL_SOCKET, SO_REUSEADDR, &reuse,
-                   sizeof(reuse)) == -1)
-      throw std::runtime_error(std::string("ListenSocket(): setsockopt(): ") +
-                               std::strerror(errno));
+    if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)
+      throw std::runtime_error("Failed to set socket options");
 
-    if (bind(pollfd.fd, addr.data(), addr.size()))
-      throw std::runtime_error(std::string("ListenSocket(): bind(): ") +
-                               std::strerror(errno));
-
-    if (listen(pollfd.fd, backlog))
-      throw std::runtime_error(std::string("ListenSocket(): listen(): ") +
-                               std::strerror(errno));
-
-    newInstance.link = false;
-    newInstance.ptr = new ListenSocket(addr);
-  } catch (...) {
-    close(pollfd.fd);
-    throw;
+    if (bind(_fd, addr.data(), addr.size()))
+      throw std::runtime_error("Failed to bind socket");
+    if (listen(_fd, BACKLOG))
+      throw std::runtime_error("Failed to prepare socket");
+  } catch (const std::exception &e) {
+    setStateBits(ERROR);
+    throw std::runtime_error(e.what());
   }
-  pollfd.events = POLLIN;
-  pollfd.revents = 0;
-  accessLog_g.write("Listen: " + toString<Address const &>(addr), DEBUG);
-  Poll::add(newInstance, pollfd);
 }
 
-void ListenSocket::onPollEvent(struct pollfd &pollfd,
-                               CallbackPointer *newCallbackObject,
-                               struct pollfd *newPollfd) {
+ListenSocket::~ListenSocket() {}
+
+void ListenSocket::in() {
   socklen_t len = sizeof(sockaddr_in6);
-  Address remoteAddress;
+  Address clientAddress;
   Address serverAdresss;
-  if ((pollfd.revents & POLLIN) == false && pollfd.revents)
-    throw std::runtime_error("POLLERR");
-  if ((pollfd.revents & POLLIN) == false) return;
-  pollfd.revents &= ~POLLIN;
-  newPollfd->fd = ::accept(pollfd.fd, remoteAddress.data(), &len);
-  if (newPollfd->fd == -1)
-    throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
-                             std::strerror(errno));
-  int flags = fcntl(newPollfd->fd, F_GETFL, 0);
-  if (flags == -1)
-    throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
-                             std::strerror(errno));
-  if (fcntl(newPollfd->fd, F_SETFL, flags | O_NONBLOCK) == -1)
-    throw std::runtime_error(
-        std::string("ListenSocket(): onPollIn(): fcntl(): ") +
-        std::strerror(errno));
-  remoteAddress.size(len);
-  newPollfd->events = POLLIN;
-  newPollfd->revents = 0;
 
-  if (getsockname(newPollfd->fd, serverAdresss.data(), &len) == -1)
-    throw std::runtime_error(std::string("ListenSocket::onPollEvent(): ") +
-                             std::strerror(errno));
+  int clientFd = ::accept(_fd, clientAddress.data(), &len);
+  if (clientFd == -1) return;
 
-  serverAdresss.size(len);
-  newCallbackObject->link = false;
+  ClientSocket *client = NULL;
   try {
-    newCallbackObject->ptr = new Http(remoteAddress, serverAdresss);
-  } catch (std::bad_alloc const &e) {
-    close(newPollfd->fd);
-    newPollfd->fd = -1;
-    try {
-      errorLog_g.write("Failed to accept client: ENOMEM", DEBUG, BRIGHT_RED);
-    } catch (...) {
-    }
+    int flags = fcntl(clientFd, F_GETFL, 0);
+    if (flags == -1 || fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) == -1)
+      throw std::runtime_error("Failed to set socket options");
+    clientAddress.size(len);
+
+    if (getsockname(clientFd, serverAdresss.data(), &len) == -1)
+      throw std::runtime_error("Failed to get socket address");
+    serverAdresss.size(len);
+
+    client = new ClientSocket(clientFd, clientAddress, serverAdresss);
+    if (pushQueueFront(client))
+      throw std::runtime_error("Failed to add client to queue");
+  } catch (...) {
+    delete client;
+    close(clientFd);
+    return;
   }
 }
+
+void ListenSocket::out() {}
+
+void ListenSocket::process() {}

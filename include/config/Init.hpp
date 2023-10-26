@@ -5,6 +5,7 @@
 #include "Log.hpp"
 #include "Poll.hpp"
 #include "VirtualHost.hpp"
+#include "global.hpp"
 
 class Init {
  private:
@@ -12,12 +13,11 @@ class Init {
   ~Init();
 
  public:
-  static void init(Context context);
+  static void init(Poll& poll, Context& context);
   static void initLogDefaults(Context& context);
   static void initMimeTypes(Context& context);
   static void initVirtualHosts(Context& context);
-  static void initAConnection(Context& context);
-  static void initPoll();
+  static void initPoll(Poll& poll);
 };
 
 #endif

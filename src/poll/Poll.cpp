@@ -1,289 +1,89 @@
 #include "Poll.hpp"
 
-#include <unistd.h>
+Poll::Poll() : _timeout(-1) {}
 
-#include <cerrno>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
+Poll::~Poll() {
+  for (size_t i = 0; i < _connections.size(); i++) delete _connections[i];
+}
 
-#include "webserv.hpp"
-
-/**
- * @brief Add callback object with corresponding pollfd struct
- * @param pollfd Poll takes ownership of the fd element and ensures its
- * proper closure.
- * @param src Poll takes ownersip of the allocated callback object and ensures
- * proper cleanup
- * @throw std::vector::push_back() might throw std::bad_alloc()
- */
-void Poll::add(CallbackPointer const &src, struct pollfd const &pollfd) try {
-  getInstance().callbackObjects.push_back(src);
+int Poll::add(AConnection *connection) {
+  if (connection == NULL) return 0;
   try {
-    getInstance().pollfds.push_back(pollfd);
-  } catch (...) {
-    getInstance().callbackObjects.pop_back();
-    throw;
-  }
-} catch (...) {
-  if (src.link == false) delete src.ptr;
-  close(pollfd.fd);
-  throw;
-}
-
-/**
- * @brief removed callback object and pollfd struct by index
- * @throw noexcept
- */
-void Poll::remove(size_t pos) {
-  if (callbackObjects[pos].link == false) delete callbackObjects[pos].ptr;
-  close(pollfds[pos].fd);
-  callbackObjects.erase(callbackObjects.begin() + pos);
-  pollfds.erase(pollfds.begin() + pos);
-}
-
-/**
- * @param src all occurences with this value will be removed
- * @throw noexcept
- */
-void Poll::remove(IFileDescriptor *src) {
-  for (size_t i = 0; i < callbackObjects.size();) {
-    if (callbackObjects[i].ptr == src) {
-      remove(i);
-    } else
-      ++i;
-  }
-}
-
-void Poll::release(CallbackPointer const *callback, struct pollfd const *pollfd,
-                   size_t size) {
-  for (size_t i = 0; i < size; ++i) {
-    if (callback[i].ptr != NULL && callback[i].link == false)
-      delete callback[i].ptr;
-    if (pollfd[i].fd != -1) close(pollfd[i].fd);
-  }
-}
-
-bool Poll::poll() {
-  Poll &poll = getInstance();
-
-  int ready = ::poll(poll.pollfds.data(), poll.pollfds.size(), poll.timeout);
-  if (poll.stop) return false;
-  if (ready == -1)
-    throw std::runtime_error(std::string("Poll::poll(): ") +
-                             std::strerror(errno));
-
-  if (ready == 0) try {
-      errorLog_g.write("Poll: no revents", DEBUG, BRIGHT_RED);
-    } catch (...) {
-    }
-  poll.timeout = -1;
-  poll.iterate();
-  return true;
-}
-
-/**
- * print newline because ^C is printed without
- */
-void Poll::signalHandler(int) {
-  getInstance().stop = true;
-  std::cout << std::endl;
-}
-
-Poll::Poll() {
-  struct sigaction sigAction = {};
-
-  sigAction.sa_handler = Poll::signalHandler;
-  sigaction(SIGINT, &sigAction, &originalSigIntAction);
-  sigaction(SIGTERM, &sigAction, &originalSigTermAction);
-  timeout = -1;
-  stop = false;
-  pid = -1;
-}
-
-pid_t Poll::lastForkPid() { return getInstance().pid; }
-
-void Poll::lastForkPid(pid_t src) { getInstance().pid = src; }
-
-/**
- * @brief is used to release resources in child processes
- * @throw noexcept
- */
-void Poll::cleanUp() {
-  Poll &poll = getInstance();
-
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      poll.callbackObjects.begin();
-  std::vector<struct pollfd>::iterator pollfdIt = poll.pollfds.begin();
-  while (callbackObjectsIt != poll.callbackObjects.end()) {
-    if (callbackObjectsIt->link == false) delete callbackObjectsIt->ptr;
-    close(pollfdIt->fd);
-    ++callbackObjectsIt;
-    ++pollfdIt;
-  }
-  poll.callbackObjects.clear();
-  poll.pollfds.clear();
-  sigaction(SIGINT, &poll.originalSigIntAction, NULL);
-  sigaction(SIGTERM, &poll.originalSigTermAction, NULL);
-}
-
-Poll::~Poll() { cleanUp(); }
-
-/**
- * @brief
- * Tries to add array.
- * Only guarantees that either both callback object and pollfd struct are added
- * or neither. Does not close fds or delete allocated memory.
- * @throw std::vector::push_back() might throw std::bad_alloc()
- */
-void Poll::tryToAddNewElements(CallbackPointer const *callback,
-                               struct pollfd const *pollfd, size_t size) {
-  for (size_t i = 0; i < size; ++i)
-    if (callback[i].ptr != NULL) {
-      callbackObjects.push_back(callback[i]);
-      try {
-        pollfds.push_back(pollfd[i]);
-      } catch (...) {
-        callbackObjects.pop_back();
-        throw;
-      }
-    }
-}
-
-void Poll::iterate() {
-  for (size_t i = 0; i < callbackObjects.size();) {
-    struct pollfd newPollfd[2];
-    CallbackPointer newCallbackObject[2];
-
-    for (size_t j = 0; j < sizeof(newPollfd) / sizeof(*newPollfd); ++j)
-      newPollfd[j].fd = -1;
+    pollfd newPollFd = {connection->fd(), 0, 0};
+    _pollfds.push_back(newPollFd);
     try {
-      callbackObjects[i].ptr->onPollEvent(pollfds[i], newCallbackObject,
-                                          newPollfd);
-      tryToAddNewElements(newCallbackObject, newPollfd,
-                          sizeof(newPollfd) / sizeof(*newPollfd));
+      _connections.push_back(connection);
+    } catch (const std::exception &e) {
+      _pollfds.pop_back();
+      throw std::runtime_error("Failed add connection to poll");
+    }
+  } catch (...) {
+    return 1;
+  }
+  return 0;
+}
 
-      if (pollfds[i].events == 0) {
-        remove(i);
+void Poll::remove(size_t i) {
+  delete _connections[i];
+  _connections.erase(_connections.begin() + i);
+  _pollfds.erase(_pollfds.begin() + i);
+}
+
+void Poll::updateRequestedEvents() {
+  for (size_t i = 0; i < _connections.size(); i++) {
+    _pollfds[i].events = 0;
+    if (_connections[i]->listenIn()) _pollfds[i].events |= POLLIN;
+    if (_connections[i]->listenOut()) _pollfds[i].events |= POLLOUT;
+  }
+}
+
+int Poll::update() {
+  updateRequestedEvents();
+
+  int ret = poll(_pollfds.data(), _pollfds.size(), _timeout);
+  if (ret == -1) {
+    errorLog_g.write("Poll: Fatal error", ERROR);
+    return 1;
+  } else if (ret == 0)
+    accessLog_g.write("Poll: No poll event", DEBUG, YELLOW);
+  else {
+    processConnectionEvents();
+    addConnectionQueue();
+    removeStaleConnections();
+  }
+  return 0;
+}
+
+void Poll::processConnectionEvents() {
+  for (size_t i = 0; i < _connections.size(); i++) {
+    try {
+      if (_pollfds[i].revents & (POLLERR | POLLHUP)) {
+        std::cerr << i << " Poll::processOccuredEvents(): POLLERR or POLLHUP\n";
+        throw std::exception();
       } else {
-        ++i;
+        if (_pollfds[i].revents & POLLIN) _connections[i]->in();
+        if (_pollfds[i].revents & POLLOUT) _connections[i]->out();
+        if (_connections[i]->remove() == false) _connections[i]->process();
       }
-    } catch (std::exception const &e) {
-      try {
-        accessLog_g.write(std::string(e.what()), DEBUG);
-      } catch (...) {
-      }
-      remove(callbackObjects[i].ptr);
-      release(newCallbackObject, newPollfd,
-              sizeof(newPollfd) / sizeof(*newPollfd));
-      i = 0;
+    } catch (...) {
+      _connections[i]->setStateBits(AConnection::ERROR);
     }
+    _pollfds[i].revents = 0;
   }
 }
 
-void Poll::setTimeout(int src) {
-  Poll &poll = getInstance();
-
-  if (poll.timeout == -1 || src < poll.timeout) poll.timeout = src;
-}
-
-void Poll::addPollEvent(short event, IFileDescriptor *src) {
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      getInstance().callbackObjects.begin();
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
-      pollfdIt->events |= event;
-      return;
+void Poll::addConnectionQueue() {
+  AConnection *connection = AConnection::popQueueFront();
+  while (connection != NULL) {
+    if (add(connection)) {
+      delete connection;
+      std::cerr << "Failed to add connection to poll\n";
     }
-    ++callbackObjectsIt;
-    ++pollfdIt;
+    connection = AConnection::popQueueFront();
   }
-  throw std::invalid_argument("Poll::addPollEvent(): no pointer found");
 }
 
-/**
- * undefined behavior if fd is not inside pollfds
- */
-void Poll::addPollEvent(short event, int fd) {
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-
-  while (pollfdIt != getInstance().pollfds.end()) {
-    if (pollfdIt->fd == fd) {
-      pollfdIt->events |= event;
-      return;
-    }
-    ++pollfdIt;
-  }
-  throw std::invalid_argument("Poll::addPollEvent(): no fd found");
-}
-
-void Poll::clearPollEvent(short event, IFileDescriptor *src) {
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      getInstance().callbackObjects.begin();
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
-      pollfdIt->events &= ~event;
-      return;
-    }
-    ++callbackObjectsIt;
-    ++pollfdIt;
-  }
-  throw std::invalid_argument("Poll::clearPollEvent(): no pointer found");
-}
-
-void Poll::clearPollEvent(short event, int fd) {
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-
-  while (pollfdIt != getInstance().pollfds.end()) {
-    if (pollfdIt->fd == fd) {
-      pollfdIt->events &= ~event;
-      return;
-    }
-    ++pollfdIt;
-  }
-  throw std::invalid_argument("Poll::clearPollEvent(): no fd found");
-}
-
-void Poll::setPollActive(short oldEvents, IFileDescriptor *src) {
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      getInstance().callbackObjects.begin();
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
-      pollfdIt->events &= ~POLLINACTIVE;
-      pollfdIt->events |= oldEvents;
-      return;
-    }
-    ++callbackObjectsIt;
-    ++pollfdIt;
-  }
-  throw std::invalid_argument("Poll::setPollActive(): no pointer found");
-}
-
-short Poll::setPollInactive(IFileDescriptor *src) {
-  std::vector<CallbackPointer>::iterator callbackObjectsIt =
-      getInstance().callbackObjects.begin();
-  std::vector<struct pollfd>::iterator pollfdIt = getInstance().pollfds.begin();
-  while (callbackObjectsIt != getInstance().callbackObjects.end()) {
-    if (callbackObjectsIt->link == false && callbackObjectsIt->ptr == src) {
-      short tmp = pollfdIt->events & POLLIN;
-      pollfdIt->events &= ~POLLIN;
-      pollfdIt->events |= POLLINACTIVE;
-      return tmp;
-    }
-    ++callbackObjectsIt;
-    ++pollfdIt;
-  }
-  throw std::invalid_argument("Poll::getPollInactive(): no pointer found");
-}
-
-/**
- * only if an object exists does the destructor get called
- */
-Poll &Poll::getInstance() {
-  static Poll poll;
-
-  return poll;
+void Poll::removeStaleConnections() {
+  for (size_t i = 0; i < _connections.size(); i++)
+    if (_connections[i]->remove()) remove(i--);
 }

@@ -10,6 +10,7 @@ SRC			+= global.cpp
 SRC			+= poll/Address.cpp
 SRC			+= poll/AConnection.cpp
 SRC			+= poll/ListenSocket.cpp
+SRC			+= poll/ClientSocket.cpp
 SRC			+= poll/Poll.cpp
 SRC			+= poll/CallbackPointer.cpp
 SRC			+= poll/timeval.cpp
@@ -42,6 +43,7 @@ HEADERS		+= config/Init.hpp
 HEADERS		+= poll/Address.hpp
 HEADERS		+= poll/AConnection.hpp
 HEADERS		+= poll/ListenSocket.hpp
+HEADERS		+= poll/ClientSocket.hpp
 HEADERS		+= poll/Poll.hpp
 HEADERS		+= poll/IFileDescriptor.hpp
 HEADERS		+= poll/CallbackPointer.hpp
@@ -84,7 +86,6 @@ clean:
 	$(RM) -r $(OBJ_DIR)
 
 fclean: clean
-	rm -f tools/transformer
 	$(RM) $(NAME)
 
 re: fclean all

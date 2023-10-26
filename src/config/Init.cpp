@@ -4,14 +4,13 @@ Init::Init() {}
 
 Init::~Init() {}
 
-void Init::init(Context context) {
+void Init::init(Poll& poll, Context& context) {
   Context& http = context.getContext("http")[0];
 
   initLogDefaults(http);
   initMimeTypes(http);
   initVirtualHosts(http);
-  initAConnection(http);
-  initPoll();
+  initPoll(poll);
 }
 
 void Init::initLogDefaults(Context& context) {
@@ -82,19 +81,7 @@ void Init::initVirtualHosts(Context& context) {
                     BRIGHT_GREEN);
 }
 
-void Init::initAConnection(Context& context) {
-  if (context.exists("cgi_timeout")) {
-    size_t timeout = fromString<int>(context.getDirective("cgi_timeout")[0][0]);
-    AConnection::initCgiTimout(timeout ? timeout : 1);
-  }
-  if (context.exists("client_timeout")) {
-    size_t timeout =
-        fromString<int>(context.getDirective("client_timeout")[0][0]);
-    AConnection::initConnectionTimeout(timeout ? timeout : 1);
-  }
-}
-
-void Init::initPoll() {
+void Init::initPoll(Poll& poll) {
   accessLog_g.write("--------- Creating sockets ----------", INFO,
                     BRIGHT_GREEN);
   size_t sockets = 0;
@@ -110,7 +97,14 @@ void Init::initPoll() {
     std::set<Address>::const_iterator addr_any =
         allAddresses.find(Address(it->family(), it->port()));
     if (addr_any == allAddresses.end() || addr_any == it) {
-      ListenSocket::create(*it);
+      ListenSocket* s = NULL;
+      try {
+        s = new ListenSocket(*it);
+        if (poll.add(s)) throw std::exception();
+      } catch (...) {
+        delete s;
+        throw std::runtime_error("Failed to initialize listen socket");
+      }
       ++sockets;
     }
   }

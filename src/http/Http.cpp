@@ -1,24 +1,90 @@
 #include "Http.hpp"
 
-Http::Http(Address const &client, Address const &host)
-    : AConnection(host, client) {
+Http::Http(Address const &client, Address const &host) {
+  _client = client;
+  _host = host;
+  _keepAlive = true;
   setReadState(REQUEST_LINE);
-  this->headSizeLimit = 8192;
-  this->_virtualHost = NULL;
-  this->_context = NULL;
-  this->_expectedBodySize = 0;
-  this->_currBodySize = 0;
-  accessLog_g.write(toString<Address &>(this->host) +
-                        " -> add: " + toString<Address &>(this->client),
-                    DEBUG);
+  _virtualHost = NULL;
+  _context = NULL;
+  bodySize = 0;
+  _expectedBodySize = 0;
+  _currBodySize = 0;
+  accessLog_g.write(
+      toString<Address &>(_client) + " -> add: " + toString<Address &>(_host),
+      DEBUG);
 }
 
 Http::~Http() {
   try {
-    accessLog_g.write(toString<Address &>(host) +
-                          " -> delete: " + toString<Address &>(client),
+    accessLog_g.write(toString<Address &>(_host) +
+                          " -> delete: " + toString<Address &>(_client),
                       DEBUG);
   } catch (...) {
+  }
+}
+
+bool Http::keepAlive() { return _keepAlive; }
+
+void Http::process(std::string &data) {
+  std::string::size_type pos;
+
+  while (true) {
+    pos = data.find(_readDelimiter);
+    if (pos == std::string::npos) return;
+    size_t tmpReadDelim = _readDelimiter.size();
+
+    switch (_readState) {
+      case REQUEST_LINE:
+        OnRequestRecv(data.substr(0, pos));
+        break;
+      case HEAD:
+        OnHeadRecv(data.substr(0, pos));
+        break;
+      case CHUNK_SIZE:
+        OnChunkSizeRecv(data.substr(0, pos));
+        break;
+      case TRAILER:
+        OnTrailerRecv(data.substr(0, pos));
+        break;
+      case BODY:
+        if (data.size() < bodySize) return;
+        pos = bodySize;
+        OnBodyRecv(data.substr(0, pos));
+        break;
+
+      default:
+        throw std::runtime_error("passReadBuffer(): Undefined read state");
+    }
+    data.erase(0, pos + tmpReadDelim);
+  }
+}
+
+std::list<std::istream *> &Http::output() { return _output; }
+
+void Http::setReadState(state_t readState) {
+  _readState = readState;
+
+  switch (_readState) {
+    case REQUEST_LINE:
+      _readDelimiter = "\r\n";
+      break;
+    case HEAD:
+      _readDelimiter = "\r\n\r\n";
+      break;
+    case BODY:
+      _readDelimiter = "";
+      break;
+    case CHUNK_SIZE:
+      _readDelimiter = "\r\n";
+      break;
+    case TRAILER:
+      _readDelimiter = "\r\n";
+      break;
+
+    default:
+      _readDelimiter = "\r\n";
+      break;
   }
 }
 
@@ -30,9 +96,9 @@ void Http::OnRequestRecv(std::string msg) {
 
   _request = Request();
   bool parseRet = _request.parseRequestLine(msg);
-  _log = toString<Address &>(client) + ": " + _request.getMethod() + " " +
+  _log = toString<Address &>(_client) + ": " + _request.getMethod() + " " +
          _request.getUri().generate() + " " + _request.getVersion() + " -> " +
-         toString<Address &>(host);
+         toString<Address &>(_host);
   parseRet |= _request.getUri().decode();
   accessLog_g.write("Decoded URI: " + _request.getUri().generate(), DEBUG);
 
@@ -67,7 +133,7 @@ void Http::OnHeadRecv(std::string msg) {
       requestHost = _request.getUri().getHost();
 
     if (_request.getHeaderField("Host").size() > 0) {
-      _virtualHost = VirtualHost::matchVirtualHost(host, requestHost);
+      _virtualHost = VirtualHost::matchVirtualHost(_host, requestHost);
       processRequest();
     } else
       processError("400", "Bad Request", true);
@@ -102,8 +168,8 @@ void Http::OnTrailerRecv(std::string msg) {
       getPutResponse(_uri);
     else if (_request.isMethod("POST")) {
       processCgi(toString(_currBodySize));
-      cgiSend(cgiChunkedBody);
-      cgiCloseSendPipe();
+      // cgiSend(cgiChunkedBody);
+      // cgiCloseSendPipe();
     } else
       errorLog_g.write(
           "OnTrailerRecv() processed unknown method: " + _request.getMethod(),
@@ -287,17 +353,17 @@ void Http::processCgi(std::string contentLength) {
   }
 
   env.push_back("SERVER_NAME=" + _request.getHeaderField("Host"));
-  env.push_back("SERVER_PORT=" + toString<in_port_t>(host.port()));
+  env.push_back("SERVER_PORT=" + toString<in_port_t>(_host.port()));
   std::ostringstream oss;
-  oss << "REMOTE_ADDR=" << client;
+  oss << "REMOTE_ADDR=" << _client;
   env.push_back(oss.str());
 
   // Optional stuff to increase functionality
   env.push_back("HTTP_COOKIE=" + _request.getHeaderField("Cookie"));
   env.push_back("HTTP_USER_AGENT=" + _request.getHeaderField("User-Agent"));
 
-  runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
-  if (_request.isMethod("POST") == false) cgiCloseSendPipe();
+  // runCGI(cgiProgramPathname, std::vector<std::string>(1, pathname), env);
+  // if (_request.isMethod("POST") == false) cgiCloseSendPipe();
   _response.clear();
 }
 
@@ -320,7 +386,7 @@ void Http::processBodyRequest() {
     if (isBodySizeValid(_expectedBodySize) == false)
       return processError("413", "Request Entity Too Large", true);
 
-    bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
+    // bodySize = std::min(static_cast<size_t>(BUFFER_SIZE), _expectedBodySize);
     setReadState(BODY);
   }
 
@@ -350,8 +416,7 @@ void Http::processPutData(const std::string &data) {
     return setReadState(CHUNK_SIZE);
 
   if (_currBodySize >= _expectedBodySize) return getPutResponse(_uri);
-  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE),
-                      _expectedBodySize - _currBodySize);
+  bodySize = std::min(65536ul, _expectedBodySize - _currBodySize);
 }
 
 void Http::processPostData(const std::string &data) {
@@ -360,13 +425,13 @@ void Http::processPostData(const std::string &data) {
     cgiChunkedBody.append(data);
     return setReadState(CHUNK_SIZE);
   }
-  cgiSend(data);
-  if (_currBodySize >= _expectedBodySize) {
-    cgiCloseSendPipe();
-    return;
-  }
-  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE),
-                      _expectedBodySize - _currBodySize);
+  // cgiSend(data);
+  //  if (_currBodySize >= _expectedBodySize) {
+  //    cgiCloseSendPipe();
+  //    return;
+  //  }
+  //  bodySize = std::min(static_cast<size_t>(BUFFER_SIZE),
+  //                      _expectedBodySize - _currBodySize);
 }
 
 void Http::getPutResponse(std::string uri) {
@@ -545,8 +610,23 @@ void Http::sendResponse() {
     _response.setHeader("Connection", "keep-alive", true);
 
   // Send response
-  send(new std::istringstream(_response.generateHead()));
-  if (_request.isMethod("HEAD") == false) send(_response.resetBody());
+
+  std::istringstream *head = new std::istringstream(_response.generateHead());
+  try {
+    _output.push_back(head);
+  } catch (...) {
+    delete head;
+    throw std::exception();
+  }
+  if (_request.isMethod("HEAD") == false) {
+    std::istream *body = _response.resetBody();
+    try {
+      _output.push_back(body);
+    } catch (...) {
+      delete body;
+      throw std::exception();
+    }
+  }
 
   // Reset class variables
   setReadState(REQUEST_LINE);
@@ -554,7 +634,7 @@ void Http::sendResponse() {
   // Close connection if needed or asked for
   if (_response.getHeader("Connection") == "close" ||
       _request.hasHeaderFieldValue("Connection", "close"))
-    stopReceiving();
+    _keepAlive = false;
 
   accessLog_g.write(_log + " -> " + _response.getVersion() + " " +
                         _response.getStatus() + " " + _response.getReason() +

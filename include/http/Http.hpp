@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 
-#include "AConnection.hpp"
 #include "File.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
@@ -26,7 +25,11 @@
 const std::string codes_g[] = {"200", "201", "204", "301", "400", "403", "404",
                                "405", "411", "413", "500", "501", "505"};
 
-class Http : public AConnection {
+class Http {
+  Address _client;
+  Address _host;
+  bool _keepAlive;
+
   Request _request;
   Response _response;
   VirtualHost* _virtualHost;
@@ -35,6 +38,7 @@ class Http : public AConnection {
 
   std::ofstream _file;
   bool _newFile;
+  size_t bodySize;
   size_t _expectedBodySize;
   size_t _currBodySize;
 
@@ -48,6 +52,26 @@ class Http : public AConnection {
   Http(Address const& client, Address const& host);
   ~Http();
 
+  bool keepAlive();
+  void process(std::string& data);
+  std::list<std::istream*>& output();
+
+ private:
+  typedef enum state_e {
+    REQUEST_LINE,
+    HEAD,
+    BODY,
+    CHUNK_SIZE,
+    TRAILER
+  } state_t;
+
+  state_t _readState;
+  std::string _readDelimiter;
+
+  std::list<std::istream*> _output;
+
+  void setReadState(state_t readState);
+
   void OnRequestRecv(std::string msg);
   void OnHeadRecv(std::string msg);
   void OnChunkSizeRecv(std::string msg);
@@ -56,7 +80,6 @@ class Http : public AConnection {
   void OnCgiRecv(std::string msg);
   void OnCgiError();
 
- private:
   void processRequest();
   void processFile(std::string uri);
   void processBodyRequest();

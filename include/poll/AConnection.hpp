@@ -1,107 +1,49 @@
 #ifndef ACONNECTION_HPP
 #define ACONNECTION_HPP
 
-#include <fcntl.h>
+#include <unistd.h>
 
-#include <istream>
-#include <queue>
+#include <list>
+#include <set>
 #include <string>
-#include <vector>
 
-#include "Address.hpp"
-#include "CallbackPointer.hpp"
-#include "timeval.hpp"
+#define IO_OPERATION_SIZE 65536ul
 
-// WEBSERV_CONFIG ----------- ACONNECTION VALUES -------------------
-/**
- * close connections if they are TIMEOUT milliseconds inactive
- */
-#define CONNECTION_TIMEOUT 30000
-#define CGI_TIMEOUT 30000
-#define BUFFER_SIZE 65536
-
-class AConnection : public IFileDescriptor {
- public:
-  AConnection();
-  AConnection(Address const &serverAddress, Address const &remoteAddress);
-  AConnection(AConnection const &other);
-  virtual ~AConnection();
-  AConnection &operator=(AConnection const &other);
-
-  static void initConnectionTimeout(int connectionTimeout);
-  static void initCgiTimout(int cgiTimout);
-
-  virtual void OnCgiRecv(std::string msg) = 0;
-  virtual void OnCgiError() = 0;
-
+class AConnection {
  protected:
-  typedef enum state_e {
-    REQUEST_LINE,
-    HEAD,
-    BODY,
-    CHUNK_SIZE,
-    TRAILER
-  } state_t;
+  static std::list<AConnection *> _queue;
 
-  Address client;
-  Address host;
-
-  std::string::size_type headSizeLimit;
-  std::string::size_type bodySize;
-  size_t _writeBufferPos;
-
-  void setReadState(state_t readState);
-
-  std::string const &getReadDelimiter() const;
-
-  virtual void OnRequestRecv(std::string msg) = 0;
-  virtual void OnHeadRecv(std::string msg) = 0;
-  virtual void OnChunkSizeRecv(std::string msg) = 0;
-  virtual void OnTrailerRecv(std::string msg) = 0;
-  virtual void OnBodyRecv(std::string msg) = 0;
-  void send(std::istream *msg);
-  void cgiSend(std::string const &msg);
-  void cgiCloseSendPipe();
-  void runCGI(std::string program, std::vector<std::string> const &arg,
-              std::vector<std::string> const &env);
-  void stopReceiving();
+  int _fd;
+  bool _listenIn;
+  bool _listenOut;
 
  private:
-  static int _connectionTimeout;
-  state_t _readState;
-  std::string readDelimiter;
+  short _state;
 
-  std::queue<std::istream *> _writeStreams;
-  char _writeBuffer[BUFFER_SIZE];
-  size_t _writeBufferSize;
-  std::string _readBuffer;
-  struct timeval lastTimeActive;
-  CallbackPointer *_newCallbackObject;
-  struct pollfd *_newPollfd;
+ public:
+  AConnection();
+  AConnection(int fd, bool listenIn, bool listenOut);
+  virtual ~AConnection();
 
-  // cgi vars
-  static int _cgiTimout;
+  typedef enum state_e { ERROR = 1, TIMEOUT = 2, CLOSED = 4, DONE = 8 } state_t;
 
-  int pipeIn;
-  int pipeOut;
-  std::string _cgiReadBuffer;
-  std::string _cgiWriteBuffer;
-  pid_t _cgiPid;
-  short _isListening;
-  struct timeval pipeInLastTimeActive;
-  void KillCgi();
+  static int pushQueueFront(AConnection *connection);
+  static AConnection *popQueueFront();
 
-  void onPollEvent(struct pollfd &pollfd, CallbackPointer *newCallbackObject,
-                   struct pollfd *newPollfd);
-  void onPipeInPollEvent(struct pollfd &pollfd);
-  void onPipeInPollIn(struct pollfd &pollfd);
-  void onPipeInNoPollEvent(struct pollfd &pollfd);
-  void onPipeOutPollEvent(struct pollfd &pollfd);
-  void onPipeOutPollOut(struct pollfd &pollfd);
-  void onPollOut(struct pollfd &pollfd);
-  void onPollIn(struct pollfd &pollfd);
-  void onNoPollEvent(struct pollfd &pollfd);
-  void passReadBuffer(struct pollfd &pollfd);
+  int fd();
+
+  virtual void in() = 0;
+  virtual void out() = 0;
+  virtual void process() = 0;
+
+  bool listenIn();
+  bool listenOut();
+
+  void setStateBits(state_t bits);
+  void clearStateBits(state_t bits);
+  bool getStateBit(state_t bit);
+
+  bool remove();
 };
 
-#endif  // ACONNECTION_HPP
+#endif

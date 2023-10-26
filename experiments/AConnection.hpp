@@ -43,7 +43,7 @@ class AConnection {
   void clearStateBits(state_t bits);
   bool getStateBit(state_t bit);
 
-  bool bad();
+  bool remove();
 };
 
 #endif
