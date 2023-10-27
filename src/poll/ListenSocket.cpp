@@ -45,7 +45,7 @@ void ListenSocket::in() {
     serverAdresss.size(len);
 
     client = new ClientSocket(clientFd, clientAddress, serverAdresss);
-    if (pushQueueFront(client))
+    if (pushQueueBack(client))
       throw std::runtime_error("Failed to add client to queue");
   } catch (...) {
     delete client;

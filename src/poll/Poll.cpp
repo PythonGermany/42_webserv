@@ -58,7 +58,7 @@ void Poll::processConnectionEvents() {
   for (size_t i = 0; i < _connections.size(); i++) {
     try {
       if (_pollfds[i].revents & (POLLERR | POLLHUP)) {
-        std::cerr << i << " Poll::processOccuredEvents(): POLLERR or POLLHUP\n";
+        accessLog_g.write("Poll: POLLERR or POLLHUP", DEBUG, YELLOW);
         throw std::exception();
       } else {
         if (_pollfds[i].revents & POLLIN) _connections[i]->in();

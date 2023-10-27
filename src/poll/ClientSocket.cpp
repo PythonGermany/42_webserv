@@ -17,6 +17,15 @@ void ClientSocket::in() {
 }
 
 void ClientSocket::out() {
+  // size_t toSend = std::min(IO_OPERATION_SIZE, _writeBuffer.size());
+  // int ret = send(_fd, _writeBuffer.data(), toSend, 0);
+  // if (ret == -1)
+  //   setStateBits(ERROR);
+  // else {
+  //   _writeBuffer.erase(0, ret);
+  //   _listenOut = _writeBuffer.empty();
+  // }
+
   std::istream *stream = _writeStreams.front();
 
   stream->read(_writeBuffer, IO_OPERATION_SIZE);

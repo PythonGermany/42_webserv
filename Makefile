@@ -12,7 +12,6 @@ SRC			+= poll/AConnection.cpp
 SRC			+= poll/ListenSocket.cpp
 SRC			+= poll/ClientSocket.cpp
 SRC			+= poll/Poll.cpp
-SRC			+= poll/CallbackPointer.cpp
 SRC			+= poll/timeval.cpp
 
 SRC			+= config/argument.cpp
@@ -46,7 +45,6 @@ HEADERS		+= poll/ListenSocket.hpp
 HEADERS		+= poll/ClientSocket.hpp
 HEADERS		+= poll/Poll.hpp
 HEADERS		+= poll/IFileDescriptor.hpp
-HEADERS		+= poll/CallbackPointer.hpp
 HEADERS		+= poll/timeval.hpp
 
 HEADERS		+= http/Http.hpp

@@ -27,7 +27,7 @@ class AConnection {
 
   typedef enum state_e { ERROR = 1, TIMEOUT = 2, CLOSED = 4, DONE = 8 } state_t;
 
-  static int pushQueueFront(AConnection *connection);
+  static int pushQueueBack(AConnection *connection);
   static AConnection *popQueueFront();
 
   int fd();

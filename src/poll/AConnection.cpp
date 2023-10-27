@@ -12,9 +12,9 @@ AConnection::~AConnection() {
   if (_fd >= 0) close(_fd);
 }
 
-int AConnection::pushQueueFront(AConnection *connection) {
+int AConnection::pushQueueBack(AConnection *connection) {
   try {
-    if (connection != NULL) _queue.push_front(connection);
+    if (connection != NULL) _queue.push_back(connection);
   } catch (...) {
     return 1;
   }
