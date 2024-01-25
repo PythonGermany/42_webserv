@@ -65,7 +65,7 @@ A flag overwrites the default setting as well as the ones that are configured in
 | Flag | Description | Allowed values
 | --- | --- | --- |
 | i | Show info block when starting the server | NONE |
-| h | Show this help message and exit | NONE |
+| h | Show help message and exit | NONE |
 | v | Show version of webserv and exit | NONE
 | c | Show parsed config file structure and exit | NONE |
 | t | Check if the config file syntax is valid and exit | NONE |
