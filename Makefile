@@ -1,9 +1,11 @@
 NAME		:= webserv
+CONF  := project.conf
 
 OBJ_DIR		:= obj
 SRC_DIR		:= src
 INC_DIR		:= include
 BIN_DIR		:= bin
+CONF_DIR	:= conf
 
 SRC			+= main.cpp
 SRC			+= global.cpp
@@ -105,6 +107,9 @@ fsanitize:
 custom:
 	make CXXFLAGS="$(ARG) $(CXXFLAGS)"
 
+run:
+	$(BIN_DIR)/$(NAME) $(CONF_DIR)/$(CONF)
+
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 
@@ -118,6 +123,7 @@ help:
 	@echo "  performance  : Build with optimization flags (-O3)"
 	@echo "  debug        : Build with debugging symbols (-g)"
 	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
+	@echo "  run          : Run webserv binary with project configuration file"
 	@echo "  lines        : Count lines of code in source files"
 
 .PHONY: all clean fclean re performance debug fsanitize custom flamegraph jmeter lines help
