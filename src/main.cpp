@@ -9,7 +9,7 @@
 static void initGlobals() {
   cwd_g = getcwd();
   if (cwd_g.empty()) throw std::runtime_error("getcwd(): Failed to init cwd");
-  if (!endsWith(cwd_g, "/")) cwd_g.append("/");
+  if (endsWith(cwd_g, "/") == false) cwd_g.append("/");
   try {
     accessLog_g.init(LOG_PATH);
     errorLog_g.init(LOG_ERROR_PATH);
@@ -44,12 +44,11 @@ int main(int argc, char** argv) {
     if (ret) return 0;
     Init::init(context);
     while (true) {
-      if (!Poll::poll()) break;
+      if (Poll::poll() == false) break;
     }
   } catch (const std::exception& e) {
     try {
-      if (errorLog_g.getLogToFile() == false)
-        Log::setLogToTerminal(true, true);
+      if (errorLog_g.getLogToFile() == false) Log::setLogToTerminal(true, true);
       errorLog_g.write(e.what(), ERROR);
       printHelp(PRINT);
     } catch (...) {

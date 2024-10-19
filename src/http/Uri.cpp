@@ -117,7 +117,6 @@ std::string Uri::generate() const {
   return uri;
 }
 
-#include <iostream>
 int Uri::resolveDots() {
   std::list<std::string> blocks =
       split<std::list<std::string> >(_path, "/", true);

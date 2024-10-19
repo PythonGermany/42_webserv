@@ -80,7 +80,7 @@ int Request::parseRequestLine(std::string line) {
   if (_method.find_first_of(WHITESPACE) != std::string::npos ||
       _version.find_first_of(WHITESPACE) != std::string::npos)
     return 1;
-  if (!startsWith(_version, "HTTP/")) return 1;
+  if (startsWith(_version, "HTTP/") == false) return 1;
   return _uri.load(requestLineTokens[1]);
 }
 

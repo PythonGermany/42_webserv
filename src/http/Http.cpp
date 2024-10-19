@@ -36,14 +36,14 @@ void Http::OnRequestRecv(std::string msg) {
   parseRet |= _request.getUri().decode();
   accessLog_g.write("Decoded URI: " + _request.getUri().generate(), DEBUG);
 
-  bool validPath = !_request.getUri().resolveDots();
+  bool validPath = (_request.getUri().resolveDots() == false);
   accessLog_g.write("Resolved URI: " + _request.getUri().generate(), DEBUG);
 
   const Uri &uriRef = _request.getUri();
   validPath &= startsWith(uriRef.getPath(), "/") ||
                (_request.isMethod("OPTIONS") && uriRef.getPath() == "*");
 
-  if (parseRet || !validPath)
+  if (parseRet || validPath == false)
     processError("400", "Bad Request", true);
   else if (isHttpVersionValid(_request.getVersion()) == false) {
     processError("505", "HTTP Version Not Supported", true);
@@ -116,7 +116,8 @@ void Http::OnTrailerRecv(std::string msg) {
 
 void Http::OnBodyRecv(std::string msg) {
   if (_request.hasHeaderFieldValue("Transfer-Encoding", "chunked")) {
-    if (!endsWith(msg, "\r\n")) return processError("400", "Bad Request", true);
+    if (endsWith(msg, "\r\n") == false)
+      return processError("400", "Bad Request", true);
     msg.erase(msg.size() - 2, 2);
   }
   accessLog_g.write("HTTP body: '" + msg + "'", VERBOSE);
@@ -245,13 +246,13 @@ void Http::processFile(std::string uri) {
 
   // Set mime type
   std::string mimeType = VirtualHost::getMimeType(file.getExtension());
-  if (!mimeType.empty()) _response.setHeader("Content-Type", mimeType);
+  if (mimeType.empty() == false) _response.setHeader("Content-Type", mimeType);
   _response.setReady();
 }
 
 void Http::processCgi(std::string contentLength) {
   std::string pathname(cgiFilePathname);
-  if (!startsWith(pathname, "/")) pathname.insert(0, cwd_g);
+  if (startsWith(pathname, "/") == false) pathname.insert(0, cwd_g);
 
   std::vector<std::string> env;
   // const values:
@@ -328,7 +329,7 @@ void Http::processBodyRequest() {
     return processFile(_uri);
   else if (_request.isMethod("PUT")) {
     std::string path = _context->getDirective("root", true)[0][0] + _uri;
-    _newFile = !File(path).exists();
+    _newFile = (File(path).exists() == false);
 
     if (!File(File(path).getDir()).exists())
       return processError("404", "Not found");
@@ -504,14 +505,15 @@ void Http::addIndexToPath(File &file, std::string &uri) {
 }
 
 void Http::checkResourceValidity(const File &file, const std::string &uri) {
-  if (!file.exists()) return processError("404", "Not Found");
+  if (file.exists() == false) return processError("404", "Not Found");
   if (file.dir()) {
-    if (!endsWith(file.getPath(), "/")) return processRedirect(uri + "/");
+    if (endsWith(file.getPath(), "/") == false)
+      return processRedirect(uri + "/");
     if (_context->exists("autoindex", true) &&
         _context->getDirective("autoindex", true)[0][0] == "on")
       return processAutoindex(uri);
     return processError("403", "Forbidden");
-  } else if (!file.readable())
+  } else if (file.readable() == false)
     return processError("403", "Forbidden");
 }
 
@@ -622,7 +624,7 @@ bool Http::isBodySizeValid(size_t size) const {
 }
 
 std::string Http::getCgiPath(std::string extension) const {
-  if (!_context->exists("cgi", true)) return "";
+  if (_context->exists("cgi", true) == false) return "";
   std::vector<std::vector<std::string> > &cgis =
       _context->getDirective("cgi", true);
   for (size_t i = 0; i < cgis.size(); i++)

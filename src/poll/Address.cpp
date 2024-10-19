@@ -257,7 +257,7 @@ static std::ostream &operator<<(std::ostream &os, in6_addr const &src) {
     bool first = (i % 2 == 0);
 
     if (zeroField.second == 0 || i < zeroField.first || i > zeroField.second) {
-      if (!first) {
+      if (first == false) {
         if (addr[i - 1] != 0) os << std::setw(2) << std::setfill('0');
         os << (int)addr[i];
         if (i != 15) os << ':';

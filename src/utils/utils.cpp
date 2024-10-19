@@ -161,7 +161,7 @@ std::string getTime(std::string format, const time_t* timer) {
     std::time(&rawtime);
     timer = &rawtime;
   }
-  if (!endsWith(format, " GMT")) format += " GMT";
+  if (endsWith(format, " GMT") == false) format += " GMT";
   while (true) {
     std::string buffer(size, '\0');
     timeinfo = std::gmtime(timer);
