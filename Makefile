@@ -3,6 +3,7 @@ NAME		:= webserv
 OBJ_DIR		:= obj
 SRC_DIR		:= src
 INC_DIR		:= include
+BIN_DIR		:= bin
 
 SRC			+= main.cpp
 SRC			+= global.cpp
@@ -65,9 +66,9 @@ DEPS		:= $(addprefix $(INC_DIR)/, $(HEADERS))
 CXX			:= c++
 CXXFLAGS	:= -Wall -Wextra -Werror -Wpedantic -std=c++98 -Iinclude -Iinclude/poll -Iinclude/config -Iinclude/http -Iinclude/utils -Iinclude/output
 
-all: $(NAME)
+all: $(BIN_DIR)/$(NAME)
 
-$(NAME): $(OBJ)
+$(BIN_DIR)/$(NAME): $(OBJ) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPS) | $(OBJ_DIR)
@@ -80,12 +81,15 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)/utils
 	mkdir -p $(OBJ_DIR)/output
 
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
 clean:
 	$(RM) -r $(OBJ_DIR)
 
 fclean: clean
 	rm -f tools/transformer
-	$(RM) $(NAME)
+	$(RM) -r $(BIN_DIR)
 
 re: fclean all
 
@@ -114,8 +118,6 @@ help:
 	@echo "  performance  : Build with optimization flags (-O3)"
 	@echo "  debug        : Build with debugging symbols (-g)"
 	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
-	@echo "  flamegraph   : Generate flamegraph profiling SVG"
-	@echo "  jmeter       : Download and run Apache JMeter"
 	@echo "  lines        : Count lines of code in source files"
 
 .PHONY: all clean fclean re performance debug fsanitize custom flamegraph jmeter lines help
