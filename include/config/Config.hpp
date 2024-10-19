@@ -44,7 +44,13 @@ std::string isCgi(std::string const &value, size_t index);
  * minOccurence, maxOccurence, minArgs, maxArgs, validationFunction}
  */
 const token_t tokens_g[] = {
+    // Wildcard context
+    {"include", "*", false, 0, static_cast<size_t>(-1), 1, 1, NULL},
+
+    // Root context
     {"http", "_", true, 1, 1, 0, 0, NULL},
+
+    // Http context
     {"log_to_terminal", "http", false, 0, 1, 1, 1, isBoolean},
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"access_log", "http", false, 0, 1, 1, 1, NULL},
@@ -109,20 +115,6 @@ class Config {
                         bool validate = true);
 
  private:
-  // Processes a context
-  // @param context The context to add data to
-  // @param data The data to process
-  // @param token The token name of the context to process
-  // @param line The line in the config file where the context starts
-  // @exception std::runtime_error If the context is invalid
-  void processContext(Context &context, std::string &data, std::string token,
-                      size_t &line);
-
-  // Processes an include directive
-  // @param context The context to add the included context to
-  // @param path The path to the included config file
-  void processInclude(Context &context, std::string path);
-
   // Checks if the token is a valid context in the given context
   // @param context The context to check in
   // @param token The token to check
@@ -159,7 +151,7 @@ class Config {
   // @param recursive If true, the function will validate all child contexts
   // @return An empty string if the context is valid, an error message otherwise
   // @exception No custom exceptions
-  std::string validate(Context &context, bool recursive);
+  std::string validateContext(Context &context, bool recursive);
 
   // Returns the number of lines until the given position
   // @param data The string to search in

@@ -153,7 +153,10 @@ void Config::removeComments() {
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
                               bool validateResult) {
-  accessLog_g.write(_path + ":" + toString(line) + " Context: '" + context.getName() + "' -> Parsing", DEBUG);
+  accessLog_g.write(_path + ":" + toString(line) + " Context: '" +
+                        context.getName() + "' -> Parsing",
+                    DEBUG);
+
   size_t startLine = line;
   while (true) {
     // Trim leading whitespace
@@ -169,19 +172,38 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
 
     // Process token
     std::string token = trim(cut(data, 0, nextEnd));
-    if (token == "include" || isValidDirective(context, token)) {
+    if (isValidDirective(context, token)) {
+      accessLog_g.write(_path + ":" + toString(line) + " Directive: '" + token +
+                            "' -> Parsing",
+                        DEBUG);
+
       // Find end of token value
       nextEnd = data.find_first_of(";\n");
       if (nextEnd == std::string::npos || data[nextEnd] != ';')
         throwExeption(line, "Expected token ';' not found");
 
       // Process token value
-      if (token == "include") try {
-          processInclude(context, trim(cut(data, 0, nextEnd)));
-        } catch (const std::exception &e) {
-          throwExeption(line, e.what());
+      if (token == "include") {
+        const std::string path = trim(cut(data, 0, nextEnd));
+
+        // Prepare wildcard path
+        std::string wildcardPath =
+            startsWith(path, "/") ? path : _includePath + path;
+
+        // Get file list
+        std::set<std::string> files = processWildcardPath(wildcardPath);
+        std::set<std::string>::iterator itr = files.begin();
+        for (; itr != files.end(); itr++) {
+          accessLog_g.write(_path + " Context: '" + context.getName() +
+                                "' -> Include '" + *itr + "'",
+                            DEBUG);
+
+          // Recursively parse included config files
+          Config config(*itr, _includePath);
+          config.removeComments();
+          config.parseContext(context, config.getConfig(), 1, false);
         }
-      else {
+      } else {
         checkError(line, validToAdd(context, token));
         std::vector<std::string> args = split<std::vector<std::string> >(
             cut(data, 0, nextEnd), " \f\n\r\t\v");
@@ -190,66 +212,39 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
       }
       data.erase(0, 1);
     } else if (isValidContext(context, token)) {
-      processContext(context, data, token, line);
+      Context child(token, &context);
+      // Find context start bracket
+      size_t argsEnd = data.find_first_of("{\n");
+      if (argsEnd == std::string::npos || data[argsEnd] != '{')
+        throwExeption(line, "Expected token '{' not found");
+
+      // Parse, validate and add
+      std::vector<std::string> args = split<std::vector<std::string> >(
+          trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
+      checkError(line, validArguments(context, token, args));
+      child.setArgs(args);
+
+      line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
+      trimStart(data, " \f\t\v");
+
+      // Find context end bracket
+      size_t nextEnd = findContextEnd(data);
+      if (nextEnd == std::string::npos)
+        throwExeption(line, "No context end found for '" + token + "'");
+      std::string contextData = cut(data, 1, nextEnd);
+
+      // Parse context
+      parseContext(child, contextData, line);
+      checkError(line, validToAdd(context, token));
+      context.addContext(child);
+      line += linesUntilPos(contextData, contextData.length() + 2);
+      data.erase(0, 2);
     } else
       throwExeption(line, "Invalid token '" + token + "'");
   }
   // Validate parsed context
-  if (validateResult) checkError(startLine, validate(context, false));
+  if (validateResult) checkError(startLine, validateContext(context, false));
   return context;
-}
-
-void Config::processContext(Context &context, std::string &data,
-                            std::string token, size_t &line) {
-  Context child(token, &context);
-  // Find context start bracket
-  size_t argsEnd = data.find_first_of("{\n");
-  if (argsEnd == std::string::npos || data[argsEnd] != '{')
-    throwExeption(line, "Expected token '{' not found");
-
-  // Parse, validate and add
-  std::vector<std::string> args = split<std::vector<std::string> >(
-      trim(cut(data, 0, argsEnd)), " \f\n\r\t\v");
-  checkError(line, validArguments(context, token, args));
-  child.setArgs(args);
-
-  line += linesUntilPos(data, data.find_first_not_of(" \f\t\v"));
-  trimStart(data, " \f\t\v");
-
-  // Find context end bracket
-  size_t nextEnd = findContextEnd(data);
-  if (nextEnd == std::string::npos)
-    throwExeption(line, "No context end found for '" + token + "'");
-  std::string contextData = cut(data, 1, nextEnd);
-
-  // Parse context
-  parseContext(child, contextData, line);
-  checkError(line, validToAdd(context, token));
-  context.addContext(child);
-  line += linesUntilPos(contextData, contextData.length() + 2);
-  data.erase(0, 2);
-}
-
-void Config::processInclude(Context &context, std::string path) {
-  // Prepare wildcard path
-  std::string includePath;
-  if (startsWith(path, "/"))
-    includePath = path;
-  else
-    includePath = _includePath + path;
-
-  // Get file list
-  std::set<std::string> files = processWildcardPath(includePath);
-  std::set<std::string>::iterator itr = files.begin();
-  for (; itr != files.end(); itr++) {
-    accessLog_g.write( _path +
-        " Context: '" + context.getName() + "' -> Include '" + *itr + "'",
-        DEBUG);
-    // Recursively parse included config files
-    Config config(*itr, _includePath);
-    config.removeComments();
-    config.parseContext(context, config.getConfig(), 1, false);
-  }
 }
 
 bool Config::isValidContext(Context &context, std::string token) const {
@@ -262,8 +257,10 @@ bool Config::isValidContext(Context &context, std::string token) const {
 
 bool Config::isValidDirective(Context &context, std::string token) const {
   for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++)
-    if (tokens_g[i].name == token && tokens_g[i].parent == context.getName() &&
-        !tokens_g[i].isContext)
+    if (tokens_g[i].name == token &&
+        (tokens_g[i].parent == "*" ||
+         tokens_g[i].parent == context.getName()) &&
+        tokens_g[i].isContext == false)
       return true;
   return false;
 }
@@ -273,7 +270,7 @@ std::string Config::validToAdd(Context &context, std::string token) {
     if (tokens_g[i].name == token && tokens_g[i].parent == context.getName())
       return context.getTokenOccurence(token) < tokens_g[i].maxOccurence
                  ? ""
-                 : "Token '" + token + "'has too many occurences";
+                 : "Token '" + token + "' has too many occurences";
   return "Token '" + token + "' not found";
 }
 
@@ -298,9 +295,9 @@ std::string Config::validArguments(Context &context, std::string token,
   return "Token '" + token + "' not found";
 }
 
-std::string Config::validate(Context &context, bool recursive) {
-  accessLog_g.write(_path + " Context: '" + context.getName() + "' -> Validating",
-                    DEBUG);
+std::string Config::validateContext(Context &context, bool recursive) {
+  accessLog_g.write(
+      _path + " Context: '" + context.getName() + "' -> Validating", DEBUG);
   for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++) {
     if (tokens_g[i].parent == context.getName() &&
         context.getTokenOccurence(tokens_g[i].name) <
@@ -314,7 +311,8 @@ std::string Config::validate(Context &context, bool recursive) {
     std::map<std::string, std::vector<Context> >::iterator it;
     for (it = context.getContexts().begin(); it != context.getContexts().end();
          it++)
-      for (size_t i = 0; i < it->second.size(); i++) validate(context, true);
+      for (size_t i = 0; i < it->second.size(); i++)
+        validateContext(context, true);
   }
   return "";
 }
