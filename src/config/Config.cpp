@@ -153,7 +153,7 @@ void Config::removeComments() {
 
 Context &Config::parseContext(Context &context, std::string data, size_t line,
                               bool validateResult) {
-  accessLog_g.write("Context: '" + context.getName() + "' -> Parsing", DEBUG);
+  accessLog_g.write(_path + ":" + toString(line) + " Context: '" + context.getName() + "' -> Parsing", DEBUG);
   size_t startLine = line;
   while (true) {
     // Trim leading whitespace
@@ -192,7 +192,7 @@ Context &Config::parseContext(Context &context, std::string data, size_t line,
     } else if (isValidContext(context, token)) {
       processContext(context, data, token, line);
     } else
-      checkError(line, "Invalid token '" + token + "'");
+      throwExeption(line, "Invalid token '" + token + "'");
   }
   // Validate parsed context
   if (validateResult) checkError(startLine, validate(context, false));
@@ -242,8 +242,8 @@ void Config::processInclude(Context &context, std::string path) {
   std::set<std::string> files = processWildcardPath(includePath);
   std::set<std::string>::iterator itr = files.begin();
   for (; itr != files.end(); itr++) {
-    accessLog_g.write(
-        "Context: '" + context.getName() + "' -> Include '" + *itr + "'",
+    accessLog_g.write( _path +
+        " Context: '" + context.getName() + "' -> Include '" + *itr + "'",
         DEBUG);
     // Recursively parse included config files
     Config config(*itr, _includePath);
@@ -299,7 +299,7 @@ std::string Config::validArguments(Context &context, std::string token,
 }
 
 std::string Config::validate(Context &context, bool recursive) {
-  accessLog_g.write("Context: '" + context.getName() + "' -> Validating",
+  accessLog_g.write(_path + " Context: '" + context.getName() + "' -> Validating",
                     DEBUG);
   for (size_t i = 0; i < sizeof(tokens_g) / sizeof(token_t); i++) {
     if (tokens_g[i].parent == context.getName() &&
