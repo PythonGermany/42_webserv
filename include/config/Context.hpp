@@ -40,7 +40,7 @@ class Context {
   void setArgs(std::vector<std::string> args);
   void setTokenOccurences(std::map<std::string, size_t> tokenOccurences);
   void addDirective(std::string token, std::vector<std::string> values);
-  std::string addContext(Context &context);
+  void addContext(Context &context);
 
   // Removes all directives with the given token
   // @exception No custom exceptions

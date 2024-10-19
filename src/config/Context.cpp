@@ -79,10 +79,9 @@ void Context::addDirective(std::string token, std::vector<std::string> values) {
   addTokenOccurence(token);
 }
 
-std::string Context::addContext(Context &context) {
+void Context::addContext(Context &context) {
   _contexts[context.getName()].push_back(context);
   addTokenOccurence(context.getName());
-  return "";
 }
 
 void Context::removeDirective(std::string token) {

@@ -41,4 +41,4 @@ if ! wp core is-installed --path=$folder; then
     --admin_user=$WORDPRESS_USER --admin_password=$WORDPRESS_PASSWORD --admin_email=$WORDPRESS_EMAIL
 fi
 
-make && ./webserv $WEBSERV_ARGS
+make && ./bin/webserv $WEBSERV_ARGS

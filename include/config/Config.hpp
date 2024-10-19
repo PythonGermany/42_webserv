@@ -105,6 +105,7 @@ class Config {
   // Removes all comments from the config file
   // @exception No custom exceptions
   void removeComments();
+  
   // Recursively parses a context
   // @param context The context to add data to
   // @param data The data to parse
@@ -174,7 +175,7 @@ class Config {
   // Throws an exeption with the given message and line
   // @param line The line in the config file where the error occured
   // @param msg The message to display
-  // @return std::runtime_error
+  // @exception std::runtime_error
   void throwExeption(size_t line, std::string msg);
 };
 
