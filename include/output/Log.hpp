@@ -41,19 +41,19 @@ class Log {
   static log_level_t _log_level;
 
   std::string _path;
-  std::ostream& _terminal;
+  std::ostream &_terminal;
   std::ofstream _file;
 
   static std::string _timeFormat;
   static std::string _dateFormat;
 
-  bool _fileSet;      // True once file has been set
-  bool _initialized;  // Enables/Disables logfile functionality
+  bool _fileSet;
+  bool _logToFile;
 
-  bool _error;  // True if an error occured while writing to the log file
+  bool _logFileWriteError;
 
  public:
-  Log(std::ostream& terminal);
+  Log(std::ostream &terminal);
   ~Log();
 
   void init(std::string path);
@@ -62,16 +62,17 @@ class Log {
   static void setLogToTerminal(bool log, bool overwrite = false);
   static void setLevel(log_level_t level, bool overwrite = false);
   void setFile(std::string path, bool overwrite = false);
-  void setInitialized(bool intialized);
+  void setLogToFile(bool logToFile);
 
   // Getters
   static log_level_t getLevel();
-  bool getInitialized();
+  static std::string getLevelName(log_level_t level);
+  bool getLogToFile();
 
   // Writes a message to the log file and if enabled also to the _terminal
   // stream
   // @exception No custom exceptions
-  void write(std::string const& msg, log_level_t level,
+  void write(std::string const &msg, log_level_t level,
              std::string color = RESET);
 
  private:

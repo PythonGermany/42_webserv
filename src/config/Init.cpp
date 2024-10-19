@@ -39,8 +39,8 @@ void Init::initLogDefaults(Context& context) {
     accessLog_g.setFile(context.getDirective("access_log")[0][0]);
   if (context.exists("error_log"))
     errorLog_g.setFile(context.getDirective("error_log")[0][0]);
-  accessLog_g.setInitialized(true);
-  errorLog_g.setInitialized(true);
+  accessLog_g.setLogToFile(true);
+  errorLog_g.setLogToFile(true);
 }
 
 void Init::initMimeTypes(Context& context) {

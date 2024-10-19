@@ -19,7 +19,7 @@ void Log::init(std::string path) {
 
 void Log::setLogToTerminal(bool log, bool overwrite) {
   static bool initialized = false;
-  if (overwrite || !initialized) {
+  if (overwrite || initialized == false) {
     _log_to_terminal = log;
     initialized = true;
   }
@@ -27,42 +27,62 @@ void Log::setLogToTerminal(bool log, bool overwrite) {
 
 void Log::setLevel(log_level_t level, bool overwrite) {
   static bool initialized = false;
-  if (overwrite || !initialized) {
+  if (overwrite || initialized == false) {
     _log_level = level;
     initialized = true;
   }
 }
 
 void Log::setFile(std::string path, bool overwrite) {
-  if (overwrite || !_fileSet) {
+  if (overwrite || _fileSet == false) {
     File(path).createDirPath();
     _path = path;
     if (_file.is_open()) _file.close();
     _file.open(path.c_str(), std::ios_base::app);
-    if (_file.good()) _error = false;
+    if (_file.good()) _logFileWriteError = false;
     _fileSet = true;
   }
 }
 
-void Log::setInitialized(bool initialized) { _initialized = initialized; }
+void Log::setLogToFile(bool logToFile) { _logToFile = logToFile; }
 
 log_level_t Log::getLevel() { return _log_level; }
 
-bool Log::getInitialized() { return _initialized; }
+static std::string getLevelString(log_level_t level) {
+  switch (level)
+  {
+  case ERROR:
+    return "Error  ";
+  case WARNING:
+    return "Warning";
+  case INFO:
+    return "Info   ";
+  case DEBUG:
+    return "Debug  ";
+  case VERBOSE:
+    return "Verbose";
+  
+  default:
+    return "Unknown";
+  }
+}
+
+bool Log::getLogToFile() { return _logToFile; }
 
 void Log::write(std::string const &msg, log_level_t level, std::string color) {
   if (level > _log_level) return;
-  std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "] ";
+  std::string timeStamp = "[" + getTime(_dateFormat + " " + _timeFormat) + "]";
+  std::string levelString = "[" + getLevelString(level) + "] ";
   if (_log_to_terminal) {
     if (color == RESET) color = getLevelColor(level);
-    _terminal << timeStamp << color << msg << RESET << std::endl;
+    _terminal << timeStamp << color << levelString << msg << RESET << std::endl;
   }
-  if (!_initialized) return;
-  _file << timeStamp << msg << std::endl;
-  if (_file.good() || _error) return;
+  if (getLogToFile() == false) return;
+  _file << timeStamp << levelString << msg << std::endl;
+  if (_file.good() || _logFileWriteError == true) return;
   std::cerr << timeStamp << BRIGHT_RED << "ERROR: " << RESET
             << "Unable to write to log file: " << _path << std::endl;
-  _error = true;
+  _logFileWriteError = true;
 }
 
 std::string Log::getLevelColor(log_level_t level) {

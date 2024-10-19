@@ -69,7 +69,7 @@ arg_state_t setAccessLog(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
   accessLog_g.setFile(values.front());
-  accessLog_g.setInitialized(true);
+  accessLog_g.setLogToFile(true);
   set = true;
   return SUCCESS;
 }
@@ -78,7 +78,7 @@ arg_state_t setErrorLog(const std::list<std::string> &values) {
   static bool set = false;
   if (set) return FLAG_DUPLICATE;
   errorLog_g.setFile(values.front());
-  errorLog_g.setInitialized(true);
+  errorLog_g.setLogToFile(true);
   set = true;
   return SUCCESS;
 }

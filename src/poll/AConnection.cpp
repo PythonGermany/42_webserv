@@ -435,8 +435,8 @@ void AConnection::runCGI(std::string program,
   }
   if (_cgiPid == 0) {
     Log::setLogToTerminal(false, true);
-    accessLog_g.setInitialized(false);
-    errorLog_g.setInitialized(false);
+    accessLog_g.setLogToFile(false);
+    errorLog_g.setLogToFile(false);
     Poll::cleanUp();
     close(pipeInArray[0]);
     close(pipeOutArray[1]);

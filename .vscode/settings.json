@@ -67,7 +67,14 @@
     "stop_token": "cpp",
     "thread": "cpp",
     "variant": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "charconv": "cpp",
+    "codecvt": "cpp",
+    "format": "cpp",
+    "stdfloat": "cpp",
+    "text_encoding": "cpp",
+    "cfenv": "cpp",
+    "valarray": "cpp"
   },
-  "cmake.configureOnOpen": false
+  "C_Cpp.clang_format_fallbackStyle": "Google",
 }

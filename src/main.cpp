@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     }
   } catch (const std::exception& e) {
     try {
-      if (errorLog_g.getInitialized() == false)
+      if (errorLog_g.getLogToFile() == false)
         Log::setLogToTerminal(true, true);
       errorLog_g.write(e.what(), ERROR);
       printHelp(PRINT);
