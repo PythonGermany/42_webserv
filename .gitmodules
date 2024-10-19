@@ -1,3 +1,6 @@
 [submodule "websites/myceel"]
 	path = websites/myceel
 	url = git@github.com:PythonGermany/myceel.git
+[submodule "websites/randomThingsSite"]
+	path = websites/randomThingsSite
+	url = https://github.com/PythonGermany/randomThingsSite.git
