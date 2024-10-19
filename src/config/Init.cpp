@@ -63,8 +63,6 @@ void Init::initMimeTypes(Context& context) {
   VirtualHost::setMimeTypes(types);
   accessLog_g.write(
       "Mime types loaded for " + toString(types.size()) + " extensions", INFO);
-  accessLog_g.write("-- Mime types successfully loaded ---", INFO,
-                    BRIGHT_GREEN);
 }
 
 void Init::initVirtualHosts(Context& context) {
@@ -78,8 +76,6 @@ void Init::initVirtualHosts(Context& context) {
   }
   size_t size = VirtualHost::getVirtualHosts().size();
   accessLog_g.write(toString(size) + " virtual hosts loaded", INFO);
-  accessLog_g.write("------- Virtual Hosts loaded --------", INFO,
-                    BRIGHT_GREEN);
 }
 
 void Init::initAConnection(Context& context) {
@@ -115,6 +111,4 @@ void Init::initPoll() {
     }
   }
   accessLog_g.write("Number of sockets: " + toString(sockets), INFO);
-  accessLog_g.write("---------- Sockets created ----------", INFO,
-                    BRIGHT_GREEN);
 }
