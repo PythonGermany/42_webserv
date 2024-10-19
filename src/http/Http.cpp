@@ -237,7 +237,7 @@ void Http::processFile(std::string uri) {
   // Load the file
   _response.init(PROTOCOL "/" HTTP_VERSION, "200", "OK");
   _response.setBody(new std::ifstream(file.getPath().c_str()));
-  int bodySize = file.size();
+  long int bodySize = file.size();
   if (_response.getBody()->good() == false || bodySize < 0)
     return processError("500", "Internal Server Error");
   _response.setHeader("Content-Length", toString(bodySize));
