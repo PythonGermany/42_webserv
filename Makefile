@@ -107,7 +107,7 @@ fsanitize:
 custom:
 	make CXXFLAGS="$(ARG) $(CXXFLAGS)"
 
-run:
+run: all
 	$(BIN_DIR)/$(NAME) $(CONF_DIR)/$(CONF)
 
 lines:
