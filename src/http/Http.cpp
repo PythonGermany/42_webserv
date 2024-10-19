@@ -463,7 +463,7 @@ void Http::processError(std::string code, std::string reason, bool close) {
       File file(path);
       if (file.exists() && file.file() && file.readable()) {
         _response.setBody(new std::ifstream(path.c_str()));
-        size_t bodySize = file.size();
+        long int bodySize = file.size();
         if (_response.getBody()->good() == false || bodySize < 0)
           return processError("500", "Internal Server Error");
         _response.setHeader("Content-Length", toString(bodySize));

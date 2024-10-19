@@ -54,31 +54,31 @@ const token_t tokens_g[] = {
 
     // Mime type context
     {"types", "http", true, 1, 1, 0, 0, NULL},
-    {"type", "types", false, 1, -1, 2, -1, isMimeType},
+    {"type", "types", false, 1, static_cast<size_t>(-1), 2, static_cast<size_t>(-1), isMimeType},
 
     // Server context
-    {"server", "http", true, 1, -1, 0, 0, NULL},
-    {"listen", "server", false, 1, -1, 1, 1, isListen},
-    {"server_name", "server", false, 0, -1, 1, -1, NULL},
+    {"server", "http", true, 1, static_cast<size_t>(-1), 0, 0, NULL},
+    {"listen", "server", false, 1, static_cast<size_t>(-1), 1, 1, isListen},
+    {"server_name", "server", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), NULL},
     {"root", "server", false, 1, 1, 1, 1, NULL},
-    {"index", "server", false, 0, 1, 1, -1, NULL},
-    {"allow", "server", false, 0, -1, 1, -1, isMethod},
+    {"index", "server", false, 0, 1, 1, static_cast<size_t>(-1), NULL},
+    {"allow", "server", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), isMethod},
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isMemorySize},
-    {"error_page", "server", false, 0, -1, 2, 2, isErrorPage},
-    {"cgi", "server", false, 0, -1, 2, 2, isCgi},
+    {"error_page", "server", false, 0, static_cast<size_t>(-1), 2, 2, isErrorPage},
+    {"cgi", "server", false, 0, static_cast<size_t>(-1), 2, 2, isCgi},
 
     // Location context
-    {"location", "server", true, 0, -1, 1, 1, isAbsolutePath},
+    {"location", "server", true, 0, static_cast<size_t>(-1), 1, 1, isAbsolutePath},
     {"alias", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"root", "location", false, 0, 1, 1, 1, NULL},
-    {"index", "location", false, 0, 1, 1, -1, NULL},
-    {"allow", "location", false, 0, -1, 1, -1, isMethod},
+    {"index", "location", false, 0, 1, 1, static_cast<size_t>(-1), NULL},
+    {"allow", "location", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isMemorySize},
-    {"cgi", "location", false, 0, -1, 2, 2, isCgi}};
+    {"cgi", "location", false, 0, static_cast<size_t>(-1), 2, 2, isCgi}};
 
 class Config {
  private:
