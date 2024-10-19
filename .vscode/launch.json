@@ -9,7 +9,7 @@
       "name": "debug webserv",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/webserv",
+      "program": "${workspaceFolder}/bin/webserv",
       "args": [
         "conf/project.conf"
       ],
@@ -24,7 +24,7 @@
       "name": "webserv",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/webserv",
+      "program": "${workspaceFolder}/bin/webserv",
       "args": [
         "conf/webserv.conf"
       ],
