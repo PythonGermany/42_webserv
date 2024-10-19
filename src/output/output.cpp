@@ -37,8 +37,8 @@ int printHelp(int flags) {
                  "  -c Show parsed config file structure and exit\r\n"
                  "  -t Check if the config file syntax is valid and exit\r\n"
                  "  -o Turn terminal output 'on' or 'off'\r\n"
-                 "  -l set the log level using '0/1/2/3' for "
-                 "error/warning/info/debug\r\n"
+                 "  -l set the log level using '0/1/2/3/4' for "
+                 "error/warning/info/debug/verbose\r\n"
                  "  -a Sets the path for the access log file\r\n"
                  "  -e Sets the path for the error log file"
               << std::endl;
