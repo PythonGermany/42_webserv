@@ -4,17 +4,12 @@
 #include <dirent.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <list>
 #include <set>
 #include <sstream>
-#include <vector>
-
-#include "colors.hpp"
 
 #define WHITESPACE " \f\n\r\t\v"
 

@@ -1,5 +1,8 @@
 #include "utils.hpp"
 
+#include <algorithm>
+#include <list>
+
 std::string trim(const std::string& str, std::string chars) {
   size_t first = str.find_first_not_of(chars);
   if (first == std::string::npos) return "";

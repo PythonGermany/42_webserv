@@ -1,5 +1,10 @@
 #include "argument.hpp"
 
+#include "Config.hpp"
+#include "global.hpp"
+#include "output.hpp"
+#include "utils.hpp"
+
 arg_state_t setPrintInfo(const std::list<std::string> &values) {
   static bool set = false;
   if (values.size() > 0) return ARG_INVALID;

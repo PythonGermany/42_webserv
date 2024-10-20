@@ -1,5 +1,8 @@
 #include "Address.hpp"
 
+#include <iomanip>
+#include <sstream>
+
 Address::Address() { this->_family = 0; }
 
 Address::Address(sa_family_t family, in_port_t port) {

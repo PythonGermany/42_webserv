@@ -1,5 +1,7 @@
 #include "Response.hpp"
 
+#include <algorithm>
+
 Response::Response() : _body(NULL), _ready(false) {}
 
 Response::Response(std::string version, std::string status, std::string reason)

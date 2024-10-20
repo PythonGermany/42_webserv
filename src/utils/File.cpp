@@ -1,5 +1,10 @@
 #include "File.hpp"
 
+#include <cerrno>
+#include <stdexcept>
+
+#include "utils.hpp"
+
 File::File() {}
 
 File::File(std::string path) { _path = path; }

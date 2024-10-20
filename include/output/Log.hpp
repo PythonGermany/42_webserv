@@ -3,13 +3,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <ostream>
 #include <string>
 
-#include "File.hpp"
 #include "colors.hpp"
-#include "utils.hpp"
 
 typedef enum log_level_e { ERROR, WARNING, INFO, DEBUG, VERBOSE } log_level_t;
 

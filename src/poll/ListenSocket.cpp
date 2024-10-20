@@ -4,6 +4,8 @@
 
 #include "Http.hpp"
 #include "Poll.hpp"
+#include "global.hpp"
+#include "utils.hpp"
 
 ListenSocket::ListenSocket(Address const &addr)
     : _addr(addr), acceptAttempts(0) {}

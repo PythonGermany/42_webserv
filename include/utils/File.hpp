@@ -8,12 +8,8 @@
 
 #include <cstring>
 #include <ctime>
-#include <fstream>
 #include <set>
-#include <stdexcept>
 #include <string>
-
-#include "utils.hpp"
 
 // Class to check file properties and read/write files
 class File {

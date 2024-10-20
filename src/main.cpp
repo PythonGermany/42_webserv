@@ -5,6 +5,8 @@
 #include "Poll.hpp"
 #include "argument.hpp"
 #include "global.hpp"
+#include "output.hpp"
+#include "utils.hpp"
 
 static void initGlobals() {
   cwd_g = getcwd();

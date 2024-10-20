@@ -1,5 +1,10 @@
 #include "Uri.hpp"
 
+#include <algorithm>
+#include <list>
+
+#include "utils.hpp"
+
 Uri::Uri() {}
 
 Uri::Uri(const Uri &rhs) { *this = rhs; }

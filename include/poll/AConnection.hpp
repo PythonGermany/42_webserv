@@ -10,7 +10,6 @@
 
 #include "Address.hpp"
 #include "CallbackPointer.hpp"
-#include "timeval.hpp"
 
 // WEBSERV_CONFIG ----------- ACONNECTION VALUES -------------------
 /**

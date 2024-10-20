@@ -1,9 +1,8 @@
 #ifndef ARGUMENT_HPP
 #define ARGUMENT_HPP
 
-#include "Config.hpp"
-#include "global.hpp"
-#include "output.hpp"
+#include <list>
+#include <string>
 
 // ------------------------- ARG STRUCTURE -------------------------
 typedef enum arg_state_e {

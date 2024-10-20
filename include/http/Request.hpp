@@ -1,13 +1,11 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <algorithm>
+#include <list>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "Uri.hpp"
-#include "utils.hpp"
 
 class Request {
  private:

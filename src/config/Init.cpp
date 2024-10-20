@@ -1,5 +1,12 @@
 #include "Init.hpp"
 
+#include "AConnection.hpp"
+#include "ListenSocket.hpp"
+#include "Log.hpp"
+#include "VirtualHost.hpp"
+#include "global.hpp"
+#include "utils.hpp"
+
 Init::Init() {}
 
 Init::~Init() {}

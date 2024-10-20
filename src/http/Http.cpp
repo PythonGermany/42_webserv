@@ -1,5 +1,11 @@
 #include "Http.hpp"
 
+#include <algorithm>
+
+#include "global.hpp"
+#include "utils.hpp"
+#include "webserv.hpp"
+
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
   setReadState(REQUEST_LINE);

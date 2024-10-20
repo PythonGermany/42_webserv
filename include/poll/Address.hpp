@@ -3,19 +3,14 @@
 
 #include <netdb.h>
 #include <netinet/in.h>
-#include <sys/socket.h>  //AF_INET
+#include <sys/socket.h>
 
 #include <cerrno>
-#include <cstdlib>  //atoi
+#include <cstdlib>
 #include <cstring>
-#include <iomanip>
-#include <limits>
-#include <ostream>  //overload
+#include <ostream>
 #include <set>
-#include <sstream>
-#include <stdexcept>
 #include <string>
-#include <utility>
 
 /**
  * @brief stores either an ipv4 or an ipv6 address with port

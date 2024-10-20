@@ -1,7 +1,6 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <algorithm>
 #include <istream>
 #include <list>
 #include <map>

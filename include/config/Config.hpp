@@ -1,15 +1,10 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <set>
 #include <string>
 #include <vector>
 
 #include "Context.hpp"
-#include "File.hpp"
-#include "Http.hpp"
-#include "global.hpp"
-#include "utils.hpp"
 
 // ----------------------- CONFIG STRUCTURE ------------------------
 typedef struct token_s {
@@ -60,27 +55,33 @@ const token_t tokens_g[] = {
 
     // Mime type context
     {"types", "http", true, 1, 1, 0, 0, NULL},
-    {"type", "types", false, 1, static_cast<size_t>(-1), 2, static_cast<size_t>(-1), isMimeType},
+    {"type", "types", false, 1, static_cast<size_t>(-1), 2,
+     static_cast<size_t>(-1), isMimeType},
 
     // Server context
     {"server", "http", true, 1, static_cast<size_t>(-1), 0, 0, NULL},
     {"listen", "server", false, 1, static_cast<size_t>(-1), 1, 1, isListen},
-    {"server_name", "server", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), NULL},
+    {"server_name", "server", false, 0, static_cast<size_t>(-1), 1,
+     static_cast<size_t>(-1), NULL},
     {"root", "server", false, 1, 1, 1, 1, NULL},
     {"index", "server", false, 0, 1, 1, static_cast<size_t>(-1), NULL},
-    {"allow", "server", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), isMethod},
+    {"allow", "server", false, 0, static_cast<size_t>(-1), 1,
+     static_cast<size_t>(-1), isMethod},
     {"autoindex", "server", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "server", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isMemorySize},
-    {"error_page", "server", false, 0, static_cast<size_t>(-1), 2, 2, isErrorPage},
+    {"error_page", "server", false, 0, static_cast<size_t>(-1), 2, 2,
+     isErrorPage},
     {"cgi", "server", false, 0, static_cast<size_t>(-1), 2, 2, isCgi},
 
     // Location context
-    {"location", "server", true, 0, static_cast<size_t>(-1), 1, 1, isAbsolutePath},
+    {"location", "server", true, 0, static_cast<size_t>(-1), 1, 1,
+     isAbsolutePath},
     {"alias", "location", false, 0, 1, 1, 1, isAbsolutePath},
     {"root", "location", false, 0, 1, 1, 1, NULL},
     {"index", "location", false, 0, 1, 1, static_cast<size_t>(-1), NULL},
-    {"allow", "location", false, 0, static_cast<size_t>(-1), 1, static_cast<size_t>(-1), isMethod},
+    {"allow", "location", false, 0, static_cast<size_t>(-1), 1,
+     static_cast<size_t>(-1), isMethod},
     {"autoindex", "location", false, 0, 1, 1, 1, isBoolean},
     {"redirect", "location", false, 0, 1, 1, 1, NULL},
     {"max_client_body_size", "location", false, 0, 1, 1, 1, isMemorySize},
@@ -105,7 +106,7 @@ class Config {
   // Removes all comments from the config file
   // @exception No custom exceptions
   void removeComments();
-  
+
   // Recursively parses a context
   // @param context The context to add data to
   // @param data The data to parse

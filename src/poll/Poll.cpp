@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "webserv.hpp"
+#include "global.hpp"
 
 /**
  * @brief Add callback object with corresponding pollfd struct

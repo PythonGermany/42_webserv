@@ -1,10 +1,7 @@
 #ifndef INIT_HPP
 #define INIT_HPP
 
-#include "ListenSocket.hpp"
-#include "Log.hpp"
-#include "Poll.hpp"
-#include "VirtualHost.hpp"
+#include "Context.hpp"
 
 class Init {
  private:

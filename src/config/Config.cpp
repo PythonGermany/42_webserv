@@ -1,5 +1,9 @@
 #include "Config.hpp"
 
+#include "Http.hpp"
+#include "global.hpp"
+#include "utils.hpp"
+
 std::string isMimeType(std::string const &value, size_t index) {
   if (value.length() == 0) return "Mime type cannot be empty";
   if (index == 0) {

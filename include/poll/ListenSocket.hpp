@@ -2,12 +2,8 @@
 #ifndef LISTENSOCKET_HPP
 #define LISTENSOCKET_HPP
 
-#include <string>
-
-#include "AConnection.hpp"
 #include "Address.hpp"
 #include "CallbackPointer.hpp"
-#include "global.hpp"
 
 class ListenSocket : public IFileDescriptor {
  public:

@@ -1,5 +1,7 @@
 #include "Context.hpp"
 
+#include "colors.hpp"
+
 Context::Context() {}
 
 Context::Context(std::string name, Context *parent) {

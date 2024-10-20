@@ -1,5 +1,10 @@
 #include "Request.hpp"
 
+#include <algorithm>
+#include <vector>
+
+#include "utils.hpp"
+
 Request::Request() {}
 
 Request::Request(const Request &rhs) { *this = rhs; }

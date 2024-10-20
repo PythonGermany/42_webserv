@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "utils.hpp"
-
 class Uri {
  private:
   std::string _scheme;

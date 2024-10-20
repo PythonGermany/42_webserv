@@ -1,5 +1,10 @@
 #include "Log.hpp"
 
+#include <map>
+
+#include "File.hpp"
+#include "utils.hpp"
+
 bool Log::_log_to_terminal = LOG_TO_TERMINAL;
 log_level_t Log::_log_level = LOG_LEVEL;
 std::string Log::_timeFormat = LOG_TIME_FORMAT;
@@ -49,21 +54,20 @@ void Log::setLogToFile(bool logToFile) { _logToFile = logToFile; }
 log_level_t Log::getLevel() { return _log_level; }
 
 static std::string getLevelString(log_level_t level) {
-  switch (level)
-  {
-  case ERROR:
-    return "Error  ";
-  case WARNING:
-    return "Warning";
-  case INFO:
-    return "Info   ";
-  case DEBUG:
-    return "Debug  ";
-  case VERBOSE:
-    return "Verbose";
-  
-  default:
-    return "Unknown";
+  switch (level) {
+    case ERROR:
+      return "Error  ";
+    case WARNING:
+      return "Warning";
+    case INFO:
+      return "Info   ";
+    case DEBUG:
+      return "Debug  ";
+    case VERBOSE:
+      return "Verbose";
+
+    default:
+      return "Unknown";
   }
 }
 

@@ -6,8 +6,11 @@
 
 #include <iostream>
 
+#include "File.hpp"
 #include "Poll.hpp"
 #include "global.hpp"
+#include "timeval.hpp"
+#include "utils.hpp"
 
 int AConnection::_connectionTimeout = CONNECTION_TIMEOUT;
 

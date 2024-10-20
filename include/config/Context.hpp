@@ -1,13 +1,9 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-#include "colors.hpp"
-#include "utils.hpp"
 
 class Context {
  private:

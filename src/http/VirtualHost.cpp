@@ -1,5 +1,7 @@
 #include "VirtualHost.hpp"
 
+#include "utils.hpp"
+
 std::vector<VirtualHost> VirtualHost::_virtualHosts;
 
 std::map<std::string, std::string> VirtualHost::_mimeTypes;
