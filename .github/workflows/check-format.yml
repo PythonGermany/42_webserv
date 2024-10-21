@@ -16,14 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Clang-Format
-        uses: actions/cache@v4
-        with:
-          path: /usr/bin/clang-format
-          key: ${{ runner.os }}-clang-format-cache
-          restore-keys: |
-            ${{ runner.os }}-clang-format-cache
-
       - name: Set up Clang-Format
         run: |
           if ! command -v clang-format &> /dev/null; then
@@ -48,7 +40,7 @@ jobs:
 
           # Check formatting for each file
           for file in $files; do
-            if clang-format -style=file -output-replacements-xml "$file" | grep -q '<replacement '; then
+            if clang-format -output-replacements-xml "$file" | grep -q '<replacement '; then
               echo "Formatting issues found in $file"
               formatting_issues=1
             fi

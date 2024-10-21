@@ -9,7 +9,7 @@ class CallbackPointer;
 
 class IFileDescriptor {
  public:
-  virtual ~IFileDescriptor(){};
+  virtual ~IFileDescriptor();
   virtual void onPollEvent(struct pollfd &pollfd,
                            CallbackPointer *newCallbackObject,
                            struct pollfd *newPollfd) = 0;
