@@ -1,3 +1,6 @@
+[![Linux build](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml)
+[![Format check](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml)
+
 # Introduction
 
 This project is a basic HTTP server written in C++98. The standards listed below (HTTP/CGI) are not completely implemented and were rather seen as a guideline to implement a usable server than a "to be followed requirement".
