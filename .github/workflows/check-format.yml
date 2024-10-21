@@ -40,27 +40,15 @@ jobs:
 
           # Check formatting for each file
           for file in $files; do
-            echo "Checking formatting for file: $file"
-  
-            # Run clang-format and capture the output
-            output=$(clang-format -output-replacements-xml "$file")
-  
-            # Print the output for debugging
-            echo "clang-format output for $file:"
-            echo "$output"
-  
-            # Check for formatting issues
-            if echo "$output" | grep -q '<replacement '; then
+            if clang-format -style=file -output-replacements-xml "$file" | grep -q '<replacement '; then
               echo "Formatting issues found in $file"
               formatting_issues=1
-            else
-              echo "No formatting issues found in $file"
             fi
           done
 
           # Exit with the appropriate status code
           if [ $formatting_issues -eq 1 ]; then
-            echo "Please format the files using clang-format and commit the changes."
+            echo "Please format the files using clang-format version "$(clang-format --version)" and commit the changes."
             exit 1
           else
             echo "All files are properly formatted."
