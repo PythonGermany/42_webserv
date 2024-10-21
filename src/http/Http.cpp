@@ -9,7 +9,7 @@
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {
   setReadState(REQUEST_LINE);
-  this->headSizeLimit = 8192;
+  this->_maxHeadSize = MAX_CLIENT_HEAD_SIZE;
   this->_virtualHost = NULL;
   this->_context = NULL;
   this->_expectedBodySize = 0;
@@ -84,7 +84,7 @@ void Http::OnHeadRecv(std::string msg) {
 void Http::OnChunkSizeRecv(std::string msg) {
   accessLog_g.write("HTTP chunk size: '" + msg + "'", VERBOSE);
 
-  msg.substr(0, msg.find(';'));
+  (void)msg.substr(0, msg.find(';'));
   bodySize = 0;
   if (std::sscanf(msg.substr(0, msg.size()).c_str(), "%lx", &bodySize) == EOF) {
     errorLog_g.write("OnChunkSizeRecv(): sscanf failure", DEBUG, BRIGHT_RED);

@@ -45,7 +45,7 @@ class AConnection : public IFileDescriptor {
   Address client;
   Address host;
 
-  std::string::size_type headSizeLimit;
+  std::string::size_type _maxHeadSize;
   std::string::size_type bodySize;
   size_t _writeBufferPos;
 

@@ -18,6 +18,7 @@
 #define HTTP_DEFAULT_METHODS \
   { "GET", "HEAD", "OPTIONS" }
 #define HTTP_DEFAULT_MIME "application/octet-stream"
+#define MAX_CLIENT_HEAD_SIZE 16384
 #define MAX_CLIENT_BODY_SIZE 1048576
 
 const std::string codes_g[] = {"200", "201", "204", "301", "400", "403", "404",
