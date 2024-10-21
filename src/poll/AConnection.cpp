@@ -323,7 +323,7 @@ void AConnection::onPollIn(struct pollfd &pollfd) {
   if (pollfd.events & POLLIN &&
       (_readState == REQUEST_LINE || _readState == HEAD ||
        _readState == TRAILER) &&
-      _readBuffer.size() > headSizeLimit) {
+      _readBuffer.size() > _maxHeadSize) {
     pollfd.events = 0;
     pollfd.revents = 0;
   }
