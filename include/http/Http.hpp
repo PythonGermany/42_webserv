@@ -12,9 +12,11 @@
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
 #define PROTOCOL "HTTP"
 #define HTTP_VERSION "1.1"
-#define HTTP_METHODS {"GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE"}
+#define HTTP_METHODS \
+  { "GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE" }
 #define HTTP_DEFAULT_METHOD_COUNT 3
-#define HTTP_DEFAULT_METHODS {"GET", "HEAD", "OPTIONS"}
+#define HTTP_DEFAULT_METHODS \
+  { "GET", "HEAD", "OPTIONS" }
 #define HTTP_DEFAULT_MIME "application/octet-stream"
 #define MAX_CLIENT_BODY_SIZE 1048576
 
