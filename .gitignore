@@ -23,3 +23,6 @@ websites/config_test/uploaded/*
 docker/webserv/source
 database/
 .env
+
+# Clangd config file
+.clangd
