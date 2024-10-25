@@ -115,7 +115,7 @@ docker.build:
 	docker build -t webserv .
 
 docker.run:
-	docker run --rm -p 8080:8080 --name webserv webserv:latest
+	docker run --rm -p 8080:80 --name webserv webserv:latest
 
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 

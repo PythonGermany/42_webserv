@@ -20,6 +20,6 @@ RUN ln -s /etc/webserv/sites-available/default.conf /etc/webserv/sites-enabled/
 RUN mkdir -p /var/www/html
 COPY --from=build-stage /app/websites/default/index.html /var/www/html/
 
-EXPOSE 8080
+EXPOSE 80
 
-CMD ["/usr/bin/webserv"]
+CMD ["/usr/bin/webserv", "-o", "on"]
