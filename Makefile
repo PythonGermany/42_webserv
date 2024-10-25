@@ -120,7 +120,6 @@ help:
 	@echo "  clean        : Remove object files"
 	@echo "  fclean       : Remove object files and the webserv binary"
 	@echo "  re           : Rebuild the webserv binary (fclean + all)"
-	@echo "  cgi          : Build the CGI program"
 	@echo "  performance  : Build with optimization flags (-O3)"
 	@echo "  debug        : Build with debugging symbols (-g)"
 	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
