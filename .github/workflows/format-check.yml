@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '*'
+    paths:
+      - .clang-format
 
 jobs:
   format-check:
