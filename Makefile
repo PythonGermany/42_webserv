@@ -111,6 +111,12 @@ custom:
 run: all
 	$(BIN_DIR)/$(NAME) $(CONF_DIR)/$(CONF)
 
+docker.build:
+	docker build -t webserv .
+
+docker.run:
+	docker run --rm -p 8080:8080 --name webserv webserv:latest
+
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 
@@ -124,6 +130,8 @@ help:
 	@echo "  debug        : Build with debugging symbols (-g)"
 	@echo "  custom       : Build with custom CXXFLAGS (e.g., ARG='-DDEBUG')"
 	@echo "  run          : Run webserv binary with project configuration file"
+	@echo "  docker.build : Build webserv docker image"
+	@echo "  docker.run   : Run webserv docker image"
 	@echo "  lines        : Count lines of code in source files"
 
 .PHONY: all clean fclean re performance debug fsanitize custom flamegraph jmeter lines help
