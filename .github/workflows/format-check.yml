@@ -6,6 +6,8 @@ on:
       - '*'
     paths:
       - .clang-format
+      - include/**
+      - src/**
 
 jobs:
   format-check:
