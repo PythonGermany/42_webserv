@@ -1,5 +1,7 @@
 #include "Init.hpp"
 
+#include <string>
+
 #include "AConnection.hpp"
 #include "ListenSocket.hpp"
 #include "Log.hpp"
@@ -68,8 +70,8 @@ void Init::initMimeTypes(Context& context) {
   }
   context.removeContext("types");
   VirtualHost::setMimeTypes(types);
-  accessLog_g.write(
-      "Mime types loaded for " + toString(types.size()) + " extensions", INFO);
+  accessLog_g.write("Number of mime types loaded: " + toString(types.size()),
+                    INFO);
 }
 
 void Init::initVirtualHosts(Context& context) {
@@ -82,7 +84,7 @@ void Init::initVirtualHosts(Context& context) {
     VirtualHost::add(VirtualHost(serverContexts[i]));
   }
   size_t size = VirtualHost::getVirtualHosts().size();
-  accessLog_g.write(toString(size) + " virtual hosts loaded", INFO);
+  accessLog_g.write("Number of virtual hosts loaded: " + toString(size), INFO);
 }
 
 void Init::initAConnection(Context& context) {
@@ -117,5 +119,5 @@ void Init::initPoll() {
       ++sockets;
     }
   }
-  accessLog_g.write("Number of sockets: " + toString(sockets), INFO);
+  accessLog_g.write("Number of sockets created: " + toString(sockets), INFO);
 }
