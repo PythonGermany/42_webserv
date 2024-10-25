@@ -22,4 +22,4 @@ COPY --from=build-stage /app/websites/default/index.html /var/www/html/
 
 EXPOSE 8080
 
-CMD ["/usr/bin/webserv"]
+CMD ["/usr/bin/webserv", "-o", "on"]
