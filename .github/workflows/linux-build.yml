@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - '*'
+    paths:
+      - Makefile
+      - include/**
+      - src/**
+      
 
 jobs:
   linux-build:
