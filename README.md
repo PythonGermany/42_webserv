@@ -1,5 +1,6 @@
-[![Linux build](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml)
 [![Format check](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml)
+[![Linux build](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml)
+[![Docker ci](https://github.com/PythonGermany/42_webserv/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/docker-ci.yml)
 
 # Introduction
 
