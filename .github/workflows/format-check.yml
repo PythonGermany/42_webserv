@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - '*'
+    paths:
+      - include/**
+      - src/**
 
 jobs:
   format-check:
