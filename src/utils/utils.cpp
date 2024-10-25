@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <algorithm>
+#include <climits>
 #include <list>
 
 std::string trim(const std::string& str, std::string chars) {
