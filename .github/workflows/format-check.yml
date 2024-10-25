@@ -5,6 +5,7 @@ on:
     branches:
       - '*'
     paths:
+      - .clang-format
       - include/**
       - src/**
 
