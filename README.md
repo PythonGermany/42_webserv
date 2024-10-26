@@ -39,12 +39,12 @@ Pull the [docker image](https://hub.docker.com/repository/docker/pythongermany/w
 make docker.build
 make docker.run
 ```
-This will build and run the standalone webserver image
+Build and run the standalone webserver image
 
 ```
 make -C docker up
 ```
-This will create a mariadb docker container for the database another container which will setup wordpress, compile webserv execute it. To populate the container env credentials you can make a copy of the [.env-example](docker/.env-example) file and rename it to `.env`, make sure to change the default values according to your needs.
+Create a mariadb docker container for the database another container which will setup wordpress, compile webserv execute it. To populate the container env credentials you can make a copy of the [.env-example](docker/.env-example) file and rename it to `.env`, make sure to change the default values according to your needs.
 
 ## Compile with make and clang
 
@@ -64,11 +64,11 @@ A flag overwrites the default setting as well as the ones that are configured in
 
 | Flag | Description | Allowed values
 | --- | --- | --- |
-| i | Show info block when starting the server | NONE |
-| h | Show help message and exit | NONE |
-| v | Show version of webserv and exit | NONE
-| c | Show parsed config file structure and exit | NONE |
-| t | Check if the config file syntax is valid and exit | NONE |
+| i | Show info block when starting the server | - |
+| h | Show help message and exit | - |
+| v | Show version of webserv and exit | -
+| c | Show parsed config file structure and exit | - |
+| t | Check if the config file syntax is valid and exit | - |
 | o | Controls [log_to_terminal](#log_to_terminal) | on/off |
 | l | Controls [log_level](#log_level) | 0 / 1 / 2 / 3 / 4 for `error` / `warning` / `info` / `debug` / `verbose`
 | a | Controls [access_log](#access_log) | PATH
