@@ -17,9 +17,7 @@ This project is a basic HTTP server written in C++98. The standards listed below
 
 # Table of Contents
 
-- [Linux installation](#linux-installation)
-  - [Requirements](#requirements)
-  - [Compilation](#compilation)
+- [Getting started](#getting-started)
 - [Usage](#usage)
   - [Flags](#flags)
 - [Configuration](#configuration)
@@ -27,33 +25,30 @@ This project is a basic HTTP server written in C++98. The standards listed below
   - [Directives](#directives)
   - [Example](#example)
 
-# Linux installation
+# Getting started
 
-## Requirements
-
-[Docker](https://docs.docker.com/engine/install/) or
+## Docker
 
 ```
-apt install make
+docker pull pythongermany/webserv
 ```
+Pull the [docker image](https://hub.docker.com/repository/docker/pythongermany/webserv/general)
 
 ```
-apt install clang
+make docker.build
+make docker.run
 ```
+This will build and run the standalone webserver image
 
-## Compilation
+```
+make -C docker up
+```
+This will create a mariadb docker container for the database another container which will setup wordpress, compile webserv execute it. To populate the container env credentials you can make a copy of the [.env-example](docker/.env-example) file and rename it to `.env`, make sure to change the default values according to your needs.
 
-### Native
+## Compile with make and clang
 
 ```
 make [performance|debug|fsanitize]
-```
-
-### Docker
-
-This will create a mariadb docker container for the database another container which will setup wordpress, compile webserv execute it. To populate the container env credentials you can make a copy of the [.env-example](docker/.env-example) file and rename it to `.env`, make sure to change the default values according to your needs.
-```
-make -C docker up
 ```
 
 # Usage
