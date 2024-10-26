@@ -15,6 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Cache object files
+      id: cache-obj-files
+      uses: actions/cache@v4
+      with:
+        path: obj
+        key: ${{ runner.os }}-obj-files
+    
     - name: Build binary
       run: make
     
