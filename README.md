@@ -24,6 +24,7 @@ This project is a basic HTTP server written in C++98. The standards listed below
   - [Contexts](#contexts)
   - [Directives](#directives)
   - [Example](#example)
+- [Contributors](#contributors)
 
 # Getting started
 
@@ -364,3 +365,8 @@ server {
 ```
 ./webserv [-i]
 ```
+
+# Contributors
+
+[jharrach](https://github.com/jharrach)
+[PythonGermany](https://github.com/PythonGermany)
