@@ -24,5 +24,6 @@ docker/webserv/source
 database/
 .env
 
-# Clangd config file
-.clangd
+.cache/
+
+compile_commands.json
