@@ -117,6 +117,9 @@ docker.build:
 docker.run:
 	docker run --rm -p 8080:80 --name webserv webserv:latest
 
+bear: fclean
+	bear -- make
+
 lines:
 	@wc -l $(SRC_DIR)/*.cpp $(INC_DIR)/*.hpp $(SRC_DIR)/*/*.cpp $(INC_DIR)/*/*.hpp | sort 
 
@@ -132,6 +135,7 @@ help:
 	@echo "  run          : Run webserv binary with project configuration file"
 	@echo "  docker.build : Build webserv docker image"
 	@echo "  docker.run   : Run webserv docker image"
+	@echo "  bear         : Use bear to generate compile_commands.json file which can be used by clangd"
 	@echo "  lines        : Count lines of code in source files"
 
 .PHONY: all clean fclean re performance debug fsanitize custom flamegraph jmeter lines help
