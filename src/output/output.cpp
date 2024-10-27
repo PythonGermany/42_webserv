@@ -1,5 +1,10 @@
 #include "output.hpp"
 
+#include <iostream>
+
+#include "colors.hpp"
+#include "webserv.hpp"
+
 int getBit(output_flag_t flag, int value) { return value & flag; }
 
 void printInfo(int flags) {

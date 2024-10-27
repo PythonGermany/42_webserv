@@ -1,10 +1,7 @@
 #ifndef OUTPUT_HPP
 #define OUTPUT_HPP
 
-#include <iostream>
-
-#include "colors.hpp"
-#include "webserv.hpp"
+#include <string>
 
 typedef enum output_flag_e { SET = 1, PRINT = 2, UNSET = 4 } output_flag_t;
 
