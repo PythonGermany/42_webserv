@@ -157,7 +157,7 @@ std::string percentEncode(std::string str, std::string reserved) {
 }
 
 std::string getTime(std::string format, const time_t* timer) {
-  struct tm* timeinfo;
+  struct tm timeinfo;
   size_t size = 64;
 
   time_t rawtime;
@@ -168,8 +168,8 @@ std::string getTime(std::string format, const time_t* timer) {
   if (endsWith(format, " GMT") == false) format += " GMT";
   while (true) {
     std::string buffer(size, '\0');
-    timeinfo = std::gmtime(timer);
-    size_t ret = std::strftime(&buffer[0], size, format.c_str(), timeinfo);
+    std::gmtime_r(timer, &timeinfo);
+    size_t ret = std::strftime(&buffer[0], size, format.c_str(), &timeinfo);
     if (ret != 0) {
       buffer.resize(ret);
       return buffer;
