@@ -53,6 +53,7 @@ const token_t tokens_g[] = {
     {"log_level", "http", false, 0, 1, 1, 1, isLogLevel},
     {"log_to_terminal", "http", false, 0, 1, 1, 1, isBoolean},
     {"server", "http", true, 1, static_cast<size_t>(-1), 0, 0, NULL},
+    {"server_tokens", "http", false, 0, 1, 1, 1, isBoolean},
     {"types", "http", true, 1, 1, 0, 0, NULL},
 
     // Mime type context
@@ -72,6 +73,7 @@ const token_t tokens_g[] = {
     {"root", "server", false, 1, 1, 1, 1, NULL},
     {"server_name", "server", false, 0, static_cast<size_t>(-1), 1,
      static_cast<size_t>(-1), NULL},
+    {"server_tokens", "server", false, 0, 1, 1, 1, isBoolean},
     {"max_client_head_size", "server", false, 0, 1, 1, 1, isMemorySize},
     {"max_client_body_size", "server", false, 0, 1, 1, 1, isMemorySize},
 

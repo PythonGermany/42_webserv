@@ -1,15 +1,17 @@
 #include "VirtualHost.hpp"
 
 #include "utils.hpp"
+#include "webserv.hpp"
 
 std::vector<VirtualHost> VirtualHost::_virtualHosts;
 
 std::map<std::string, std::string> VirtualHost::_mimeTypes;
 
-VirtualHost::VirtualHost() {}
+VirtualHost::VirtualHost() : _externalServerId(WEBSERV_NAME) {}
 
 VirtualHost::VirtualHost(const Context &context) {
   _context = context;
+  setExternalServerId();
 
   std::vector<std::vector<std::string> > &listens =
       _context.getDirective("listen");
@@ -22,6 +24,7 @@ VirtualHost::VirtualHost(const VirtualHost &rhs) { *this = rhs; }
 VirtualHost &VirtualHost::operator=(const VirtualHost &rhs) {
   if (this == &rhs) return *this;
   _context = rhs._context;
+  _externalServerId = rhs._externalServerId;
   _resolvedListenDirective = rhs._resolvedListenDirective;
   return *this;
 }
@@ -35,8 +38,6 @@ void VirtualHost::add(const VirtualHost &virtualHost) {
 void VirtualHost::setMimeTypes(std::map<std::string, std::string> &mimeTypes) {
   _mimeTypes = mimeTypes;
 }
-
-void VirtualHost::setContext(const Context &context) { _context = context; }
 
 std::vector<VirtualHost> &VirtualHost::getVirtualHosts() {
   return _virtualHosts;
@@ -56,6 +57,10 @@ std::set<Address> const &VirtualHost::getResolvedAddress() const {
 }
 
 Context &VirtualHost::getContext() { return _context; }
+
+const std::string &VirtualHost::getExternalServerId() const {
+  return _externalServerId;
+}
 
 VirtualHost *VirtualHost::matchVirtualHost(Address &address, std::string host) {
   std::vector<VirtualHost *> possibleHosts;
@@ -109,4 +114,12 @@ Context *VirtualHost::matchLocation(const std::string &uri) {
     }
   }
   return match;
+}
+
+void VirtualHost::setExternalServerId() {
+  if (_context.exists("server_tokens", true) &&
+      _context.getDirective("server_tokens", true)[0][0] == "on")
+    _externalServerId = WEBSERV_ID;
+  else
+    _externalServerId = WEBSERV_NAME;
 }
