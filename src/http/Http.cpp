@@ -263,7 +263,7 @@ void Http::processCgi(std::string contentLength) {
   std::vector<std::string> env;
   // const values:
   env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-  env.push_back("SERVER_SOFTWARE=" WEBSERV_ID);
+  env.push_back("SERVER_SOFTWARE=" + _virtualHost->getExternalServerId());
   env.push_back("SERVER_PROTOCOL=" PROTOCOL "/" HTTP_VERSION);
 
   // request specific values:
@@ -526,7 +526,8 @@ void Http::checkResourceValidity(const File &file, const std::string &uri) {
 std::string Http::getDefaultBody(std::string code, std::string reason) const {
   return "<html>\r\n<head><title>" + code + " " + reason +
          "</title></head>\r\n<body>\r\n<center><h1>" + code + " " + reason +
-         "</h1></center>\r\n<hr><center>" WEBSERV_ID
+         "</h1></center>\r\n<hr><center>" +
+         _virtualHost->getExternalServerId() +
          "</center>\r\n</body>\r\n</"
          "html>\r\n";
 }
@@ -538,7 +539,7 @@ void Http::sendResponse() {
   }
 
   // Set default header values
-  _response.setHeader("Server", WEBSERV_ID);
+  _response.setHeader("Server", _virtualHost->getExternalServerId());
   if (_response.getHeader("Content-Length").empty())
     _response.setHeader("Content-Length", "0");
   if (_response.getHeader("Content-type").empty())

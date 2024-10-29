@@ -89,7 +89,7 @@ The configuration file is used to define the configuration of the webserver. It 
 | Config type | Options |
 | --- | --- |
 | Configuration file context | [http](#http) / [location](#location) / [server](#server) |
-| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [type](#type) |
+| Configuration file directives | [access_log](#access_log) / [alias](#alias) / [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout) / [error_log](#error_log) / [error_page](#error_page) / [include](#include) / [index](#index) / [listen](#listen) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [max_client_body_size](#max_client_body_size)  / [redirect](#redirect) / [root](#root) / [server_name](#server_name) / [server_tokens](#server_tokens) / [type](#type) |
 
 ## Contexts
 
@@ -110,13 +110,15 @@ http {
   log_to_terminal [on|off];
   log_level LEVEL;
 
+  server_tokens [on|off];
+
   server {
     [directives]
   }
 }
 ```
 Root context. It contains the global configuration of the webserver.  
-**Allowed tokens:** [access_log](#access_log) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout)/ [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [server](#server) / [types](#types)
+**Allowed tokens:** [access_log](#access_log) / [cgi_timeout](#cgi_timeout) / [client_timeout](#client_timout)/ [error_log](#error_log) / [include](#include) / [log_level](#log_level) / [log_to_terminal](#log_to_terminal) / [server](#server) / [server_tokens](#server_tokens) / [types](#types)
 
 ### Types
 ```nginx
@@ -130,6 +132,8 @@ Types context. It contains the mime types of the server. The file [mime.types](c
 ### Server
 ```nginx
 server {
+  server_tokens [on|off];
+
   listen HOST:PORT;
   server_name NAME [NAME ...];
   root PATH;
@@ -147,7 +151,7 @@ server {
 }
 ```
 Virtual server context. It contains the configuration of a virtual server.  
-**Allowed tokens:** [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_page](#error_page) / [index](#index) / [listen](#listen) / [location](#location) / [max_client_body_size](#max_client_body_size) / [root](#root) / [server_name](#server_name)
+**Allowed tokens:** [allow](#allow) / [autoindex](#autoindex) / [cgi](#cgi) / [error_page](#error_page) / [index](#index) / [listen](#listen) / [location](#location) / [max_client_body_size](#max_client_body_size) / [root](#root) / [server_name](#server_name) / [server_tokens](#server_tokens)
 
 ### Location
 ```nginx
@@ -303,6 +307,13 @@ server_name NAME [NAME ...];
 Sets the server names.  
 **Allowed in:** [Server](#server)
 
+### server_tokens
+```
+server_tokens [on|off];
+```
+Enables or disables emitting server version in error messages and in the Server response header field.
+**Allowed in:** [Http](#http) / [Server](#server)
+
 ### type
 ```nginx
 type MIME_TYPE EXTENSION [EXTENSION ...];
@@ -343,21 +354,27 @@ http {
 # File -> /etc/webserv/sites-enabled/server.conf
 server {
   listen 8080;
+
+  server_tokens on;
+
   root /var/www/html;
   index index.html index.htm;
   autoindex on;
+
   max_client_body_size 1m;
   allow GET HEAD OPTIONS;
   error_page 404 /404.html;
+
   cgi php /usr/bin/php-cgi;
 
   location /example {
     alias /www; # Request: GET /example/file -> ROOT/www/file
     index example.html;
+
     allow GET HEAD OPTIONS PUT DELETE;
     autoindex off;
   }
-  location /redirect {
+  location /search {
     redirect https://www.duckduckgo.com;
   }
 }
