@@ -91,7 +91,6 @@ clean:
 	$(RM) -r $(OBJ_DIR)
 
 fclean: clean
-	rm -f tools/transformer
 	$(RM) -r $(BIN_DIR)
 
 re: fclean all

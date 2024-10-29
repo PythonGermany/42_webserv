@@ -1,7 +1,7 @@
 #ifndef CALLBACKPOINTER_HPP
 #define CALLBACKPOINTER_HPP
 
-#include "IFileDescriptor.hpp"
+class IFileDescriptor;
 
 class CallbackPointer {
  public:

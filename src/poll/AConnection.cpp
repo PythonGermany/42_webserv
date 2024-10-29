@@ -1,11 +1,15 @@
 #include "AConnection.hpp"
 
 #include <fcntl.h>
+#include <poll.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <cstdlib>
 #include <iostream>
 
+#include "CallbackPointer.hpp"
 #include "File.hpp"
 #include "Poll.hpp"
 #include "global.hpp"

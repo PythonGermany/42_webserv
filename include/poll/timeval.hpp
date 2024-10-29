@@ -1,7 +1,7 @@
 #ifndef TIMEVAL_HPP
 #define TIMEVAL_HPP
 
-#include <sys/time.h>
+struct timeval;
 
 timeval operator-(timeval const &lhs, timeval const &rhs);
 

@@ -1,5 +1,10 @@
 #include "Address.hpp"
 
+#include <netdb.h>
+
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 

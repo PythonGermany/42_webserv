@@ -2,9 +2,10 @@
 
 #include <algorithm>
 
+#include "File.hpp"
+#include "VirtualHost.hpp"
 #include "global.hpp"
 #include "utils.hpp"
-#include "webserv.hpp"
 
 Http::Http(Address const &client, Address const &host)
     : AConnection(host, client) {

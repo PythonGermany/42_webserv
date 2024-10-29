@@ -1,5 +1,7 @@
 #include "Config.hpp"
 
+#include "Context.hpp"
+#include "File.hpp"
 #include "Http.hpp"
 #include "global.hpp"
 #include "utils.hpp"

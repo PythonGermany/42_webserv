@@ -1,7 +1,7 @@
 #ifndef INIT_HPP
 #define INIT_HPP
 
-#include "Context.hpp"
+class Context;
 
 class Init {
  private:

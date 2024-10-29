@@ -1,5 +1,6 @@
 #include "Poll.hpp"
 
+#include <poll.h>
 #include <unistd.h>
 
 #include <cerrno>
@@ -7,6 +8,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "CallbackPointer.hpp"
+#include "IFileDescriptor.hpp"
 #include "global.hpp"
 
 /**

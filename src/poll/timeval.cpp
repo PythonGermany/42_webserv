@@ -1,5 +1,7 @@
 #include "timeval.hpp"
 
+#include <sys/time.h>
+
 timeval operator-(timeval const &lhs, timeval const &rhs) {
   timeval result;
   result.tv_sec = lhs.tv_sec - rhs.tv_sec;

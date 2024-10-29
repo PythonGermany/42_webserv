@@ -1,13 +1,8 @@
 #ifndef ADDRESS_HPP
 #define ADDRESS_HPP
 
-#include <netdb.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
 
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
 #include <ostream>
 #include <set>
 #include <string>

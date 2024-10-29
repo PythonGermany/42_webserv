@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Context.hpp"
+class Context;
 
 // ----------------------- CONFIG STRUCTURE ------------------------
 typedef struct token_s {
