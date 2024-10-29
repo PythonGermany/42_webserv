@@ -1,5 +1,6 @@
 #include "Log.hpp"
 
+#include <iostream>
 #include <map>
 
 #include "File.hpp"

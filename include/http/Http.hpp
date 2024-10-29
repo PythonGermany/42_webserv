@@ -4,10 +4,12 @@
 #include <fstream>
 
 #include "AConnection.hpp"
-#include "File.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-#include "VirtualHost.hpp"
+
+class VirtualHost;
+class Context;
+class File;
 
 // WEBSERV_CONFIG ----------- HTTP VALUES --------------------------
 #define PROTOCOL "HTTP"

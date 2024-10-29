@@ -3,7 +3,9 @@
 #define LISTENSOCKET_HPP
 
 #include "Address.hpp"
-#include "CallbackPointer.hpp"
+#include "IFileDescriptor.hpp"
+
+class CallbackPointer;
 
 class ListenSocket : public IFileDescriptor {
  public:

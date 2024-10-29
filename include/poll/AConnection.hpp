@@ -1,16 +1,16 @@
 #ifndef ACONNECTION_HPP
 #define ACONNECTION_HPP
 
-#include <fcntl.h>
+#include <sys/time.h>
 
-#include <istream>
 #include <queue>
 #include <string>
 #include <vector>
 
 #include "Address.hpp"
-#include "CallbackPointer.hpp"
-#include "timeval.hpp"
+#include "IFileDescriptor.hpp"
+
+class CallbackPointer;
 
 // WEBSERV_CONFIG ----------- ACONNECTION VALUES -------------------
 /**

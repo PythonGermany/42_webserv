@@ -1,8 +1,7 @@
 #ifndef IFILEDESCRIPTOR_HPP
 #define IFILEDESCRIPTOR_HPP
 
-#include <poll.h>
-
+struct pollfd;
 class CallbackPointer;
 
 #define POLLINACTIVE POLLERR

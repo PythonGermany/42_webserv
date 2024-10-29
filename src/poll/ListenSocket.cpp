@@ -1,7 +1,9 @@
 #include "ListenSocket.hpp"
 
 #include <fcntl.h>
+#include <poll.h>
 
+#include "CallbackPointer.hpp"
 #include "Http.hpp"
 #include "Poll.hpp"
 #include "global.hpp"

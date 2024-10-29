@@ -2,7 +2,6 @@
 #define LOG_HPP
 
 #include <fstream>
-#include <iostream>
 #include <ostream>
 #include <string>
 

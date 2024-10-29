@@ -4,7 +4,8 @@
 #include <csignal>
 #include <vector>
 
-#include "CallbackPointer.hpp"
+class CallbackPointer;
+class IFileDescriptor;
 
 class Poll {
  public:

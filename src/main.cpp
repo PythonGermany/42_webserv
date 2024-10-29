@@ -1,6 +1,7 @@
 #include <csignal>
 
 #include "Config.hpp"
+#include "Context.hpp"
 #include "Init.hpp"
 #include "Poll.hpp"
 #include "argument.hpp"
