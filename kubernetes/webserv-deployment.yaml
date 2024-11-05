@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserv-deployment
+  labels:
+    app: webserv
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webserv
+  template:
+    metadata:
+      labels:
+        app: webserv
+    spec:
+      containers:
+      - name: webserv
+        image: pythongermany/webserv:latest
+        volumeMounts:
+        - mountPath: "/usr/share/webserv/html"
+          name: webserv-volume
+        ports:
+        - containerPort: 80
+      volumes:
+        - name: webserv-volume
+          persistentVolumeClaim:
+            claimName: webserv-pvc
+
