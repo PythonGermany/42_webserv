@@ -7,11 +7,14 @@ name: Docker CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
     # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -19,10 +22,8 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: pythongermany/webserv
 
-
 jobs:
-  docker-ci:
-
+  docker-cd:
     runs-on: ubuntu-latest
     permissions:
       contents: read
