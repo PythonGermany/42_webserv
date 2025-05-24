@@ -3,7 +3,14 @@ name: Format check
 on:
   push:
     branches:
-      - '*'
+      - main
+    paths:
+      - .clang-format
+      - include/**
+      - src/**
+  pull_request:
+    branches:
+      - main
     paths:
       - .clang-format
       - include/**
