@@ -3,12 +3,18 @@ name: Linux build
 on:
   push:
     branches:
-      - '*'
+      - main
     paths:
       - Makefile
       - include/**
       - src/**
-      
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Makefile
+      - include/**
+      - src/**
 
 jobs:
   linux-build:
