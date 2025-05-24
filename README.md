@@ -1,6 +1,7 @@
 [![Format check](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/format-check.yml)
 [![Linux build](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/linux-build.yml)
 [![Docker CD](https://github.com/PythonGermany/42_webserv/actions/workflows/docker-cd.yml/badge.svg)](https://github.com/PythonGermany/42_webserv/actions/workflows/docker-cd.yml)
+[![GPL-3.0 License](https://img.shields.io/badge/license-GPL--3.0-blue)](https://github.com/PythonGermany/42_webserv/blob/main/LICENSE)
 
 # Introduction
 
