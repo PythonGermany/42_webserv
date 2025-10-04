@@ -34,7 +34,7 @@ This project is a basic HTTP server written in C++98. The standards listed below
 ```
 docker pull pythongermany/webserv
 ```
-Pull the [docker image](https://hub.docker.com/repository/docker/pythongermany/webserv/general)
+Pull the [docker image](https://github.com/PythonGermany/42_webserv/pkgs/container/webserv)
 
 ```
 make docker.build
